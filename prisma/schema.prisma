@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  client Client?
+
+  @@map("users")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  company   String
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  adAccounts AdAccount[]
+
+  @@map("clients")
+}
+
+model AdAccount {
+  id        String    @id @default(cuid())
+  name      String
+  accountId String
+  platform  Platform
+  clientId  String
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  metrics CampaignMetric[]
+
+  @@unique([accountId, platform])
+  @@map("ad_accounts")
+}
+
+model CampaignMetric {
+  id           String    @id @default(cuid())
+  adAccountId  String
+  adAccount    AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+  date         DateTime
+  spend        Float     @default(0)
+  impressions  Int       @default(0)
+  clicks       Int       @default(0)
+  conversions  Int       @default(0)
+  revenue      Float     @default(0)
+  campaignName String?
+  createdAt    DateTime  @default(now())
+
+  @@map("campaign_metrics")
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum Platform {
+  FACEBOOK
+  GOOGLE
+  TIKTOK
+}
