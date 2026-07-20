@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { Users, LayoutDashboard, LogOut, Plus, BarChart2 } from 'lucide-react'
+import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings } from 'lucide-react'
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -13,9 +13,11 @@ export function Sidebar() {
     { href:'/admin/clients', label:'Клієнти', icon:Users },
     { href:'/admin/new-client', label:'Новий клієнт', icon:Plus },
     { href:'/admin/stats', label:'Статистика', icon:BarChart2 },
+    { href:'/profile', label:'Профіль', icon:Settings },
   ] : [
     { href:'/dashboard', label:'Дашборд', icon:LayoutDashboard },
     { href:'/stats', label:'Статистика', icon:BarChart2 },
+    { href:'/profile', label:'Профіль', icon:Settings },
   ]
 
   return (
@@ -46,20 +48,25 @@ export function Sidebar() {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
             <Link key={href} href={href} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', fontWeight:500, textDecoration:'none', transition:'all 0.15s', background: active ? 'rgba(230,0,0,0.1)' : 'transparent', color: active ? '#ff4444' : 'rgba(255,255,255,0.45)', borderLeft: active ? '2px solid #e60000' : '2px solid transparent' }}>
-              <Icon size={15} />{label}
+              <Icon size={15}/>{label}
             </Link>
           )
         })}
       </nav>
 
       <div style={{ padding:'12px 10px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ padding:'8px 12px', marginBottom:'4px' }}>
-          <div style={{ width:'28px', height:'28px', borderRadius:'50%', background:'rgba(230,0,0,0.15)', border:'1px solid rgba(230,0,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'8px' }}>
+        <Link href="/profile" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 12px', marginBottom:'4px', textDecoration:'none', borderRadius:'8px', transition:'background 0.15s' }}
+          onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.03)' }}
+          onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
+        >
+          <div style={{ width:'28px', height:'28px', borderRadius:'50%', background:'rgba(230,0,0,0.15)', border:'1px solid rgba(230,0,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
             <span style={{ fontSize:'11px', fontWeight:700, color:'#e60000' }}>{session?.user?.name?.[0]?.toUpperCase()}</span>
           </div>
-          <p style={{ fontSize:'13px', fontWeight:600, color:'#fff', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.name}</p>
-          <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.28)', marginTop:'2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.email}</p>
-        </div>
+          <div style={{ overflow:'hidden' }}>
+            <p style={{ fontSize:'13px', fontWeight:600, color:'#fff', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.name}</p>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.28)', marginTop:'1px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.email}</p>
+          </div>
+        </Link>
         <button onClick={() => signOut({ callbackUrl: '/auth/login' })}
           style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', color:'rgba(255,255,255,0.3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500 }}
           onMouseEnter={e=>{ e.currentTarget.style.color='#ff4444'; e.currentTarget.style.background='rgba(230,0,0,0.08)' }}
