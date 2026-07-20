@@ -1,9 +1,8 @@
 'use client'
-
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { BarChart3, Loader2 } from 'lucide-react'
+import { Loader2, BarChart3, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -16,93 +15,50 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    })
-
-    if (result?.error) {
-      setError('Невірний email або пароль')
-      setLoading(false)
-    } else {
-      router.push('/')
-      router.refresh()
-    }
+    const result = await signIn('credentials', { email, password, redirect: false })
+    if (result?.error) { setError('Невірний email або пароль'); setLoading(false) }
+    else { router.push('/'); router.refresh() }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-900 via-brand-700 to-brand-500 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl backdrop-blur mb-4">
-            <BarChart3 className="w-8 h-8 text-white" />
+    <div className="min-h-screen grid-bg flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Червоне світло фон */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none" style={{background:'radial-gradient(circle, rgba(230,0,0,0.08) 0%, transparent 70%)'}} />
+
+      <div className="w-full max-w-sm animate-slide-up relative z-10">
+        {/* Логотип */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl mb-5" style={{background:'rgba(230,0,0,0.1)',border:'1px solid rgba(230,0,0,0.3)'}}>
+            <BarChart3 className="w-7 h-7" style={{color:'#e60000'}} />
           </div>
-          <h1 className="text-3xl font-bold text-white">Ad Tracker</h1>
-          <p className="text-white/70 mt-1">Аналітика ваших рекламних кампаній</p>
+          <div className="mono text-xs tracking-widest mb-2" style={{color:'rgba(255,255,255,0.3)'}}>INFINITE UNION</div>
+          <h1 className="text-2xl font-bold text-white">Ad Tracker</h1>
+          <p className="text-sm mt-1" style={{color:'rgba(255,255,255,0.4)'}}>Аналітика рекламних кампаній</p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Вхід в систему</h2>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Форма */}
+        <div className="iu-card p-7">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
-              />
+              <label className="iu-label">Email</label>
+              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" required className="iu-input" />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Пароль
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
-              />
+              <label className="iu-label">Пароль</label>
+              <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" required className="iu-input" />
             </div>
-
             {error && (
-              <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl">
-                {error}
+              <div className="flex items-center gap-2 text-sm px-4 py-3 rounded-lg" style={{background:'rgba(230,0,0,0.1)',border:'1px solid rgba(230,0,0,0.2)',color:'#ff6b6b'}}>
+                <AlertCircle className="w-4 h-4 shrink-0" />{error}
               </div>
             )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 px-4 rounded-xl transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Входимо...
-                </>
-              ) : (
-                'Увійти'
-              )}
+            <button type="submit" disabled={loading} className="iu-btn w-full mt-2">
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" />Входимо...</> : 'Увійти →'}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-white/50 text-sm mt-6">
-          © 2024 Ad Tracker. Всі права захищені.
-        </p>
+        <p className="text-center text-xs mt-6 mono" style={{color:'rgba(255,255,255,0.2)'}}>© 2026 · Infinite Union · Ad Tracker</p>
       </div>
     </div>
   )
