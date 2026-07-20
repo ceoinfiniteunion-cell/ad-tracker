@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings } from 'lucide-react'
+import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings, FileText } from 'lucide-react'
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -13,10 +13,12 @@ export function Sidebar() {
     { href:'/admin/clients', label:'Клієнти', icon:Users },
     { href:'/admin/new-client', label:'Новий клієнт', icon:Plus },
     { href:'/admin/stats', label:'Статистика', icon:BarChart2 },
+    { href:'/admin/reports', label:'Звіти', icon:FileText },
     { href:'/profile', label:'Профіль', icon:Settings },
   ] : [
     { href:'/dashboard', label:'Дашборд', icon:LayoutDashboard },
     { href:'/stats', label:'Статистика', icon:BarChart2 },
+    { href:'/reports', label:'Звіти', icon:FileText },
     { href:'/profile', label:'Профіль', icon:Settings },
   ]
 
@@ -47,7 +49,7 @@ export function Sidebar() {
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
-            <Link key={href} href={href} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', fontWeight:500, textDecoration:'none', transition:'all 0.15s', background: active ? 'rgba(230,0,0,0.1)' : 'transparent', color: active ? '#ff4444' : 'rgba(255,255,255,0.45)', borderLeft: active ? '2px solid #e60000' : '2px solid transparent' }}>
+            <Link key={href} href={href} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', fontWeight:500, textDecoration:'none', transition:'all 0.15s', background: active?'rgba(230,0,0,0.1)':'transparent', color: active?'#ff4444':'rgba(255,255,255,0.45)', borderLeft: active?'2px solid #e60000':'2px solid transparent' }}>
               <Icon size={15}/>{label}
             </Link>
           )
@@ -67,7 +69,7 @@ export function Sidebar() {
             <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.28)', marginTop:'1px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.email}</p>
           </div>
         </Link>
-        <button onClick={() => signOut({ callbackUrl: '/auth/login' })}
+        <button onClick={()=>signOut({callbackUrl:'/auth/login'})}
           style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', color:'rgba(255,255,255,0.3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500 }}
           onMouseEnter={e=>{ e.currentTarget.style.color='#ff4444'; e.currentTarget.style.background='rgba(230,0,0,0.08)' }}
           onMouseLeave={e=>{ e.currentTarget.style.color='rgba(255,255,255,0.3)'; e.currentTarget.style.background='transparent' }}
