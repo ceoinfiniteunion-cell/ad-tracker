@@ -2,38 +2,50 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { BarChart3, Users, LayoutDashboard, LogOut, Plus } from 'lucide-react'
+import { Users, LayoutDashboard, LogOut, Plus } from 'lucide-react'
 
 export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
   const links = isAdmin
-    ? [{ href: '/admin/clients', label: 'Клієнти', icon: Users }, { href: '/admin/new-client', label: 'Новий клієнт', icon: Plus }]
-    : [{ href: '/dashboard', label: 'Дашборд', icon: LayoutDashboard }]
+    ? [{ href:'/admin/clients', label:'Клієнти', icon:Users }, { href:'/admin/new-client', label:'Новий клієнт', icon:Plus }]
+    : [{ href:'/dashboard', label:'Дашборд', icon:LayoutDashboard }]
 
   return (
-    <aside className="w-56 flex flex-col h-screen sticky top-0 shrink-0" style={{background:'#0d0d0d',borderRight:'1px solid rgba(255,255,255,0.05)'}}>
-      {/* Logo */}
-      <div className="p-5 mb-2" style={{borderBottom:'1px solid rgba(255,255,255,0.05)'}}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'rgba(230,0,0,0.15)',border:'1px solid rgba(230,0,0,0.3)'}}>
-            <BarChart3 className="w-4 h-4" style={{color:'#e60000'}} />
+    <aside style={{ width:'220px', minWidth:'220px', background:'#0d0d0d', borderRight:'1px solid rgba(255,255,255,0.05)', display:'flex', flexDirection:'column', height:'100vh', position:'sticky', top:0 }}>
+
+      {/* Логотип */}
+      <div style={{ padding:'20px', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+          {/* Знак нескінченності */}
+          <div style={{ width:'36px', height:'36px', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.25)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <svg width="22" height="11" viewBox="0 0 44 22">
+              <ellipse cx="11" cy="11" rx="9" ry="8" fill="none" stroke="#e60000" strokeWidth="2.5"/>
+              <ellipse cx="33" cy="11" rx="9" ry="8" fill="none" stroke="#e60000" strokeWidth="2.5"/>
+            </svg>
           </div>
           <div>
-            <p className="font-bold text-white text-sm leading-none">Ad Tracker</p>
-            <p className="mono text-xs mt-0.5" style={{color:'rgba(255,255,255,0.3)'}}>by Infinite Union</p>
+            <p style={{ fontWeight:800, color:'#fff', fontSize:'14px', lineHeight:1, margin:0 }}>Ad Tracker</p>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.28)', marginTop:'3px' }}>by Infinite Union</p>
           </div>
         </div>
       </div>
 
+      {/* Змія декор */}
+      <div style={{ padding:'12px 16px 0', overflow:'hidden' }}>
+        <svg width="100%" height="20" viewBox="0 0 188 20" preserveAspectRatio="none">
+          <path d="M0,10 C20,2 40,18 60,10 C80,2 100,18 120,10 C140,2 160,18 188,10" fill="none" stroke="rgba(230,0,0,0.2)" strokeWidth="1.5" strokeDasharray="4 4"/>
+        </svg>
+      </div>
+
       {/* Nav */}
-      <nav className="flex-1 p-3 space-y-0.5">
+      <nav style={{ flex:1, padding:'12px 10px', display:'flex', flexDirection:'column', gap:'3px' }}>
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
-            <Link key={href} href={href} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all" style={active ? {background:'rgba(230,0,0,0.12)',color:'#ff4444',borderLeft:'2px solid #e60000',paddingLeft:'10px'} : {color:'rgba(255,255,255,0.45)',borderLeft:'2px solid transparent',paddingLeft:'10px'}}>
-              <Icon className="w-4 h-4" />
+            <Link key={href} href={href} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', fontWeight:500, textDecoration:'none', transition:'all 0.15s', background: active ? 'rgba(230,0,0,0.1)' : 'transparent', color: active ? '#ff4444' : 'rgba(255,255,255,0.45)', borderLeft: active ? '2px solid #e60000' : '2px solid transparent' }}>
+              <Icon size={15} />
               {label}
             </Link>
           )
@@ -41,16 +53,20 @@ export function Sidebar() {
       </nav>
 
       {/* User */}
-      <div className="p-3" style={{borderTop:'1px solid rgba(255,255,255,0.05)'}}>
-        <div className="px-3 py-2 mb-1">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center mb-2" style={{background:'rgba(230,0,0,0.15)'}}>
-            <span className="text-xs font-bold" style={{color:'#e60000'}}>{session?.user?.name?.[0]?.toUpperCase()}</span>
+      <div style={{ padding:'12px 10px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ padding:'8px 12px', marginBottom:'4px' }}>
+          <div style={{ width:'28px', height:'28px', borderRadius:'50%', background:'rgba(230,0,0,0.15)', border:'1px solid rgba(230,0,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'8px' }}>
+            <span style={{ fontSize:'11px', fontWeight:700, color:'#e60000' }}>{session?.user?.name?.[0]?.toUpperCase()}</span>
           </div>
-          <p className="text-sm font-medium text-white truncate">{session?.user?.name}</p>
-          <p className="text-xs truncate mono" style={{color:'rgba(255,255,255,0.3)'}}>{session?.user?.email}</p>
+          <p style={{ fontSize:'13px', fontWeight:600, color:'#fff', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.name}</p>
+          <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.28)', marginTop:'2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.email}</p>
         </div>
-        <button onClick={() => signOut({ callbackUrl: '/auth/login' })} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all" style={{color:'rgba(255,255,255,0.35)'}}>
-          <LogOut className="w-4 h-4" />Вийти
+        <button onClick={() => signOut({ callbackUrl: '/auth/login' })}
+          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', color:'rgba(255,255,255,0.3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500 }}
+          onMouseEnter={e=>{ (e.currentTarget).style.color='#ff4444'; (e.currentTarget).style.background='rgba(230,0,0,0.08)' }}
+          onMouseLeave={e=>{ (e.currentTarget).style.color='rgba(255,255,255,0.3)'; (e.currentTarget).style.background='transparent' }}
+        >
+          <LogOut size={14} />Вийти
         </button>
       </div>
     </aside>
