@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings, FileText } from 'lucide-react'
+import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings, FileText, Zap } from 'lucide-react'
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -14,6 +14,7 @@ export function Sidebar() {
     { href:'/admin/new-client', label:'Новий клієнт', icon:Plus },
     { href:'/admin/stats', label:'Статистика', icon:BarChart2 },
     { href:'/admin/reports', label:'Звіти', icon:FileText },
+    { href:'/admin/meta', label:'Meta API', icon:Zap },
     { href:'/profile', label:'Профіль', icon:Settings },
   ] : [
     { href:'/dashboard', label:'Дашборд', icon:LayoutDashboard },
@@ -45,7 +46,7 @@ export function Sidebar() {
         </svg>
       </div>
 
-      <nav style={{ flex:1, padding:'12px 10px', display:'flex', flexDirection:'column', gap:'3px' }}>
+      <nav style={{ flex:1, padding:'12px 10px', display:'flex', flexDirection:'column', gap:'3px', overflowY:'auto' }}>
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
