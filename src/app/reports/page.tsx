@@ -87,7 +87,7 @@ export default function ReportsPage() {
   const exportCSV = () => {
     if (!data) return
     const ap = activePlatform==='all' ? null : data.platforms.find(p=>p.platform===activePlatform)
-    const daily = activePlatform==='all' ? merge(data.platforms.map(p=>p.daily).flat()) : ap?.daily ?? []
+    const daily = activePlatform==='all' ? merge((data?.platforms ?? []).map(p=>p.daily).flat()) : ap?.daily ?? []
     const rows = [
       ['Дата','Витрати','Покази','Кліки','Конверсії','Дохід'],
       ...daily.map(d=>[d.date, d.spend.toFixed(2), d.impressions, d.clicks, d.conversions, d.revenue.toFixed(2)])
@@ -110,7 +110,7 @@ export default function ReportsPage() {
   const ap = activePlatform==='all' ? null : data?.platforms.find(p=>p.platform===activePlatform)
   const summary = ap ? ap.summary : data?.totals
   const prevSummary = activePlatform==='all' ? prevData?.totals : prevData?.platforms.find(p=>p.platform===activePlatform)?.summary
-  const daily = !data ? [] : activePlatform==='all' ? merge(data.platforms.map(p=>p.daily).flat()) : ap?.daily ?? []
+  const daily = !data ? [] : activePlatform==='all' ? merge((data?.platforms ?? []).map(p=>p.daily).flat()) : ap?.daily ?? []
 
   const days = Math.ceil((new Date(to).getTime()-new Date(from).getTime())/(1000*60*60*24))+1
 
@@ -185,7 +185,7 @@ export default function ReportsPage() {
           {/* Platform tabs */}
           <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'16px', flexWrap:'wrap' }}>
             <button onClick={()=>setActivePlatform('all')} style={tabStyle(activePlatform==='all')}>Всі платформи</button>
-            {data?.platforms.map(p=>(
+            {(data?.platforms ?? []).map(p=>(
               <button key={p.platform} onClick={()=>setActivePlatform(p.platform)} style={{ ...tabStyle(activePlatform===p.platform, PCOLOR[p.platform]), display:'flex', alignItems:'center', gap:'7px' }}>
                 <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:PCOLOR[p.platform], display:'inline-block' }}/>
                 {PLABEL[p.platform]}
@@ -249,7 +249,7 @@ export default function ReportsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.platforms.map(p=>{
+                      {(data?.platforms ?? []).map(p=>{
                         const c=PCOLOR[p.platform]
                         const pp = prevData?.platforms.find(x=>x.platform===p.platform)
                         return (
