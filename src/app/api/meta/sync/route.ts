@@ -11,9 +11,9 @@ export async function POST(request: NextRequest) {
   }
   const { accountId, adAccountId, from, to } = await request.json()
   if (!accountId || !adAccountId) {
-    return NextResponse.json({ error: 'Missing accountId or adAccountId' }, { status: 400 })
+    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
   }
-  const dateFrom = from ?? (() => { const d=new Date(); d.setDate(d.getDate()-30); return d.toISOString().split('T')[0] })()
+  const dateFrom = from ?? new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0]
   const dateTo = to ?? new Date().toISOString().split('T')[0]
   try {
     const insights = await getAccountInsights(adAccountId, dateFrom, dateTo)
@@ -25,12 +25,9 @@ export async function POST(request: NextRequest) {
       const spend = parseFloat(day.spend ?? '0')
       const impressions = parseInt(day.impressions ?? '0')
       const clicks = parseInt(day.clicks ?? '0')
-
-      // Шукаємо існуючий запис
       const existing = await prisma.campaignMetric.findFirst({
         where: { adAccountId: accountId, date }
       })
-
       if (existing) {
         await prisma.campaignMetric.update({
           where: { id: existing.id },
