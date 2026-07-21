@@ -10,16 +10,11 @@ export async function GET(request: NextRequest) {
   }
   const { searchParams } = new URL(request.url)
   const adAccountId = searchParams.get('adAccountId')
-  const from = searchParams.get('from') ?? (() => { const d = new Date(); d.setDate(d.getDate()-30); return d.toISOString().split('T')[0] })()
+  const from = searchParams.get('from') ?? (() => { const d=new Date(); d.setDate(d.getDate()-30); return d.toISOString().split('T')[0] })()
   const to = searchParams.get('to') ?? new Date().toISOString().split('T')[0]
-
   if (!adAccountId) return NextResponse.json({ error: 'Missing adAccountId' }, { status: 400 })
-
   try {
-    const [campaigns, adsets] = await Promise.all([
-      getCampaigns(adAccountId, from, to),
-      getAdSets(adAccountId, from, to),
-    ])
+    const [campaigns, adsets] = await Promise.all([getCampaigns(adAccountId, from, to), getAdSets(adAccountId, from, to)])
     return NextResponse.json({ campaigns, adsets })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
