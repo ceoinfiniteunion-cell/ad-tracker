@@ -15,7 +15,7 @@ async function metaFetch(path: string, params: Record<string, string> = {}) {
 
 export async function getAdAccounts() {
   const data = await metaFetch('/me/adaccounts', {
-    fields: 'id,name,account_id,account_status,currency,timezone_name,spend_cap,amount_spent'
+    fields: 'id,name,account_id,account_status,currency,timezone_name,amount_spent'
   })
   return data.data ?? []
 }
@@ -32,9 +32,10 @@ export async function getAccountInsights(accountId: string, from: string, to: st
 
 export async function getCampaigns(accountId: string, from: string, to: string) {
   const data = await metaFetch(`/${accountId}/campaigns`, {
-    fields: 'id,name,status,objective,daily_budget,lifetime_budget,created_time,updated_time',
-    effective_status: JSON.stringify(['ACTIVE', 'PAUSED', 'ARCHIVED']),
-    limit: '50',
+    fields: 'id,name,status,objective,daily_budget,lifetime_budget',
+    // Всі статуси включно з архівом
+    effective_status: JSON.stringify(['ACTIVE','PAUSED','DELETED','ARCHIVED','IN_PROCESS','WITH_ISSUES']),
+    limit: '100',
   })
   const campaigns = data.data ?? []
   const withInsights = await Promise.all(campaigns.map(async (c: any) => {
@@ -51,9 +52,10 @@ export async function getCampaigns(accountId: string, from: string, to: string) 
 
 export async function getAdSets(accountId: string, from: string, to: string) {
   const data = await metaFetch(`/${accountId}/adsets`, {
-    fields: 'id,name,status,campaign_id,daily_budget,lifetime_budget,targeting,optimization_goal,billing_event',
-    effective_status: JSON.stringify(['ACTIVE', 'PAUSED', 'ARCHIVED']),
-    limit: '100',
+    fields: 'id,name,status,campaign_id,daily_budget,lifetime_budget,optimization_goal,billing_event,targeting',
+    // Всі статуси
+    effective_status: JSON.stringify(['ACTIVE','PAUSED','DELETED','ARCHIVED','IN_PROCESS','WITH_ISSUES']),
+    limit: '200',
   })
   const adsets = data.data ?? []
   const withInsights = await Promise.all(adsets.map(async (a: any) => {
