@@ -21,11 +21,26 @@ export async function POST(request: NextRequest) {
     for (const day of insights) {
       const conversions = parseConversions(day.actions ?? [])
       const revenue = parseRevenue(day.action_values ?? [])
-      await prisma.campaignMetric.upsert({
-        where: { adAccountId_date: { adAccountId: accountId, date: new Date(day.date_start) } },
-        update: { spend: parseFloat(day.spend??'0'), impressions: parseInt(day.impressions??'0'), clicks: parseInt(day.clicks??'0'), conversions, revenue },
-        create: { adAccountId: accountId, date: new Date(day.date_start), spend: parseFloat(day.spend??'0'), impressions: parseInt(day.impressions??'0'), clicks: parseInt(day.clicks??'0'), conversions, revenue, campaignName: 'Meta Import' }
+      const date = new Date(day.date_start)
+      const spend = parseFloat(day.spend ?? '0')
+      const impressions = parseInt(day.impressions ?? '0')
+      const clicks = parseInt(day.clicks ?? '0')
+
+      // Шукаємо існуючий запис
+      const existing = await prisma.campaignMetric.findFirst({
+        where: { adAccountId: accountId, date }
       })
+
+      if (existing) {
+        await prisma.campaignMetric.update({
+          where: { id: existing.id },
+          data: { spend, impressions, clicks, conversions, revenue }
+        })
+      } else {
+        await prisma.campaignMetric.create({
+          data: { adAccountId: accountId, date, spend, impressions, clicks, conversions, revenue, campaignName: 'Meta Import' }
+        })
+      }
       synced++
     }
     return NextResponse.json({ ok: true, synced, from: dateFrom, to: dateTo })
