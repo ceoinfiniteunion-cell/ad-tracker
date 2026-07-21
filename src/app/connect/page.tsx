@@ -10,7 +10,7 @@ interface AdAccount {
   isActive: boolean; tokenStatus: string | null; createdAt: string
 }
 
-const PLATFORM_INFO = {
+const PLATFORM_INFO: Record<string, { label:string; color:string; bg:string; steps:{step:string;text:string;link?:string;linkText?:string}[]; idPlaceholder:string; tokenPlaceholder:string }> = {
   FACEBOOK: {
     label: 'Meta / Facebook', color: '#1877f2', bg: 'rgba(24,119,242,0.1)',
     steps: [
