@@ -1,30 +1,30 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { Plus, Trash2, CheckCircle, AlertCircle, X, ExternalLink, Eye, EyeOff, Info } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, AlertCircle, X, ExternalLink, Eye, EyeOff, Info, RefreshCw, Clock } from 'lucide-react'
 
 type Platform = 'FACEBOOK' | 'GOOGLE' | 'TIKTOK'
 
 interface AdAccount {
   id: string; name: string; accountId: string; platform: Platform
-  isActive: boolean; tokenStatus: string | null; createdAt: string
+  isActive: boolean; tokenStatus: string | null; createdAt: string; updatedAt: string
 }
 
-const PLATFORM_INFO: Record<string, { label:string; color:string; bg:string; steps:{step:string;text:string;link?:string;linkText?:string}[]; idPlaceholder:string; tokenPlaceholder:string }> = {
+const PLATFORM_INFO: Record<string, { label:string; color:string; bg:string; steps:{step:string;text:string;link?:string;linkText?:string}[]; idPlaceholder:string; tokenPlaceholder:string; autoSync:boolean }> = {
   FACEBOOK: {
-    label: 'Meta / Facebook', color: '#1877f2', bg: 'rgba(24,119,242,0.1)',
+    label: 'Meta / Facebook', color: '#1877f2', bg: 'rgba(24,119,242,0.1)', autoSync: true,
     steps: [
       { step: '1', text: 'Зайди на', link: 'https://business.facebook.com/settings/ad-accounts', linkText: 'business.facebook.com' },
       { step: '2', text: 'Знайди свій рекламний кабінет і скопіюй його ID (формат: act_XXXXXXXXXX або просто цифри)' },
       { step: '3', text: 'Для Access Token: зайди на', link: 'https://developers.facebook.com/tools/explorer', linkText: 'Graph API Explorer' },
       { step: '4', text: 'Вибери свій додаток, натисни "Generate Access Token", додай дозволи ads_read та read_insights' },
-      { step: '5', text: 'Скопіюй токен і встав нижче. Він дійсний 60 днів — потім треба оновити' },
+      { step: '5', text: 'Скопіюй токен і встав нижче. З токеном дані синхронізуються автоматично щодня!' },
     ],
     idPlaceholder: 'act_1234567890 або 1234567890',
     tokenPlaceholder: 'EAAxxxxxxxxxxxxx...',
   },
   GOOGLE: {
-    label: 'Google Ads', color: '#e60000', bg: 'rgba(230,0,0,0.1)',
+    label: 'Google Ads', color: '#e60000', bg: 'rgba(230,0,0,0.1)', autoSync: false,
     steps: [
       { step: '1', text: 'Зайди в', link: 'https://ads.google.com', linkText: 'Google Ads' },
       { step: '2', text: 'У верхньому правому куті знайди ID клієнта — формат: XXX-XXX-XXXX' },
@@ -35,7 +35,7 @@ const PLATFORM_INFO: Record<string, { label:string; color:string; bg:string; ste
     tokenPlaceholder: 'ya29.xxxxxxxxxxxxx...',
   },
   TIKTOK: {
-    label: 'TikTok Ads', color: '#fff', bg: 'rgba(255,255,255,0.07)',
+    label: 'TikTok Ads', color: '#fff', bg: 'rgba(255,255,255,0.07)', autoSync: false,
     steps: [
       { step: '1', text: 'Зайди в', link: 'https://ads.tiktok.com', linkText: 'TikTok Ads Manager' },
       { step: '2', text: 'Натисни на своє імя вгорі справа — Налаштування акаунту' },
@@ -49,9 +49,9 @@ const PLATFORM_INFO: Record<string, { label:string; color:string; bg:string; ste
 }
 
 const TOKEN_STATUS: Record<string, { label: string; color: string; bg: string }> = {
-  valid: { label: 'Токен дійсний', color: '#00c864', bg: 'rgba(0,200,100,0.1)' },
-  invalid: { label: 'Токен недійсний', color: '#ff4444', bg: 'rgba(230,0,0,0.1)' },
-  no_token: { label: 'Без токена', color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.05)' },
+  valid: { label: '✓ Токен дійсний', color: '#00c864', bg: 'rgba(0,200,100,0.1)' },
+  invalid: { label: '✗ Токен недійсний', color: '#ff4444', bg: 'rgba(230,0,0,0.1)' },
+  no_token: { label: '— Без токена', color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.05)' },
 }
 
 const gridBg = { position:'fixed' as const, inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' as const, zIndex:0 }
@@ -66,12 +66,11 @@ export default function ConnectPage() {
   const [deleting, setDeleting] = useState<string|null>(null)
   const [saving, setSaving] = useState(false)
   const [tokenSaving, setTokenSaving] = useState(false)
+  const [syncing, setSyncing] = useState<string|null>(null)
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>('FACEBOOK')
   const [showSteps, setShowSteps] = useState(true)
   const [forms, setForms] = useState<Record<Platform, typeof defaultForm>>({
-    FACEBOOK: { ...defaultForm },
-    GOOGLE: { ...defaultForm },
-    TIKTOK: { ...defaultForm },
+    FACEBOOK: { ...defaultForm }, GOOGLE: { ...defaultForm }, TIKTOK: { ...defaultForm },
   })
   const [tokenInput, setTokenInput] = useState('')
   const [showToken, setShowToken] = useState(false)
@@ -117,11 +116,25 @@ export default function ConnectPage() {
       const d = await res.json()
       setAccounts(prev=>prev.map(a=>a.id===showTokenModal.id?{...a,tokenStatus:d.tokenStatus}:a))
       setShowTokenModal(null); setTokenInput('')
-      showToast(d.tokenStatus==='valid'?'Токен підтверджено':'Токен збережено', d.tokenStatus==='valid'?'ok':'err')
+      showToast(d.tokenStatus==='valid'?'Токен підтверджено ✓':'Токен збережено', d.tokenStatus==='valid'?'ok':'err')
     } else {
       const d = await res.json(); showToast(d.error??'Помилка', 'err')
     }
     setTokenSaving(false)
+  }
+
+  const handleSync = async (acc: AdAccount) => {
+    setSyncing(acc.id)
+    const from = new Date(Date.now()-30*24*60*60*1000).toISOString().split('T')[0]
+    const to = new Date().toISOString().split('T')[0]
+    const res = await fetch('/api/meta/sync', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ accountId: acc.id, adAccountId: acc.accountId, from, to })
+    })
+    const data = await res.json()
+    if (res.ok) showToast(`Синхронізовано ${data.synced} днів ✓`, 'ok')
+    else showToast(data.error??'Помилка синхронізації', 'err')
+    setSyncing(null)
   }
 
   const handleDelete = async (id: string) => {
@@ -152,12 +165,21 @@ export default function ConnectPage() {
             <div>
               <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>// МОЇ РЕКЛАМНІ КАБІНЕТИ</p>
               <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Підключені кабінети</h1>
-              <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>Додайте свої рекламні кабінети для відстеження статистики</p>
+              <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>Додайте кабінети — дані синхронізуються автоматично</p>
             </div>
             <button onClick={()=>setShowModal(true)} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'11px 20px', background:'#e60000', color:'#fff', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor:'pointer', transition:'all 0.15s' }} onMouseEnter={e=>{e.currentTarget.style.background='#cc0000'}} onMouseLeave={e=>{e.currentTarget.style.background='#e60000'}}>
               <Plus size={15}/>Додати кабінет
             </button>
           </div>
+
+          {/* Інфо про автосинк */}
+          <div style={{ background:'rgba(0,200,100,0.06)', border:'1px solid rgba(0,200,100,0.15)', borderRadius:'10px', padding:'14px 18px', marginBottom:'24px', display:'flex', alignItems:'center', gap:'12px' }}>
+            <Clock size={16} style={{color:'#00c864', flexShrink:0}}/>
+            <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.6)', margin:0 }}>
+              <span style={{ color:'#00c864', fontWeight:600 }}>Автосинхронізація</span> — Meta кабінети з токеном оновлюються автоматично щодня. Натисніть <span style={{ color:'#fff', fontWeight:600 }}>Синхронізувати</span> щоб оновити зараз.
+            </p>
+          </div>
+
           {loading ? (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'60px' }}>
               <div style={{ width:'28px', height:'28px', border:'2px solid rgba(230,0,0,0.2)', borderTopColor:'#e60000', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/>
@@ -176,6 +198,7 @@ export default function ConnectPage() {
               {accounts.map((acc, i) => {
                 const p = PLATFORM_INFO[acc.platform]
                 const ts = TOKEN_STATUS[acc.tokenStatus??'no_token']
+                const lastSync = new Date(acc.updatedAt).toLocaleDateString('uk', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
                 return (
                   <div key={acc.id} className="anim-up" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'20px 24px', animationDelay:`${i*40}ms`, opacity:0 }} onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.06)'}}>
                     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -187,14 +210,25 @@ export default function ConnectPage() {
                           <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'4px' }}>
                             <p style={{ fontSize:'14px', fontWeight:700, color:'#fff', margin:0 }}>{acc.name}</p>
                             <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:p?.bg, color:p?.color, fontWeight:600 }}>{p?.label}</span>
+                            {p?.autoSync && acc.tokenStatus==='valid' && (
+                              <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:'rgba(0,200,100,0.1)', color:'#00c864', fontWeight:600 }}>● Авто</span>
+                            )}
                           </div>
                           <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
                             <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.3)', margin:0 }}>ID: {acc.accountId}</p>
                             <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:ts.bg, color:ts.color, fontWeight:600 }}>{ts.label}</span>
+                            <span style={{ fontSize:'11px', color:'rgba(255,255,255,0.2)' }}>Оновлено: {lastSync}</span>
                           </div>
                         </div>
                       </div>
                       <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                        {/* Кнопка синхронізації для Meta */}
+                        {acc.platform === 'FACEBOOK' && acc.tokenStatus === 'valid' && (
+                          <button onClick={()=>handleSync(acc)} disabled={syncing===acc.id} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', background:'rgba(0,200,100,0.08)', border:'1px solid rgba(0,200,100,0.2)', borderRadius:'7px', color:'#00c864', fontSize:'12px', fontWeight:600, cursor:'pointer', transition:'all 0.15s', opacity:syncing===acc.id?0.6:1 }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(0,200,100,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(0,200,100,0.08)'}}>
+                            <RefreshCw size={13} style={{animation:syncing===acc.id?'spin 0.8s linear infinite':'none'}}/>
+                            {syncing===acc.id?'Синк...':'Синхронізувати'}
+                          </button>
+                        )}
                         <button onClick={()=>{ setShowTokenModal(acc); setTokenInput('') }} style={{ padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'7px', color:'rgba(255,255,255,0.5)', fontSize:'12px', fontWeight:600, cursor:'pointer', transition:'all 0.15s' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.3)';e.currentTarget.style.color='#ff4444'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.08)';e.currentTarget.style.color='rgba(255,255,255,0.5)'}}>
                           {acc.tokenStatus==='valid'?'Оновити токен':'Додати токен'}
                         </button>
@@ -211,6 +245,7 @@ export default function ConnectPage() {
         </div>
       </main>
 
+      {/* Модал додати кабінет */}
       {showModal && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', backdropFilter:'blur(4px)', zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }} onClick={e=>{if(e.target===e.currentTarget)setShowModal(false)}}>
           <div className="anim-up" style={{ width:'100%', maxWidth:'560px', background:'#111', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'16px', padding:'0', boxShadow:'0 24px 64px rgba(0,0,0,0.6)', maxHeight:'90vh', overflowY:'auto' }}>
@@ -232,8 +267,9 @@ export default function ConnectPage() {
                     const active = selectedPlatform===pl
                     return (
                       <button type="button" key={pl} onClick={()=>setSelectedPlatform(pl)} style={{ padding:'14px 8px', borderRadius:'8px', border:`1px solid ${active?p.color+'50':'rgba(255,255,255,0.07)'}`, background:active?p.bg:'rgba(255,255,255,0.02)', color:active?p.color:'rgba(255,255,255,0.35)', fontSize:'12px', fontWeight:700, cursor:'pointer', transition:'all 0.15s', textAlign:'center' as const }}>
-                        <div style={{ fontSize:'11px', fontFamily:'monospace', marginBottom:'5px', letterSpacing:'0.05em' }}>{pl==='FACEBOOK'?'META':pl==='GOOGLE'?'GOOGLE':'TIKTOK'}</div>
+                        <div style={{ fontSize:'11px', fontFamily:'monospace', marginBottom:'5px' }}>{pl==='FACEBOOK'?'META':pl==='GOOGLE'?'GOOGLE':'TIKTOK'}</div>
                         <div style={{ fontSize:'10px', fontWeight:400, opacity:0.7 }}>{p.label}</div>
+                        {p.autoSync && <div style={{ fontSize:'9px', color:'#00c864', marginTop:'4px', fontWeight:600 }}>● Автосинк</div>}
                       </button>
                     )
                   })}
@@ -241,7 +277,7 @@ export default function ConnectPage() {
               </div>
 
               <div style={{ marginBottom:'20px' }}>
-                <button type="button" onClick={()=>setShowSteps(!showSteps)} style={{ display:'flex', alignItems:'center', gap:'8px', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', padding:'10px 14px', color:'rgba(255,255,255,0.5)', fontSize:'12px', fontWeight:600, cursor:'pointer', width:'100%', transition:'all 0.15s' }}>
+                <button type="button" onClick={()=>setShowSteps(!showSteps)} style={{ display:'flex', alignItems:'center', gap:'8px', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', padding:'10px 14px', color:'rgba(255,255,255,0.5)', fontSize:'12px', fontWeight:600, cursor:'pointer', width:'100%' }}>
                   <Info size={13} style={{color:'#fbbf24'}}/>
                   Де знайти ID кабінету та токен?
                   <span style={{ marginLeft:'auto', fontSize:'10px' }}>{showSteps?'Сховати':'Показати'}</span>
@@ -250,7 +286,7 @@ export default function ConnectPage() {
                   <div style={{ marginTop:'10px', background:'rgba(251,191,36,0.05)', border:'1px solid rgba(251,191,36,0.15)', borderRadius:'8px', padding:'14px 16px' }}>
                     {pInfo.steps.map((s,i)=>(
                       <div key={i} style={{ display:'flex', gap:'10px', marginBottom: i<pInfo.steps.length-1?'10px':0 }}>
-                        <span style={{ minWidth:'20px', height:'20px', borderRadius:'50%', background:'rgba(251,191,36,0.15)', color:'#fbbf24', fontSize:'10px', fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontFamily:'monospace' }}>{s.step}</span>
+                        <span style={{ minWidth:'20px', height:'20px', borderRadius:'50%', background:'rgba(251,191,36,0.15)', color:'#fbbf24', fontSize:'10px', fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{s.step}</span>
                         <p style={{ fontSize:'12px', color:'rgba(255,255,255,0.55)', margin:0, lineHeight:1.5 }}>
                           {s.text}{' '}
                           {s.link && <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ color:'#1877f2', textDecoration:'none', fontWeight:600 }}>{s.linkText} <ExternalLink size={10} style={{display:'inline',verticalAlign:'middle'}}/></a>}
@@ -271,16 +307,21 @@ export default function ConnectPage() {
                   <input value={currentForm.accountId} onChange={e=>setCurrentForm({accountId:e.target.value})} placeholder={pInfo.idPlaceholder} required style={inp(focusedField==='accountId')} onFocus={()=>setFocusedField('accountId')} onBlur={()=>setFocusedField(null)}/>
                 </div>
                 <div style={{ marginBottom:'20px' }}>
-                  <label style={lbl}>Access Token <span style={{ color:'rgba(255,255,255,0.25)', fontWeight:400, textTransform:'none' as const, letterSpacing:0 }}>(опційно)</span></label>
+                  <label style={lbl}>
+                    Access Token{' '}
+                    {pInfo.autoSync
+                      ? <span style={{ color:'#00c864', fontWeight:600, textTransform:'none' as const, letterSpacing:0, fontSize:'11px' }}>— потрібен для автосинхронізації</span>
+                      : <span style={{ color:'rgba(255,255,255,0.25)', fontWeight:400, textTransform:'none' as const, letterSpacing:0 }}>(опційно)</span>
+                    }
+                  </label>
                   <div style={{ position:'relative' }}>
                     <input type={showToken?'text':'password'} value={currentForm.accessToken} onChange={e=>setCurrentForm({accessToken:e.target.value})} placeholder={pInfo.tokenPlaceholder} style={{ ...inp(focusedField==='token'), paddingRight:'44px' }} onFocus={()=>setFocusedField('token')} onBlur={()=>setFocusedField(null)}/>
                     <button type="button" onClick={()=>setShowToken(!showToken)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'rgba(255,255,255,0.3)', cursor:'pointer', padding:'4px' }}>
                       {showToken?<EyeOff size={15}/>:<Eye size={15}/>}
                     </button>
                   </div>
-                  <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.2)', marginTop:'6px' }}>Токен передається захищено і зберігається в зашифрованому вигляді</p>
                 </div>
-                <button type="submit" disabled={saving} style={{ width:'100%', padding:'13px', background:saving?'#333':'#e60000', color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor:saving?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }} onMouseEnter={e=>{if(!saving){e.currentTarget.style.background='#cc0000'}}} onMouseLeave={e=>{e.currentTarget.style.background=saving?'#333':'#e60000'}}>
+                <button type="submit" disabled={saving} style={{ width:'100%', padding:'13px', background:saving?'#333':'#e60000', color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor:saving?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }} onMouseEnter={e=>{if(!saving)e.currentTarget.style.background='#cc0000'}} onMouseLeave={e=>{e.currentTarget.style.background=saving?'#333':'#e60000'}}>
                   {saving?<><div style={{width:'14px',height:'14px',border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>Підключаємо...</>:'Підключити кабінет →'}
                 </button>
               </form>
@@ -289,6 +330,7 @@ export default function ConnectPage() {
         </div>
       )}
 
+      {/* Модал токен */}
       {showTokenModal && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', backdropFilter:'blur(4px)', zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }} onClick={e=>{if(e.target===e.currentTarget){setShowTokenModal(null);setTokenInput('')}}}>
           <div className="anim-up" style={{ width:'100%', maxWidth:'480px', background:'#111', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'16px', padding:'28px', boxShadow:'0 24px 64px rgba(0,0,0,0.6)' }}>
