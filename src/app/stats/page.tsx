@@ -95,7 +95,7 @@ export default function StatsPage() {
   const daily = merge(displayPlatforms.map(p=>p.daily).flat())
 
   // Унікальні платформи
-  const uniquePlatforms = data ? [...new Set(data.platforms.map(p=>p.platform))] as Platform[] : []
+  const uniquePlatforms = data ? Array.from(new Set(data.platforms.map(p=>p.platform))) as Platform[] : []
 
   const tabStyle = (active: boolean, color?: string) => ({
     padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600 as const, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
