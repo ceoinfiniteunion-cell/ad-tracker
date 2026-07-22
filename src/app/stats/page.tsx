@@ -1,11 +1,12 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { SpendChart } from '@/components/charts/SpendChart'
 import { ClicksChart } from '@/components/charts/ClicksChart'
 import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
+import { ChevronDown, Check } from 'lucide-react'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'rgba(255,255,255,0.7)' }
@@ -38,6 +39,8 @@ export default function StatsPage() {
   const [period, setPeriod] = useState(30)
   const [activePlatform, setActivePlatform] = useState<'all'|Platform>('all')
   const [activeAccount, setActiveAccount] = useState<string>('all')
+  const [dropdown, setDropdown] = useState<Platform|null>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -47,14 +50,25 @@ export default function StatsPage() {
       .then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
   }, [period])
 
-  const tabStyle = (active: boolean, color?: string) => ({
-    padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600 as const, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
-    background: active ? (color ? `${color}18` : 'rgba(230,0,0,0.12)') : 'transparent',
-    color: active ? (color ?? '#ff4444') : 'rgba(255,255,255,0.4)',
-    borderColor: active ? (color ? `${color}40` : 'rgba(230,0,0,0.3)') : 'rgba(255,255,255,0.07)',
-  })
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdown(null)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
-  // Фільтрація по платформі і кабінету
+  // Акаунти для платформи
+  const platformAccounts = (pl: Platform) => data?.platforms.filter(p=>p.platform===pl) ?? []
+
+  // Поточна назва вибраного кабінету
+  const selectedAccountName = activeAccount === 'all'
+    ? null
+    : data?.platforms.find(p=>p.accountId===activeAccount)?.accountName
+
+  // Фільтрація даних
   const filteredPlatforms = !data ? [] : activePlatform === 'all'
     ? data.platforms
     : data.platforms.filter(p => p.platform === activePlatform)
@@ -63,34 +77,38 @@ export default function StatsPage() {
     ? filteredPlatforms
     : filteredPlatforms.filter(p => p.accountId === activeAccount)
 
-  const summary = displayPlatforms.length === 0 ? null : {
-    totalSpend: displayPlatforms.reduce((s,p)=>s+p.summary.totalSpend,0),
-    totalImpressions: displayPlatforms.reduce((s,p)=>s+p.summary.totalImpressions,0),
-    totalClicks: displayPlatforms.reduce((s,p)=>s+p.summary.totalClicks,0),
-    totalConversions: displayPlatforms.reduce((s,p)=>s+p.summary.totalConversions,0),
-    totalRevenue: displayPlatforms.reduce((s,p)=>s+p.summary.totalRevenue,0),
-    ctr: 0, cpc: 0, roas: 0,
-  } as any
-
-  if (summary) {
-    summary.ctr = summary.totalImpressions > 0 ? (summary.totalClicks/summary.totalImpressions)*100 : 0
-    summary.cpc = summary.totalClicks > 0 ? summary.totalSpend/summary.totalClicks : 0
-    summary.roas = summary.totalSpend > 0 ? summary.totalRevenue/summary.totalSpend : 0
-  }
+  const summary = displayPlatforms.length === 0 ? null : (() => {
+    const s = {
+      totalSpend: displayPlatforms.reduce((s,p)=>s+p.summary.totalSpend,0),
+      totalImpressions: displayPlatforms.reduce((s,p)=>s+p.summary.totalImpressions,0),
+      totalClicks: displayPlatforms.reduce((s,p)=>s+p.summary.totalClicks,0),
+      totalConversions: displayPlatforms.reduce((s,p)=>s+p.summary.totalConversions,0),
+      totalRevenue: displayPlatforms.reduce((s,p)=>s+p.summary.totalRevenue,0),
+      ctr:0, cpc:0, roas:0,
+    }
+    s.ctr = s.totalImpressions > 0 ? (s.totalClicks/s.totalImpressions)*100 : 0
+    s.cpc = s.totalClicks > 0 ? s.totalSpend/s.totalClicks : 0
+    s.roas = s.totalSpend > 0 ? s.totalRevenue/s.totalSpend : 0
+    return s
+  })()
 
   const daily = merge(displayPlatforms.map(p=>p.daily).flat())
 
-  // Унікальні кабінети для вибраної платформи
-  const availableAccounts = !data ? [] : activePlatform === 'all'
-    ? data.platforms
-    : data.platforms.filter(p=>p.platform===activePlatform)
+  // Унікальні платформи
+  const uniquePlatforms = data ? [...new Set(data.platforms.map(p=>p.platform))] as Platform[] : []
+
+  const tabStyle = (active: boolean, color?: string) => ({
+    padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600 as const, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
+    background: active ? (color ? `${color}18` : 'rgba(230,0,0,0.12)') : 'transparent',
+    color: active ? (color ?? '#ff4444') : 'rgba(255,255,255,0.4)',
+    borderColor: active ? (color ? `${color}40` : 'rgba(230,0,0,0.3)') : 'rgba(255,255,255,0.07)',
+  })
 
   return (
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={gridBg}/>
-        <div style={{ position:'fixed', top:'-100px', right:'15%', width:'350px', height:'350px', borderRadius:'50%', background:'radial-gradient(circle,rgba(230,0,0,0.06) 0%,transparent 70%)', pointerEvents:'none', zIndex:0 }}/>
 
         <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
 
@@ -99,7 +117,10 @@ export default function StatsPage() {
             <div>
               <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>// ДЕТАЛЬНА СТАТИСТИКА</p>
               <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Статистика</h1>
-              <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>{(session?.user as any)?.name} · {data?.client?.company}</p>
+              <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>
+                {(session?.user as any)?.name} · {data?.client?.company}
+                {selectedAccountName && <span style={{ color:'rgba(255,255,255,0.6)', fontWeight:600 }}> · {selectedAccountName}</span>}
+              </p>
             </div>
             <div style={{ display:'flex', gap:'6px' }}>
               {PERIODS.map(p=>(
@@ -117,32 +138,87 @@ export default function StatsPage() {
             </svg>
           </div>
 
-          {/* Фільтри — Платформа */}
-          <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'12px', flexWrap:'wrap' }}>
-            <button onClick={()=>{ setActivePlatform('all'); setActiveAccount('all') }} style={tabStyle(activePlatform==='all')}>Всі платформи</button>
-            {data?.platforms.map(p=>(
-              <button key={`${p.platform}-${p.accountId}`} onClick={()=>{ setActivePlatform(p.platform); setActiveAccount('all') }} style={{ ...tabStyle(activePlatform===p.platform, PCOLOR[p.platform]), display:'flex', alignItems:'center', gap:'7px' }}>
-                <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:PCOLOR[p.platform], display:'inline-block' }}/>
-                {PLABEL[p.platform]}
-              </button>
-            ))}
+          {/* Платформи з дропдаунами */}
+          <div ref={dropdownRef} className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'24px', flexWrap:'wrap', position:'relative' }}>
+            {/* Всі платформи */}
+            <button onClick={()=>{ setActivePlatform('all'); setActiveAccount('all'); setDropdown(null) }} style={tabStyle(activePlatform==='all')}>
+              Всі платформи
+            </button>
+
+            {/* Кожна платформа з дропдауном */}
+            {uniquePlatforms.map(pl=>{
+              const accounts = platformAccounts(pl)
+              const isActive = activePlatform === pl
+              const color = PCOLOR[pl]
+              const hasMultiple = accounts.length > 1
+              const currentAccForPlatform = isActive && activeAccount !== 'all'
+                ? accounts.find(a=>a.accountId===activeAccount)
+                : null
+
+              return (
+                <div key={pl} style={{ position:'relative' }}>
+                  <button
+                    onClick={()=>{
+                      if (hasMultiple) {
+                        setDropdown(dropdown===pl ? null : pl)
+                        setActivePlatform(pl)
+                      } else {
+                        setActivePlatform(pl)
+                        setActiveAccount('all')
+                        setDropdown(null)
+                      }
+                    }}
+                    style={{ ...tabStyle(isActive, color), display:'flex', alignItems:'center', gap:'7px', paddingRight: hasMultiple ? '10px' : '14px' }}
+                  >
+                    <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:color, display:'inline-block' }}/>
+                    {PLABEL[pl]}
+                    {currentAccForPlatform && (
+                      <span style={{ fontFamily:'monospace', fontSize:'10px', opacity:0.7 }}>· {currentAccForPlatform.accountName}</span>
+                    )}
+                    {hasMultiple && (
+                      <ChevronDown size={12} style={{ opacity:0.6, transform: dropdown===pl?'rotate(180deg)':'none', transition:'transform 0.2s' }}/>
+                    )}
+                  </button>
+
+                  {/* Дропдаун кабінетів */}
+                  {dropdown===pl && hasMultiple && (
+                    <div style={{ position:'absolute', top:'calc(100% + 8px)', left:0, minWidth:'240px', background:'#1a1a1a', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:100, overflow:'hidden' }}>
+                      {/* Всі кабінети цієї платформи */}
+                      <button
+                        onClick={()=>{ setActiveAccount('all'); setDropdown(null) }}
+                        style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'transparent', border:'none', borderBottom:'1px solid rgba(255,255,255,0.05)', cursor:'pointer', textAlign:'left' as const, transition:'background 0.15s' }}
+                        onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.04)' }}
+                        onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
+                      >
+                        <div>
+                          <p style={{ fontSize:'13px', fontWeight:600, color:'#fff', margin:0 }}>Всі кабінети</p>
+                          <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.35)', margin:'2px 0 0', fontFamily:'monospace' }}>{accounts.length} кабінети</p>
+                        </div>
+                        {activeAccount==='all' && <Check size={14} style={{color: color}}/>}
+                      </button>
+
+                      {/* Список кабінетів */}
+                      {accounts.map(acc=>(
+                        <button
+                          key={acc.accountId}
+                          onClick={()=>{ setActiveAccount(acc.accountId); setDropdown(null) }}
+                          style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'transparent', border:'none', borderBottom:'1px solid rgba(255,255,255,0.04)', cursor:'pointer', textAlign:'left' as const, transition:'background 0.15s' }}
+                          onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.04)' }}
+                          onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
+                        >
+                          <div>
+                            <p style={{ fontSize:'13px', fontWeight:600, color: activeAccount===acc.accountId ? color : '#fff', margin:0 }}>{acc.accountName}</p>
+                            <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.3)', margin:'2px 0 0', fontFamily:'monospace' }}>{acc.accountId}</p>
+                          </div>
+                          {activeAccount===acc.accountId && <Check size={14} style={{color: color}}/>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
-
-          {/* Фільтр — Конкретний кабінет */}
-          {activePlatform !== 'all' && availableAccounts.length > 1 && (
-            <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'24px', flexWrap:'wrap' }}>
-              <button onClick={()=>setActiveAccount('all')} style={{ padding:'6px 12px', borderRadius:'6px', fontSize:'11px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s', background:activeAccount==='all'?'rgba(255,255,255,0.08)':'transparent', color:activeAccount==='all'?'#fff':'rgba(255,255,255,0.35)', borderColor:activeAccount==='all'?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.07)' }}>
-                Всі кабінети
-              </button>
-              {availableAccounts.map(p=>(
-                <button key={p.accountId} onClick={()=>setActiveAccount(p.accountId)} style={{ padding:'6px 12px', borderRadius:'6px', fontSize:'11px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s', background:activeAccount===p.accountId?'rgba(255,255,255,0.08)':'transparent', color:activeAccount===p.accountId?'#fff':'rgba(255,255,255,0.35)', borderColor:activeAccount===p.accountId?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.07)' }}>
-                  {p.accountName} <span style={{ fontFamily:'monospace', fontSize:'10px', opacity:0.5 }}>· {p.accountId}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {!activePlatform || activePlatform === 'all' ? <div style={{ marginBottom:'24px' }}/> : null}
 
           {loading ? (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'80px 0', flexDirection:'column', gap:'16px' }}>
@@ -156,7 +232,7 @@ export default function StatsPage() {
                 <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,0.05)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                   <p style={{ fontSize:'12px', fontWeight:700, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>
                     Зведені метрики · {period} днів
-                    {activeAccount !== 'all' && <span style={{ color:'rgba(255,255,255,0.3)', fontWeight:400 }}> · {availableAccounts.find(p=>p.accountId===activeAccount)?.accountName}</span>}
+                    {selectedAccountName && <span style={{ color:'rgba(255,255,255,0.35)', fontWeight:400 }}> · {selectedAccountName}</span>}
                   </p>
                   <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.25)', margin:0 }}>{getFrom(period)} → {new Date().toISOString().split('T')[0]}</p>
                 </div>
@@ -209,7 +285,7 @@ export default function StatsPage() {
                         const c = PCOLOR[p.platform]
                         return (
                           <tr key={`${p.platform}-${p.accountId}`} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', transition:'background 0.15s', cursor:'pointer' }}
-                            onClick={()=>{ setActivePlatform(p.platform); setActiveAccount(p.accountId) }}
+                            onClick={()=>{ setActivePlatform(p.platform); setActiveAccount(p.accountId); setDropdown(null) }}
                             onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.02)' }}
                             onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
                           >
@@ -224,7 +300,7 @@ export default function StatsPage() {
                             </td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'#e60000', fontWeight:700 }}>{formatCurrency(p.summary.totalSpend)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatNumber(p.summary.totalImpressions)}</td>
-                            <td style={{ padding:'14font-16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatNumber(p.summary.totalClicks)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatNumber(p.summary.totalClicks)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatPercent(p.summary.ctr)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatCurrency(p.summary.cpc)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', fontWeight:700, color: p.summary.roas>=2?'#00c864':p.summary.roas>=1?'#fbbf24':'#ff4444' }}>{p.summary.roas.toFixed(2)}×</td>
