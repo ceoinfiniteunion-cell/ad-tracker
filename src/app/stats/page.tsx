@@ -6,11 +6,9 @@ import { SpendChart } from '@/components/charts/SpendChart'
 import { ClicksChart } from '@/components/charts/ClicksChart'
 import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'rgba(255,255,255,0.7)' }
-
 const PERIODS = [
   { label:'7 днів', days:7 },
   { label:'14 днів', days:14 },
@@ -39,6 +37,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState(30)
   const [activePlatform, setActivePlatform] = useState<'all'|Platform>('all')
+  const [activeAccount, setActiveAccount] = useState<string>('all')
 
   useEffect(() => {
     setLoading(true)
@@ -49,15 +48,42 @@ export default function StatsPage() {
   }, [period])
 
   const tabStyle = (active: boolean, color?: string) => ({
-    padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
+    padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600 as const, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
     background: active ? (color ? `${color}18` : 'rgba(230,0,0,0.12)') : 'transparent',
     color: active ? (color ?? '#ff4444') : 'rgba(255,255,255,0.4)',
     borderColor: active ? (color ? `${color}40` : 'rgba(230,0,0,0.3)') : 'rgba(255,255,255,0.07)',
   })
 
-  const ap = activePlatform==='all' ? null : data?.platforms.find(p=>p.platform===activePlatform)
-  const summary = ap ? ap.summary : data?.totals
-  const daily = !data ? [] : activePlatform==='all' ? merge(data.platforms.map(p=>p.daily).flat()) : ap?.daily ?? []
+  // Фільтрація по платформі і кабінету
+  const filteredPlatforms = !data ? [] : activePlatform === 'all'
+    ? data.platforms
+    : data.platforms.filter(p => p.platform === activePlatform)
+
+  const displayPlatforms = activeAccount === 'all'
+    ? filteredPlatforms
+    : filteredPlatforms.filter(p => p.accountId === activeAccount)
+
+  const summary = displayPlatforms.length === 0 ? null : {
+    totalSpend: displayPlatforms.reduce((s,p)=>s+p.summary.totalSpend,0),
+    totalImpressions: displayPlatforms.reduce((s,p)=>s+p.summary.totalImpressions,0),
+    totalClicks: displayPlatforms.reduce((s,p)=>s+p.summary.totalClicks,0),
+    totalConversions: displayPlatforms.reduce((s,p)=>s+p.summary.totalConversions,0),
+    totalRevenue: displayPlatforms.reduce((s,p)=>s+p.summary.totalRevenue,0),
+    ctr: 0, cpc: 0, roas: 0,
+  } as any
+
+  if (summary) {
+    summary.ctr = summary.totalImpressions > 0 ? (summary.totalClicks/summary.totalImpressions)*100 : 0
+    summary.cpc = summary.totalClicks > 0 ? summary.totalSpend/summary.totalClicks : 0
+    summary.roas = summary.totalSpend > 0 ? summary.totalRevenue/summary.totalSpend : 0
+  }
+
+  const daily = merge(displayPlatforms.map(p=>p.daily).flat())
+
+  // Унікальні кабінети для вибраної платформи
+  const availableAccounts = !data ? [] : activePlatform === 'all'
+    ? data.platforms
+    : data.platforms.filter(p=>p.platform===activePlatform)
 
   return (
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
@@ -75,7 +101,6 @@ export default function StatsPage() {
               <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Статистика</h1>
               <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>{(session?.user as any)?.name} · {data?.client?.company}</p>
             </div>
-            {/* Period selector */}
             <div style={{ display:'flex', gap:'6px' }}>
               {PERIODS.map(p=>(
                 <button key={p.days} onClick={()=>setPeriod(p.days)} style={tabStyle(period===p.days)}>
@@ -92,16 +117,32 @@ export default function StatsPage() {
             </svg>
           </div>
 
-          {/* Platform tabs */}
-          <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'24px', flexWrap:'wrap' }}>
-            <button onClick={()=>setActivePlatform('all')} style={tabStyle(activePlatform==='all')}>Всі платформи</button>
+          {/* Фільтри — Платформа */}
+          <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'12px', flexWrap:'wrap' }}>
+            <button onClick={()=>{ setActivePlatform('all'); setActiveAccount('all') }} style={tabStyle(activePlatform==='all')}>Всі платформи</button>
             {data?.platforms.map(p=>(
-              <button key={p.platform} onClick={()=>setActivePlatform(p.platform)} style={{ ...tabStyle(activePlatform===p.platform, PCOLOR[p.platform]), display:'flex', alignItems:'center', gap:'7px' }}>
+              <button key={`${p.platform}-${p.accountId}`} onClick={()=>{ setActivePlatform(p.platform); setActiveAccount('all') }} style={{ ...tabStyle(activePlatform===p.platform, PCOLOR[p.platform]), display:'flex', alignItems:'center', gap:'7px' }}>
                 <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:PCOLOR[p.platform], display:'inline-block' }}/>
                 {PLABEL[p.platform]}
               </button>
             ))}
           </div>
+
+          {/* Фільтр — Конкретний кабінет */}
+          {activePlatform !== 'all' && availableAccounts.length > 1 && (
+            <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'24px', flexWrap:'wrap' }}>
+              <button onClick={()=>setActiveAccount('all')} style={{ padding:'6px 12px', borderRadius:'6px', fontSize:'11px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s', background:activeAccount==='all'?'rgba(255,255,255,0.08)':'transparent', color:activeAccount==='all'?'#fff':'rgba(255,255,255,0.35)', borderColor:activeAccount==='all'?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.07)' }}>
+                Всі кабінети
+              </button>
+              {availableAccounts.map(p=>(
+                <button key={p.accountId} onClick={()=>setActiveAccount(p.accountId)} style={{ padding:'6px 12px', borderRadius:'6px', fontSize:'11px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s', background:activeAccount===p.accountId?'rgba(255,255,255,0.08)':'transparent', color:activeAccount===p.accountId?'#fff':'rgba(255,255,255,0.35)', borderColor:activeAccount===p.accountId?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.07)' }}>
+                  {p.accountName} <span style={{ fontFamily:'monospace', fontSize:'10px', opacity:0.5 }}>· {p.accountId}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {!activePlatform || activePlatform === 'all' ? <div style={{ marginBottom:'24px' }}/> : null}
 
           {loading ? (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'80px 0', flexDirection:'column', gap:'16px' }}>
@@ -110,10 +151,13 @@ export default function StatsPage() {
             </div>
           ) : summary && (
             <>
-              {/* Головна таблиця метрик */}
+              {/* Зведена таблиця */}
               <div className="anim-up-2" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
                 <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,0.05)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                  <p style={{ fontSize:'12px', fontWeight:700, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Зведені метрики · {period} днів</p>
+                  <p style={{ fontSize:'12px', fontWeight:700, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>
+                    Зведені метрики · {period} днів
+                    {activeAccount !== 'all' && <span style={{ color:'rgba(255,255,255,0.3)', fontWeight:400 }}> · {availableAccounts.find(p=>p.accountId===activeAccount)?.accountName}</span>}
+                  </p>
                   <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.25)', margin:0 }}>{getFrom(period)} → {new Date().toISOString().split('T')[0]}</p>
                 </div>
                 <table style={{ width:'100%', borderCollapse:'collapse' }}>
@@ -129,10 +173,10 @@ export default function StatsPage() {
                       { metric:'Витрати на рекламу', value:formatCurrency(summary.totalSpend), detail:`Дохід: ${formatCurrency(summary.totalRevenue)}`, color:'#e60000' },
                       { metric:'Покази', value:formatNumber(summary.totalImpressions), detail:'Унікальні покази оголошень', color:'rgba(255,255,255,0.7)' },
                       { metric:'Кліки', value:formatNumber(summary.totalClicks), detail:`CTR: ${formatPercent(summary.ctr)}`, color:'rgba(255,255,255,0.7)' },
-                      { metric:'Конверсії', value:formatNumber(summary.totalConversions), detail:`Вартість конверсії: ${formatCurrency(summary.totalClicks > 0 ? summary.totalSpend / summary.totalConversions : 0)}`, color:'#00c864' },
-                      { metric:'CPC (вартість кліку)', value:formatCurrency(summary.cpc), detail:'Середня вартість одного кліку', color:'rgba(255,255,255,0.7)' },
-                      { metric:'ROAS (повернення)', value:`${summary.roas.toFixed(2)}×`, detail:`На кожен $1 витрат → $${summary.roas.toFixed(2)} доходу`, color: summary.roas >= 2 ? '#00c864' : summary.roas >= 1 ? '#fbbf24' : '#ff4444' },
-                    ].map((row, i) => (
+                      { metric:'Конверсії', value:formatNumber(summary.totalConversions), detail:`Вартість: ${formatCurrency(summary.totalConversions>0 ? summary.totalSpend/summary.totalConversions : 0)}`, color:'#00c864' },
+                      { metric:'CPC', value:formatCurrency(summary.cpc), detail:'Середня вартість кліку', color:'rgba(255,255,255,0.7)' },
+                      { metric:'ROAS', value:`${summary.roas.toFixed(2)}×`, detail:`$1 витрат → $${summary.roas.toFixed(2)} доходу`, color: summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444' },
+                    ].map(row=>(
                       <tr key={row.metric} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', transition:'background 0.15s' }}
                         onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.02)' }}
                         onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
@@ -146,7 +190,7 @@ export default function StatsPage() {
                 </table>
               </div>
 
-              {/* Таблиця по платформах (тільки якщо all) */}
+              {/* Розбивка по платформах */}
               {activePlatform === 'all' && data && data.platforms.length > 1 && (
                 <div className="anim-up-3" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
                   <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
@@ -155,7 +199,7 @@ export default function StatsPage() {
                   <table style={{ width:'100%', borderCollapse:'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        {['Платформа','Витрати','Покази','Кліки','CTR','CPC','ROAS'].map(h=>(
+                        {['Платформа / Кабінет','Витрати','Покази','Кліки','CTR','CPC','ROAS'].map(h=>(
                           <th key={h} style={{ padding:'12px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'rgba(255,255,255,0.25)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                         ))}
                       </tr>
@@ -164,24 +208,26 @@ export default function StatsPage() {
                       {data.platforms.map(p=>{
                         const c = PCOLOR[p.platform]
                         return (
-                          <tr key={p.platform} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', transition:'background 0.15s', cursor:'pointer' }}
-                            onClick={()=>setActivePlatform(p.platform)}
+                          <tr key={`${p.platform}-${p.accountId}`} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', transition:'background 0.15s', cursor:'pointer' }}
+                            onClick={()=>{ setActivePlatform(p.platform); setActiveAccount(p.accountId) }}
                             onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.02)' }}
                             onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
                           >
                             <td style={{ padding:'14px 16px' }}>
                               <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
                                 <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:c, display:'inline-block', flexShrink:0 }}/>
-                                <span style={{ fontSize:'13px', fontWeight:600, color:'#fff' }}>{PLABEL[p.platform]}</span>
+                                <div>
+                                  <p style={{ fontSize:'13px', fontWeight:600, color:'#fff', margin:0 }}>{p.accountName}</p>
+                                  <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.25)', margin:'2px 0 0' }}>{PLABEL[p.platform]} · {p.accountId}</p>
+                                </div>
                               </div>
-                              <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.25)', margin:'3px 0 0 14px' }}>{p.accountId}</p>
                             </td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'#e60000', fontWeight:700 }}>{formatCurrency(p.summary.totalSpend)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatNumber(p.summary.totalImpressions)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatNumber(p.summary.totalClicks)}</td>
+                            <td style={{ padding:'14font-16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatNumber(p.summary.totalClicks)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatPercent(p.summary.ctr)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatCurrency(p.summary.cpc)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', fontWeight:700, color: p.summary.roas >= 2 ? '#00c864' : p.summary.roas >= 1 ? '#fbbf24' : '#ff4444' }}>{p.summary.roas.toFixed(2)}×</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', fontWeight:700, color: p.summary.roas>=2?'#00c864':p.summary.roas>=1?'#fbbf24':'#ff4444' }}>{p.summary.roas.toFixed(2)}×</td>
                           </tr>
                         )
                       })}
@@ -192,8 +238,8 @@ export default function StatsPage() {
 
               {/* Графіки */}
               <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
-                <SpendChart data={daily} title="Витрати та дохід" />
-                <ClicksChart data={daily} title="Кліки та конверсії" />
+                <SpendChart data={daily} />
+                <ClicksChart data={daily} />
               </div>
             </>
           )}
