@@ -139,7 +139,7 @@ export default function StatsPage() {
           </div>
 
           {/* Платформи з дропдаунами */}
-          <div ref={dropdownRef} className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'24px', flexWrap:'wrap', position:'relative' }}>
+          <div ref={dropdownRef} className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'24px', flexWrap:'wrap', position:'relative', zIndex:50 }}>
             {/* Всі платформи */}
             <button onClick={()=>{ setActivePlatform('all'); setActiveAccount('all'); setDropdown(null) }} style={tabStyle(activePlatform==='all')}>
               Всі платформи
