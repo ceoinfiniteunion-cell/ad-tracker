@@ -182,7 +182,7 @@ export default function StatsPage() {
 
                   {/* Дропдаун кабінетів */}
                   {dropdown===pl && hasMultiple && (
-                    <div style={{ position:'absolute', top:'calc(100% + 8px)', left:0, minWidth:'240px', background:'#1a1a1a', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:100, overflow:'hidden' }}>
+                    <div style={{ position:'absolute', top:0, left:'calc(100% + 8px)', minWidth:'240px', background:'#1a1a1a', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:100, overflow:'hidden' }}>
                       {/* Всі кабінети цієї платформи */}
                       <button
                         onClick={()=>{ setActiveAccount('all'); setDropdown(null) }}
