@@ -86,10 +86,10 @@ export default function StatsPage() {
       totalClicks: displayPlatforms.reduce((s,p)=>s+p.summary.totalClicks,0),
       totalConversions: displayPlatforms.reduce((s,p)=>s+p.summary.totalConversions,0),
       totalRevenue: displayPlatforms.reduce((s,p)=>s+p.summary.totalRevenue,0),
-      totalReach: displayPlatforms.reduce((s,p)=>s+(p.summary as any).totalReach??0,0),
-      totalVideoViews: displayPlatforms.reduce((s,p)=>s+(p.summary as any).totalVideoViews??0,0),
-      totalLeads: displayPlatforms.reduce((s,p)=>s+(p.summary as any).totalLeads??0,0),
-      totalPostEngagement: displayPlatforms.reduce((s,p)=>s+(p.summary as any).totalPostEngagement??0,0),
+      totalReach: displayPlatforms.reduce((s,p)=>s+(((p.summary as any).totalReach)??0),0),
+      totalVideoViews: displayPlatforms.reduce((s,p)=>s+(((p.summary as any).totalVideoViews)??0),0),
+      totalLeads: displayPlatforms.reduce((s,p)=>s+(((p.summary as any).totalLeads)??0),0),
+      totalPostEngagement: displayPlatforms.reduce((s,p)=>s+(((p.summary as any).totalPostEngagement)??0),0),
       ctr:0, cpc:0, cpm:0, cpp:0, roas:0, costPerConversion:0, costPerLead:0, frequency:0,
     }
     s.ctr = s.totalImpressions > 0 ? (s.totalClicks/s.totalImpressions)*100 : 0
