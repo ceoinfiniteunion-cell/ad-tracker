@@ -304,6 +304,15 @@ export default function ConnectPage() {
               </div>
             </div>
           )}
+          {/* Розділювач */}
+          {!selectedPlatform && accounts.length > 0 && (
+            <div style={{ display:'flex', alignItems:'center', gap:'16px', margin:'8px 0 24px' }}>
+              <div style={{ flex:1, height:'1px', background:'rgba(255,255,255,0.06)' }}/>
+              <span style={{ fontSize:'11px', fontWeight:600, letterSpacing:'0.1em', color:'rgba(255,255,255,0.2)', textTransform:'uppercase' }}>Підключені кабінети</span>
+              <div style={{ flex:1, height:'1px', background:'rgba(255,255,255,0.06)' }}/>
+            </div>
+          )}
+
           {/* Список підключених кабінетів */}
           {!loading && accounts.length > 0 && (
             <div style={{ marginBottom:'32px' }}>
