@@ -22,7 +22,7 @@ export async function getAdAccounts() {
 
 export async function getAccountInsights(accountId: string, from: string, to: string) {
   const data = await metaFetch(`/${accountId}/insights`, {
-    fields: 'spend,impressions,clicks,actions,action_values,ctr,cpc,cpp,reach,frequency',
+    fields: 'spend,impressions,clicks,reach,frequency,ctr,cpc,cpp,cpm,actions,action_values,cost_per_action_type,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p100_watched_actions',
     time_range: JSON.stringify({ since: from, until: to }),
     time_increment: '1',
     level: 'account',

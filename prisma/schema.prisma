@@ -54,6 +54,7 @@ model CampaignMetric {
   conversions  Int       @default(0)
   revenue      Float     @default(0)
   campaignName String?
+  platformData Json?
   createdAt    DateTime  @default(now())
   @@map("campaign_metrics")
 }
