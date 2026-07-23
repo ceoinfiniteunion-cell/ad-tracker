@@ -7,7 +7,7 @@ import { SpendChart } from '@/components/charts/SpendChart'
 import { ClicksChart } from '@/components/charts/ClicksChart'
 import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
-import { DollarSign, Eye, MousePointer, ShoppingCart } from 'lucide-react'
+import { DollarSign, Eye, MousePointer, ShoppingCart, Users, Play, Heart, TrendingUp } from 'lucide-react'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#fff' }
@@ -15,8 +15,10 @@ const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', 
 function merge(metrics: any[]) {
   const map: Record<string,any> = {}
   for (const m of metrics) {
-    if (!map[m.date]) map[m.date] = { date:m.date, spend:0, impressions:0, clicks:0, conversions:0, revenue:0 }
-    map[m.date].spend+=m.spend; map[m.date].impressions+=m.impressions; map[m.date].clicks+=m.clicks; map[m.date].conversions+=m.conversions; map[m.date].revenue+=m.revenue
+    if (!map[m.date]) map[m.date] = { date:m.date, spend:0, impressions:0, clicks:0, conversions:0, revenue:0, reach:0, videoViews:0, leads:0 }
+    map[m.date].spend+=m.spend; map[m.date].impressions+=m.impressions; map[m.date].clicks+=m.clicks
+    map[m.date].conversions+=m.conversions; map[m.date].revenue+=m.revenue
+    map[m.date].reach+=(m.reach??0); map[m.date].videoViews+=(m.videoViews??0); map[m.date].leads+=(m.leads??0)
   }
   return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date))
 }
@@ -51,15 +53,21 @@ export default function DashboardPage() {
     borderColor: active ? 'rgba(230,0,0,0.3)' : 'rgba(255,255,255,0.07)',
   })
 
+  const s = summary as any
+
+  const metricBlock = (label: string, val: string, sub?: string, color='rgba(255,255,255,0.9)') => (
+    <div key={label} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'18px 20px', textAlign:'center' }}>
+      <p style={{ fontSize:'18px', fontWeight:800, fontFamily:'monospace', color, margin:0 }}>{val}</p>
+      <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.3)', marginTop:'5px', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600 }}>{label}</p>
+      {sub && <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.2)', marginTop:'3px' }}>{sub}</p>}
+    </div>
+  )
+
   return (
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
-
-        {/* Фон сітка */}
         <div style={{ position:'fixed', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none', zIndex:0 }} />
-
-        {/* Червоне світіння вгорі */}
         <div style={{ position:'fixed', top:'-100px', right:'20%', width:'400px', height:'400px', borderRadius:'50%', background:'radial-gradient(circle,rgba(230,0,0,0.07) 0%,transparent 70%)', pointerEvents:'none', zIndex:0 }} />
 
         <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
@@ -80,14 +88,14 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Змія-роздільник */}
+          {/* Змія */}
           <div style={{ marginBottom:'28px', overflow:'hidden' }}>
             <svg width="100%" height="16" viewBox="0 0 1000 16" preserveAspectRatio="none">
               <path d="M0,8 C50,2 100,14 150,8 C200,2 250,14 300,8 C350,2 400,14 450,8 C500,2 550,14 600,8 C650,2 700,14 750,8 C800,2 850,14 900,8 C950,2 1000,14 1050,8" fill="none" stroke="rgba(230,0,0,0.25)" strokeWidth="1.5" strokeDasharray="6 6"/>
             </svg>
           </div>
 
-          {/* Platform Tabs */}
+          {/* Tabs */}
           <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'28px', flexWrap:'wrap' }}>
             <button onClick={()=>setActiveTab('all')} style={tabStyle(activeTab==='all')}>Всі платформи</button>
             {Array.from(new Map(data.platforms.map(p=>[p.platform,p])).values()).map(p=>(
@@ -98,33 +106,46 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Stat Cards */}
+          {/* Основні метрики */}
+          <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.25)', marginBottom:'12px' }}>// ОСНОВНІ ПОКАЗНИКИ</p>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px', marginBottom:'14px' }}>
-            <StatCard label="Витрати" value={formatCurrency(summary.totalSpend)} icon={DollarSign} color="red" delay={0} />
-            <StatCard label="Покази" value={formatNumber(summary.totalImpressions)} icon={Eye} color="white" delay={60} />
-            <StatCard label="Кліки" value={formatNumber(summary.totalClicks)} icon={MousePointer} color="white" delay={120} />
-            <StatCard label="Конверсії" value={formatNumber(summary.totalConversions)} icon={ShoppingCart} color="green" delay={180} />
+            <StatCard label="Витрати" value={formatCurrency(s.totalSpend)} icon={DollarSign} color="red" delay={0} />
+            <StatCard label="Покази" value={formatNumber(s.totalImpressions)} icon={Eye} color="white" delay={60} />
+            <StatCard label="Кліки" value={formatNumber(s.totalClicks)} icon={MousePointer} color="white" delay={120} />
+            <StatCard label="Конверсії" value={formatNumber(s.totalConversions)} icon={ShoppingCart} color="green" delay={180}/>
           </div>
 
-          {/* Secondary metrics */}
-          <div className="anim-up-3" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'14px', marginBottom:'28px' }}>
-            {[
-              { label:'CTR', val:formatPercent(summary.ctr), color:'rgba(255,255,255,0.9)' },
-              { label:'CPC', val:formatCurrency(summary.cpc), color:'rgba(255,255,255,0.9)' },
-              { label:'ROAS', val:`${summary.roas.toFixed(2)}×`, color:'#00c864' },
-            ].map(({label,val,color})=>(
-              <div key={label} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'18px 20px', textAlign:'center' }}>
-                <p style={{ fontSize:'20px', fontWeight:800, fontFamily:'monospace', color, margin:0 }}>{val}</p>
-                <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.3)', marginTop:'5px', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600 }}>{label}</p>
-              </div>
-            ))}
+          {/* Охоплення і відео */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px', marginBottom:'28px' }}>
+            <StatCard label="Охоплення" value={formatNumber(s.totalReach ?? 0)} icon={Users} color="white" delay={0} />
+            <StatCard label="Перегляди відео" value={formatNumber(s.totalVideoViews ?? 0)} icon={Play} color="white" delay={60} />
+            <StatCard label="Ліди" value={formatNumber(s.totalLeads ?? 0)} icon={Heart} color="green" delay={120} />
+            <StatCard label="Взаємодії" value={formatNumber(s.totalPostEngagement ?? 0)} icon={TrendingUp} color="white" delay={180} />
+          </div>
+
+          {/* Ефективність */}
+          <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.25)', marginBottom:'12px' }}>// ЕФЕКТИВНІСТЬ</p>
+          <div className="anim-up-3" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px', marginBottom:'14px' }}>
+            {metricBlock('CTR', formatPercent(s.ctr))}
+            {metricBlock('CPC', formatCurrency(s.cpc))}
+            {metricBlock('CPM', formatCurrency(s.cpm ?? 0), 'вартість 1000 показів')}
+            {metricBlock('ROAS', `${(s.roas??0).toFixed(2)}×`, undefined, '#00c864')}
+          </div>
+
+          <div className="anim-up-3" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px', marginBottom:'28px' }}>
+            {metricBlock('Ціна конверсії', formatCurrency(s.costPerConversion ?? 0))}
+            {metricBlock('Ціна ліда', formatCurrency(s.costPerLead ?? 0))}
+            {metricBlock('Частота', `${(s.frequency ?? 0).toFixed(2)}`, 'покази на користувача')}
+            {metricBlock('Відео до кінця', formatPercent(s.videoCompletionRate ?? 0), 'completion rate')}
           </div>
 
           {/* Charts */}
+          <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.25)', marginBottom:'12px' }}>// ДИНАМІКА</p>
           <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
             <SpendChart data={daily} />
             <ClicksChart data={daily} />
           </div>
+
         </div>
       </main>
     </div>
