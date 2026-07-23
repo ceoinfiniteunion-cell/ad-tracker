@@ -177,54 +177,6 @@ export default function ConnectPage() {
             <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>Підключіть рекламні кабінети — статистика завантажиться автоматично</p>
           </div>
 
-          {/* Список підключених кабінетів */}
-          {!loading && accounts.length > 0 && (
-            <div style={{ marginBottom:'32px' }}>
-              <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
-                {accounts.map((acc, i) => {
-                  const p = PLATFORMS[acc.platform]
-                  const ts = TOKEN_STATUS[acc.tokenStatus??'no_token']
-                  return (
-                    <div key={acc.id} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'18px 22px' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.06)'}}>
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                        <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
-                          <div style={{ width:'44px', height:'44px', borderRadius:'10px', background:p.bg, border:`1px solid ${p.color}30`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                            <span style={{ fontSize:'9px', fontWeight:800, color:p.color, fontFamily:'monospace' }}>{p.short}</span>
-                          </div>
-                          <div>
-                            <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'5px' }}>
-                              <p style={{ fontSize:'14px', fontWeight:700, color:'#fff', margin:0 }}>{acc.name}</p>
-                              <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:p.bg, color:p.color, fontWeight:600 }}>{p.label}</span>
-                              {p.autoSync && acc.tokenStatus==='valid' && <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:'rgba(0,200,100,0.1)', color:'#00c864', fontWeight:600 }}>⚡ Автосинк</span>}
-                            </div>
-                            <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.3)', margin:0 }}>ID: {acc.accountId}</p>
-                              <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:ts.bg, color:ts.color, fontWeight:600 }}>{ts.label}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                          {acc.platform === 'FACEBOOK' && acc.tokenStatus === 'valid' && (
-                            <button onClick={()=>handleSync(acc)} disabled={syncing===acc.id} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', background:'rgba(0,200,100,0.08)', border:'1px solid rgba(0,200,100,0.2)', borderRadius:'7px', color:'#00c864', fontSize:'12px', fontWeight:600, cursor:'pointer', opacity:syncing===acc.id?0.6:1 }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(0,200,100,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(0,200,100,0.08)'}}>
-                              <RefreshCw size={13} style={{animation:syncing===acc.id?'spin 0.8s linear infinite':'none'}}/>
-                              {syncing===acc.id?'Синк...':'Оновити'}
-                            </button>
-                          )}
-                          <button onClick={()=>{ setShowTokenModal(acc); setTokenInput('') }} style={{ padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'7px', color:'rgba(255,255,255,0.5)', fontSize:'12px', fontWeight:600, cursor:'pointer' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'}} onMouseLeave={e=>{e.currentTarget.style.color='rgba(255,255,255,0.5)';e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'}}>
-                            {acc.tokenStatus==='valid'?'Оновити токен':'+ Додати токен'}
-                          </button>
-                          <button onClick={()=>handleDelete(acc.id)} disabled={deleting===acc.id} style={{ width:'36px', height:'36px', background:'transparent', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'7px', color:'rgba(255,255,255,0.25)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.background='rgba(230,0,0,0.08)'}} onMouseLeave={e=>{e.currentTarget.style.color='rgba(255,255,255,0.25)';e.currentTarget.style.background='transparent'}}>
-                            {deleting===acc.id?<div style={{width:'13px',height:'13px',border:'2px solid rgba(230,0,0,0.2)',borderTopColor:'#e60000',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>:<Trash2 size={14}/>}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
           {/* ВИБІР ПЛАТФОРМИ */}
           {!selectedPlatform && (
             <div className="anim-up-1">
@@ -352,6 +304,54 @@ export default function ConnectPage() {
               </div>
             </div>
           )}
+          {/* Список підключених кабінетів */}
+          {!loading && accounts.length > 0 && (
+            <div style={{ marginBottom:'32px' }}>
+              <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
+                {accounts.map((acc, i) => {
+                  const p = PLATFORMS[acc.platform]
+                  const ts = TOKEN_STATUS[acc.tokenStatus??'no_token']
+                  return (
+                    <div key={acc.id} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'18px 22px' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.06)'}}>
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                          <div style={{ width:'44px', height:'44px', borderRadius:'10px', background:p.bg, border:`1px solid ${p.color}30`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                            <span style={{ fontSize:'9px', fontWeight:800, color:p.color, fontFamily:'monospace' }}>{p.short}</span>
+                          </div>
+                          <div>
+                            <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'5px' }}>
+                              <p style={{ fontSize:'14px', fontWeight:700, color:'#fff', margin:0 }}>{acc.name}</p>
+                              <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:p.bg, color:p.color, fontWeight:600 }}>{p.label}</span>
+                              {p.autoSync && acc.tokenStatus==='valid' && <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:'rgba(0,200,100,0.1)', color:'#00c864', fontWeight:600 }}>⚡ Автосинк</span>}
+                            </div>
+                            <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.3)', margin:0 }}>ID: {acc.accountId}</p>
+                              <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:ts.bg, color:ts.color, fontWeight:600 }}>{ts.label}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                          {acc.platform === 'FACEBOOK' && acc.tokenStatus === 'valid' && (
+                            <button onClick={()=>handleSync(acc)} disabled={syncing===acc.id} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', background:'rgba(0,200,100,0.08)', border:'1px solid rgba(0,200,100,0.2)', borderRadius:'7px', color:'#00c864', fontSize:'12px', fontWeight:600, cursor:'pointer', opacity:syncing===acc.id?0.6:1 }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(0,200,100,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(0,200,100,0.08)'}}>
+                              <RefreshCw size={13} style={{animation:syncing===acc.id?'spin 0.8s linear infinite':'none'}}/>
+                              {syncing===acc.id?'Синк...':'Оновити'}
+                            </button>
+                          )}
+                          <button onClick={()=>{ setShowTokenModal(acc); setTokenInput('') }} style={{ padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'7px', color:'rgba(255,255,255,0.5)', fontSize:'12px', fontWeight:600, cursor:'pointer' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'}} onMouseLeave={e=>{e.currentTarget.style.color='rgba(255,255,255,0.5)';e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'}}>
+                            {acc.tokenStatus==='valid'?'Оновити токен':'+ Додати токен'}
+                          </button>
+                          <button onClick={()=>handleDelete(acc.id)} disabled={deleting===acc.id} style={{ width:'36px', height:'36px', background:'transparent', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'7px', color:'rgba(255,255,255,0.25)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.background='rgba(230,0,0,0.08)'}} onMouseLeave={e=>{e.currentTarget.style.color='rgba(255,255,255,0.25)';e.currentTarget.style.background='transparent'}}>
+                            {deleting===acc.id?<div style={{width:'13px',height:'13px',border:'2px solid rgba(230,0,0,0.2)',borderTopColor:'#e60000',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>:<Trash2 size={14}/>}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
 
