@@ -24,8 +24,10 @@ function getFrom(days: number) {
 function merge(metrics: any[]) {
   const map: Record<string,any> = {}
   for (const m of metrics) {
-    if (!map[m.date]) map[m.date] = { date:m.date, spend:0, impressions:0, clicks:0, conversions:0, revenue:0 }
-    map[m.date].spend+=m.spend; map[m.date].impressions+=m.impressions; map[m.date].clicks+=m.clicks; map[m.date].conversions+=m.conversions; map[m.date].revenue+=m.revenue
+    if (!map[m.date]) map[m.date] = { date:m.date, spend:0, impressions:0, clicks:0, conversions:0, revenue:0, reach:0, videoViews:0, leads:0 }
+    map[m.date].spend+=m.spend; map[m.date].impressions+=m.impressions; map[m.date].clicks+=m.clicks
+    map[m.date].conversions+=m.conversions; map[m.date].revenue+=m.revenue
+    map[m.date].reach+=(m.reach??0); map[m.date].videoViews+=(m.videoViews??0); map[m.date].leads+=(m.leads??0)
   }
   return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date))
 }
@@ -78,17 +80,26 @@ export default function StatsPage() {
     : filteredPlatforms.filter(p => p.accountId === activeAccount)
 
   const summary = displayPlatforms.length === 0 ? null : (() => {
-    const s = {
+    const s: any = {
       totalSpend: displayPlatforms.reduce((s,p)=>s+p.summary.totalSpend,0),
       totalImpressions: displayPlatforms.reduce((s,p)=>s+p.summary.totalImpressions,0),
       totalClicks: displayPlatforms.reduce((s,p)=>s+p.summary.totalClicks,0),
       totalConversions: displayPlatforms.reduce((s,p)=>s+p.summary.totalConversions,0),
       totalRevenue: displayPlatforms.reduce((s,p)=>s+p.summary.totalRevenue,0),
-      ctr:0, cpc:0, roas:0,
+      totalReach: displayPlatforms.reduce((s,p)=>s+(p.summary as any).totalReach??0,0),
+      totalVideoViews: displayPlatforms.reduce((s,p)=>s+(p.summary as any).totalVideoViews??0,0),
+      totalLeads: displayPlatforms.reduce((s,p)=>s+(p.summary as any).totalLeads??0,0),
+      totalPostEngagement: displayPlatforms.reduce((s,p)=>s+(p.summary as any).totalPostEngagement??0,0),
+      ctr:0, cpc:0, cpm:0, cpp:0, roas:0, costPerConversion:0, costPerLead:0, frequency:0,
     }
     s.ctr = s.totalImpressions > 0 ? (s.totalClicks/s.totalImpressions)*100 : 0
     s.cpc = s.totalClicks > 0 ? s.totalSpend/s.totalClicks : 0
+    s.cpm = s.totalImpressions > 0 ? (s.totalSpend/s.totalImpressions)*1000 : 0
+    s.cpp = s.totalReach > 0 ? (s.totalSpend/s.totalReach)*1000 : 0
     s.roas = s.totalSpend > 0 ? s.totalRevenue/s.totalSpend : 0
+    s.costPerConversion = s.totalConversions > 0 ? s.totalSpend/s.totalConversions : 0
+    s.costPerLead = s.totalLeads > 0 ? s.totalSpend/s.totalLeads : 0
+    s.frequency = s.totalReach > 0 ? s.totalImpressions/s.totalReach : 0
     return s
   })()
 
@@ -275,7 +286,7 @@ export default function StatsPage() {
                   <table style={{ width:'100%', borderCollapse:'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        {['Платформа / Кабінет','Витрати','Покази','Кліки','CTR','CPC','ROAS'].map(h=>(
+                        {['Платформа / Кабінет','Витрати','Покази','Охоплення','Кліки','CTR','CPC','CPM','ROAS','Конверсії','Ліди'].map(h=>(
                           <th key={h} style={{ padding:'12px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'rgba(255,255,255,0.25)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                         ))}
                       </tr>
