@@ -2,15 +2,76 @@
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { StatCard } from '@/components/ui/StatCard'
 import { SpendChart } from '@/components/charts/SpendChart'
 import { ClicksChart } from '@/components/charts/ClicksChart'
 import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
-import { DollarSign, Eye, MousePointer, ShoppingCart, Users, Play, Heart, TrendingUp } from 'lucide-react'
+import { DollarSign, Eye, MousePointer, ShoppingCart, Users, Play, Heart, TrendingUp, Settings2, X, Check } from 'lucide-react'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#fff' }
+
+// Всі можливі метрики по платформах
+const PLATFORM_METRICS: Record<string, { key: string; label: string; format: 'currency'|'number'|'percent'|'x'|'raw'; platforms: Platform[] }[]> = {
+  common: [
+    { key:'totalSpend', label:'Витрати', format:'currency', platforms:['FACEBOOK','GOOGLE','TIKTOK'] },
+    { key:'totalImpressions', label:'Покази', format:'number', platforms:['FACEBOOK','GOOGLE','TIKTOK'] },
+    { key:'totalClicks', label:'Кліки', format:'number', platforms:['FACEBOOK','GOOGLE','TIKTOK'] },
+    { key:'totalConversions', label:'Конверсії', format:'number', platforms:['FACEBOOK','GOOGLE','TIKTOK'] },
+    { key:'totalRevenue', label:'Дохід', format:'currency', platforms:['FACEBOOK','GOOGLE','TIKTOK'] },
+    { key:'ctr', label:'CTR', format:'percent', platforms:['FACEBOOK','GOOGLE','TIKTOK'] },
+    { key:'cpc', label:'CPC', format:'currency', platforms:['FACEBOOK','GOOGLE','TIKTOK'] },
+    { key:'roas', label:'ROAS', format:'x', platforms:['FACEBOOK','GOOGLE','TIKTOK'] },
+    { key:'costPerConversion', label:'Ціна конверсії', format:'currency', platforms:['FACEBOOK','GOOGLE','TIKTOK'] },
+  ],
+  meta: [
+    { key:'totalReach', label:'Охоплення (Reach)', format:'number', platforms:['FACEBOOK'] },
+    { key:'frequency', label:'Частота (Frequency)', format:'raw', platforms:['FACEBOOK'] },
+    { key:'cpm', label:'CPM', format:'currency', platforms:['FACEBOOK'] },
+    { key:'cpp', label:'CPP', format:'currency', platforms:['FACEBOOK'] },
+    { key:'totalLeads', label:'Ліди', format:'number', platforms:['FACEBOOK'] },
+    { key:'costPerLead', label:'Ціна ліда (CPL)', format:'currency', platforms:['FACEBOOK'] },
+    { key:'totalVideoViews', label:'Перегляди відео', format:'number', platforms:['FACEBOOK'] },
+    { key:'videoCompletionRate', label:'Completion Rate', format:'percent', platforms:['FACEBOOK'] },
+    { key:'totalPostEngagement', label:'Post Engagement', format:'number', platforms:['FACEBOOK'] },
+    { key:'totalLinkClicks', label:'Link Clicks', format:'number', platforms:['FACEBOOK'] },
+    { key:'totalLandingPageViews', label:'Landing Page Views', format:'number', platforms:['FACEBOOK'] },
+    { key:'totalComments', label:'Коментарі', format:'number', platforms:['FACEBOOK'] },
+    { key:'totalShares', label:'Поширення', format:'number', platforms:['FACEBOOK'] },
+  ],
+  google: [
+    { key:'totalReach', label:'Охоплення', format:'number', platforms:['GOOGLE'] },
+    { key:'cpm', label:'CPM', format:'currency', platforms:['GOOGLE'] },
+    { key:'totalVideoViews', label:'Перегляди відео', format:'number', platforms:['GOOGLE'] },
+    { key:'costPerConversion', label:'Cost per Conversion', format:'currency', platforms:['GOOGLE'] },
+  ],
+  tiktok: [
+    { key:'totalReach', label:'Охоплення (Reach)', format:'number', platforms:['TIKTOK'] },
+    { key:'frequency', label:'Частота (Frequency)', format:'raw', platforms:['TIKTOK'] },
+    { key:'cpm', label:'CPM', format:'currency', platforms:['TIKTOK'] },
+    { key:'totalLeads', label:'Конверсії', format:'number', platforms:['TIKTOK'] },
+    { key:'costPerLead', label:'Cost per Conversion', format:'currency', platforms:['TIKTOK'] },
+    { key:'totalVideoViews', label:'Video Views', format:'number', platforms:['TIKTOK'] },
+    { key:'videoCompletionRate', label:'Completion Rate', format:'percent', platforms:['TIKTOK'] },
+    { key:'totalPostEngagement', label:'Engagement', format:'number', platforms:['TIKTOK'] },
+    { key:'totalComments', label:'Коментарі', format:'number', platforms:['TIKTOK'] },
+    { key:'totalShares', label:'Поширення', format:'number', platforms:['TIKTOK'] },
+  ],
+}
+
+const DEFAULT_METRICS = ['totalSpend','totalImpressions','totalClicks','totalConversions','ctr','cpc','roas']
+
+function formatVal(val: any, format: string) {
+  if (val === undefined || val === null) return '—'
+  switch(format) {
+    case 'currency': return formatCurrency(val)
+    case 'number': return formatNumber(val)
+    case 'percent': return formatPercent(val)
+    case 'x': return `${Number(val).toFixed(2)}×`
+    case 'raw': return Number(val).toFixed(2)
+    default: return String(val)
+  }
+}
 
 function merge(metrics: any[]) {
   const map: Record<string,any> = {}
@@ -23,13 +84,30 @@ function merge(metrics: any[]) {
   return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date))
 }
 
+const allMetrics = [...PLATFORM_METRICS.common, ...PLATFORM_METRICS.meta, ...PLATFORM_METRICS.google, ...PLATFORM_METRICS.tiktok]
+  .filter((m, i, arr) => arr.findIndex(x => x.key === m.key && x.label === m.label) === i)
+
 export default function DashboardPage() {
   const { data: session } = useSession()
   const [data, setData] = useState<ClientDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'all'|Platform>('all')
+  const [customize, setCustomize] = useState(false)
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(DEFAULT_METRICS)
 
-  useEffect(() => { fetch('/api/metrics').then(r=>r.json()).then(d=>{ setData(d); setLoading(false) }) }, [])
+  useEffect(() => {
+    const saved = localStorage.getItem('dashboard_metrics')
+    if (saved) setSelectedMetrics(JSON.parse(saved))
+    fetch('/api/metrics').then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
+  }, [])
+
+  const toggleMetric = (key: string) => {
+    const next = selectedMetrics.includes(key)
+      ? selectedMetrics.filter(k=>k!==key)
+      : [...selectedMetrics, key]
+    setSelectedMetrics(next)
+    localStorage.setItem('dashboard_metrics', JSON.stringify(next))
+  }
 
   if (loading) return (
     <div style={{ display:'flex', height:'100vh', background:'#0a0a0a' }}>
@@ -42,9 +120,16 @@ export default function DashboardPage() {
   )
 
   if (!data) return null
+
   const ap = activeTab==='all' ? null : data.platforms.find(p=>p.platform===activeTab)
-  const summary = ap ? ap.summary : data.totals
+  const summary: any = ap ? ap.summary : data.totals
   const daily = activeTab==='all' ? merge(data.platforms.map(p=>p.daily).flat()) : ap?.daily ?? []
+  const uniquePlatforms = Array.from(new Map(data.platforms.map(p=>[p.platform,p])).values())
+
+  // Групуємо платформи для секцій
+  const platformGroups = activeTab === 'all'
+    ? uniquePlatforms
+    : uniquePlatforms.filter(p => p.platform === activeTab)
 
   const tabStyle = (active: boolean) => ({
     padding:'8px 16px', borderRadius:'8px', fontSize:'13px', fontWeight:500, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
@@ -53,15 +138,15 @@ export default function DashboardPage() {
     borderColor: active ? 'rgba(230,0,0,0.3)' : 'rgba(255,255,255,0.07)',
   })
 
-  const s = summary as any
+  // Метрики для поточної платформи
+  const getMetricsForPlatform = (platform: Platform) => {
+    const platformKey = platform === 'FACEBOOK' ? 'meta' : platform === 'GOOGLE' ? 'google' : 'tiktok'
+    const common = PLATFORM_METRICS.common
+    const specific = PLATFORM_METRICS[platformKey]
+    return [...common, ...specific].filter(m => selectedMetrics.includes(m.key))
+  }
 
-  const metricBlock = (label: string, val: string, sub?: string, color='rgba(255,255,255,0.9)') => (
-    <div key={label} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'18px 20px', textAlign:'center' }}>
-      <p style={{ fontSize:'18px', fontWeight:800, fontFamily:'monospace', color, margin:0 }}>{val}</p>
-      <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.3)', marginTop:'5px', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600 }}>{label}</p>
-      {sub && <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.2)', marginTop:'3px' }}>{sub}</p>}
-    </div>
-  )
+  const commonSelected = PLATFORM_METRICS.common.filter(m => selectedMetrics.includes(m.key))
 
   return (
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
@@ -79,12 +164,21 @@ export default function DashboardPage() {
               <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Вітаємо, {session?.user?.name}</h1>
               <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>{data.client.company} · Дані за останні 30 днів</p>
             </div>
-            <div style={{ textAlign:'right' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:'6px', justifyContent:'flex-end', marginBottom:'4px' }}>
-                <span className="anim-pulse" style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#e60000', display:'inline-block' }} />
-                <span style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.3)', letterSpacing:'0.1em' }}>LIVE</span>
+            <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+              {/* Кнопка Customize */}
+              <button onClick={()=>setCustomize(true)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'8px', border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.04)', color:'rgba(255,255,255,0.6)', fontSize:'13px', fontWeight:500, cursor:'pointer', transition:'all 0.15s' }}
+                onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'; e.currentTarget.style.color='#fff' }}
+                onMouseLeave={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; e.currentTarget.style.color='rgba(255,255,255,0.6)' }}
+              >
+                <Settings2 size={14}/> Customize
+              </button>
+              <div style={{ textAlign:'right' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'6px', justifyContent:'flex-end', marginBottom:'4px' }}>
+                  <span className="anim-pulse" style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#e60000', display:'inline-block' }} />
+                  <span style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.3)', letterSpacing:'0.1em' }}>LIVE</span>
+                </div>
+                <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.2)' }}>{new Date().toLocaleDateString('uk',{day:'2-digit',month:'short',year:'numeric'})}</p>
               </div>
-              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.2)' }}>{new Date().toLocaleDateString('uk',{day:'2-digit',month:'short',year:'numeric'})}</p>
             </div>
           </div>
 
@@ -98,7 +192,7 @@ export default function DashboardPage() {
           {/* Tabs */}
           <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'28px', flexWrap:'wrap' }}>
             <button onClick={()=>setActiveTab('all')} style={tabStyle(activeTab==='all')}>Всі платформи</button>
-            {Array.from(new Map(data.platforms.map(p=>[p.platform,p])).values()).map(p=>(
+            {uniquePlatforms.map(p=>(
               <button key={p.platform} onClick={()=>setActiveTab(p.platform)} style={{ ...tabStyle(activeTab===p.platform), display:'flex', alignItems:'center', gap:'7px' }}>
                 <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:PCOLOR[p.platform], display:'inline-block' }} />
                 {PLABEL[p.platform]}
@@ -106,38 +200,68 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Основні метрики */}
-          <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.25)', marginBottom:'12px' }}>// ОСНОВНІ ПОКАЗНИКИ</p>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px', marginBottom:'14px' }}>
-            <StatCard label="Витрати" value={formatCurrency(s.totalSpend)} icon={DollarSign} color="red" delay={0} />
-            <StatCard label="Покази" value={formatNumber(s.totalImpressions)} icon={Eye} color="white" delay={60} />
-            <StatCard label="Кліки" value={formatNumber(s.totalClicks)} icon={MousePointer} color="white" delay={120} />
-            <StatCard label="Конверсії" value={formatNumber(s.totalConversions)} icon={ShoppingCart} color="green" delay={180}/>
-          </div>
+          {/* Загальні метрики (якщо всі платформи) */}
+          {activeTab === 'all' && commonSelected.length > 0 && (
+            <>
+              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.25)', marginBottom:'12px' }}>// ЗАГАЛЬНІ ПОКАЗНИКИ</p>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'12px', marginBottom:'28px' }}>
+                {commonSelected.map(m => (
+                  <div key={m.key} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'16px 20px' }}>
+                    <p style={{ fontSize:'18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(summary[m.key]>=2?'#00c864':summary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'rgba(255,255,255,0.9)', margin:0 }}>{formatVal(summary[m.key], m.format)}</p>
+                    <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.3)', marginTop:'5px', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600 }}>{m.label}</p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
-          {/* Охоплення і відео */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px', marginBottom:'28px' }}>
-            <StatCard label="Охоплення" value={formatNumber(s.totalReach ?? 0)} icon={Users} color="white" delay={0} />
-            <StatCard label="Перегляди відео" value={formatNumber(s.totalVideoViews ?? 0)} icon={Play} color="white" delay={60} />
-            <StatCard label="Ліди" value={formatNumber(s.totalLeads ?? 0)} icon={Heart} color="green" delay={120} />
-            <StatCard label="Взаємодії" value={formatNumber(s.totalPostEngagement ?? 0)} icon={TrendingUp} color="white" delay={180} />
-          </div>
+          {/* Секції по платформах */}
+          {platformGroups.map(p => {
+            const ps: any = p.summary
+            const metricsToShow = getMetricsForPlatform(p.platform)
+            if (metricsToShow.length === 0) return null
+            const color = PCOLOR[p.platform]
+            // Агрегуємо по платформі якщо all
+            const platformSummary: any = activeTab === 'all'
+              ? data.platforms.filter(x=>x.platform===p.platform).reduce((acc, x) => {
+                  const s: any = x.summary
+                  Object.keys(s).forEach(k => { acc[k] = (acc[k]||0) + (typeof s[k]==='number'?s[k]:0) })
+                  return acc
+                }, {} as any)
+              : ps
 
-          {/* Ефективність */}
-          <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.25)', marginBottom:'12px' }}>// ЕФЕКТИВНІСТЬ</p>
-          <div className="anim-up-3" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px', marginBottom:'14px' }}>
-            {metricBlock('CTR', formatPercent(s.ctr))}
-            {metricBlock('CPC', formatCurrency(s.cpc))}
-            {metricBlock('CPM', formatCurrency(s.cpm ?? 0), 'вартість 1000 показів')}
-            {metricBlock('ROAS', `${(s.roas??0).toFixed(2)}×`, undefined, '#00c864')}
-          </div>
+            // Перераховуємо похідні метрики
+            if (activeTab === 'all') {
+              platformSummary.ctr = platformSummary.totalImpressions > 0 ? (platformSummary.totalClicks/platformSummary.totalImpressions)*100 : 0
+              platformSummary.cpc = platformSummary.totalClicks > 0 ? platformSummary.totalSpend/platformSummary.totalClicks : 0
+              platformSummary.cpm = platformSummary.totalImpressions > 0 ? (platformSummary.totalSpend/platformSummary.totalImpressions)*1000 : 0
+              platformSummary.cpp = platformSummary.totalReach > 0 ? (platformSummary.totalSpend/platformSummary.totalReach)*1000 : 0
+              platformSummary.roas = platformSummary.totalSpend > 0 ? platformSummary.totalRevenue/platformSummary.totalSpend : 0
+              platformSummary.costPerConversion = platformSummary.totalConversions > 0 ? platformSummary.totalSpend/platformSummary.totalConversions : 0
+              platformSummary.costPerLead = platformSummary.totalLeads > 0 ? platformSummary.totalSpend/platformSummary.totalLeads : 0
+              platformSummary.frequency = platformSummary.totalReach > 0 ? platformSummary.totalImpressions/platformSummary.totalReach : 0
+            }
 
-          <div className="anim-up-3" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px', marginBottom:'28px' }}>
-            {metricBlock('Ціна конверсії', formatCurrency(s.costPerConversion ?? 0))}
-            {metricBlock('Ціна ліда', formatCurrency(s.costPerLead ?? 0))}
-            {metricBlock('Частота', `${(s.frequency ?? 0).toFixed(2)}`, 'покази на користувача')}
-            {metricBlock('Відео до кінця', formatPercent(s.videoCompletionRate ?? 0), 'completion rate')}
-          </div>
+            return (
+              <div key={p.platform} style={{ marginBottom:'28px' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'12px' }}>
+                  <span style={{ width:'8px', height:'8px', borderRadius:'50%', background:color, display:'inline-block' }}/>
+                  <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.35)', margin:0, textTransform:'uppercase' }}>{PLABEL[p.platform]}</p>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'10px' }}>
+                  {metricsToShow.map(m => (
+                    <div key={m.key} style={{ background:'#111', border:`1px solid ${color}15`, borderRadius:'10px', padding:'14px 18px', transition:'border-color 0.15s' }}
+                      onMouseEnter={e=>{ e.currentTarget.style.borderColor=`${color}35` }}
+                      onMouseLeave={e=>{ e.currentTarget.style.borderColor=`${color}15` }}
+                    >
+                      <p style={{ fontSize:'16px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(platformSummary[m.key]>=2?'#00c864':platformSummary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'rgba(255,255,255,0.9)', margin:0 }}>{formatVal(platformSummary[m.key], m.format)}</p>
+                      <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.3)', marginTop:'4px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>{m.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
 
           {/* Charts */}
           <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.25)', marginBottom:'12px' }}>// ДИНАМІКА</p>
@@ -148,6 +272,108 @@ export default function DashboardPage() {
 
         </div>
       </main>
+
+      {/* Customize панель */}
+      {customize && (
+        <div style={{ position:'fixed', inset:0, zIndex:200 }}>
+          {/* Overlay */}
+          <div onClick={()=>setCustomize(false)} style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.7)' }}/>
+          {/* Панель */}
+          <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'400px', background:'#111', borderLeft:'1px solid rgba(255,255,255,0.08)', overflowY:'auto', padding:'28px 24px' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'24px' }}>
+              <div>
+                <h2 style={{ fontSize:'16px', fontWeight:800, color:'#fff', margin:0 }}>Customize метрики</h2>
+                <p style={{ fontSize:'12px', color:'rgba(255,255,255,0.35)', marginTop:'4px' }}>Оберіть показники для відображення</p>
+              </div>
+              <button onClick={()=>setCustomize(false)} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.4)', padding:'4px' }}>
+                <X size={18}/>
+              </button>
+            </div>
+
+            {/* Загальні */}
+            <div style={{ marginBottom:'24px' }}>
+              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.3)', marginBottom:'12px', textTransform:'uppercase' }}>Загальні (всі платформи)</p>
+              {PLATFORM_METRICS.common.map(m=>(
+                <label key={m.key} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'8px', cursor:'pointer', marginBottom:'4px', transition:'background 0.15s' }}
+                  onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.03)' }}
+                  onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
+                >
+                  <div onClick={()=>toggleMetric(m.key)} style={{ width:'18px', height:'18px', borderRadius:'5px', border:`1px solid ${selectedMetrics.includes(m.key)?'#e60000':'rgba(255,255,255,0.15)'}`, background: selectedMetrics.includes(m.key)?'rgba(230,0,0,0.2)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, cursor:'pointer', transition:'all 0.15s' }}>
+                    {selectedMetrics.includes(m.key) && <Check size={11} color="#e60000"/>}
+                  </div>
+                  <span style={{ fontSize:'13px', color: selectedMetrics.includes(m.key)?'#fff':'rgba(255,255,255,0.5)', fontWeight: selectedMetrics.includes(m.key)?600:400 }}>{m.label}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Meta */}
+            <div style={{ marginBottom:'24px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px' }}>
+                <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1877f2', display:'inline-block' }}/>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.3)', margin:0, textTransform:'uppercase' }}>Meta / Facebook</p>
+              </div>
+              {PLATFORM_METRICS.meta.map(m=>(
+                <label key={m.key+m.label} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'8px', cursor:'pointer', marginBottom:'4px', transition:'background 0.15s' }}
+                  onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.03)' }}
+                  onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
+                >
+                  <div onClick={()=>toggleMetric(m.key)} style={{ width:'18px', height:'18px', borderRadius:'5px', border:`1px solid ${selectedMetrics.includes(m.key)?'#1877f2':'rgba(255,255,255,0.15)'}`, background: selectedMetrics.includes(m.key)?'rgba(24,119,242,0.15)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, cursor:'pointer', transition:'all 0.15s' }}>
+                    {selectedMetrics.includes(m.key) && <Check size={11} color="#1877f2"/>}
+                  </div>
+                  <span style={{ fontSize:'13px', color: selectedMetrics.includes(m.key)?'#fff':'rgba(255,255,255,0.5)', fontWeight: selectedMetrics.includes(m.key)?600:400 }}>{m.label}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Google */}
+            <div style={{ marginBottom:'24px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px' }}>
+                <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#e60000', display:'inline-block' }}/>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.3)', margin:0, textTransform:'uppercase' }}>Google Ads</p>
+              </div>
+              {PLATFORM_METRICS.google.map(m=>(
+                <label key={m.key+m.label} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'8px', cursor:'pointer', marginBottom:'4px', transition:'background 0.15s' }}
+                  onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.03)' }}
+                  onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
+                >
+                  <div onClick={()=>toggleMetric(m.key)} style={{ width:'18px', height:'18px', borderRadius:'5px', border:`1px solid ${selectedMetrics.includes(m.key)?'#e60000':'rgba(255,255,255,0.15)'}`, background: selectedMetrics.includes(m.key)?'rgba(230,0,0,0.15)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, cursor:'pointer', transition:'all 0.15s' }}>
+                    {selectedMetrics.includes(m.key) && <Check size={11} color="#e60000"/>}
+                  </div>
+                  <span style={{ fontSize:'13px', color: selectedMetrics.includes(m.key)?'#fff':'rgba(255,255,255,0.5)', fontWeight: selectedMetrics.includes(m.key)?600:400 }}>{m.label}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* TikTok */}
+            <div style={{ marginBottom:'24px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px' }}>
+                <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#fff', display:'inline-block' }}/>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.3)', margin:0, textTransform:'uppercase' }}>TikTok Ads</p>
+              </div>
+              {PLATFORM_METRICS.tiktok.map(m=>(
+                <label key={m.key+m.label} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'8px', cursor:'pointer', marginBottom:'4px', transition:'background 0.15s' }}
+                  onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.03)' }}
+                  onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
+                >
+                  <div onClick={()=>toggleMetric(m.key)} style={{ width:'18px', height:'18px', borderRadius:'5px', border:`1px solid ${selectedMetrics.includes(m.key)?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.15)'}`, background: selectedMetrics.includes(m.key)?'rgba(255,255,255,0.1)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, cursor:'pointer', transition:'all 0.15s' }}>
+                    {selectedMetrics.includes(m.key) && <Check size={11} color="#fff"/>}
+                  </div>
+                  <span style={{ fontSize:'13px', color: selectedMetrics.includes(m.key)?'#fff':'rgba(255,255,255,0.5)', fontWeight: selectedMetrics.includes(m.key)?600:400 }}>{m.label}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Reset */}
+            <button onClick={()=>{ setSelectedMetrics(DEFAULT_METRICS); localStorage.setItem('dashboard_metrics', JSON.stringify(DEFAULT_METRICS)) }}
+              style={{ width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid rgba(255,255,255,0.08)', background:'transparent', color:'rgba(255,255,255,0.35)', fontSize:'13px', cursor:'pointer', transition:'all 0.15s' }}
+              onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'; e.currentTarget.style.color='#ff4444' }}
+              onMouseLeave={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.color='rgba(255,255,255,0.35)' }}
+            >
+              Скинути до стандартних
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
