@@ -142,7 +142,7 @@ export default function AdminStatsPage() {
               {/* Platform tabs */}
               <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'24px', flexWrap:'wrap' }}>
                 <button onClick={()=>setActivePlatform('all')} style={tabStyle(activePlatform==='all')}>Всі платформи</button>
-                {data?.platforms.map(p=>(
+                {Array.from(new Map(data?.platforms.map(p=>[p.platform,p])).values()).map(p=>(
                   <button key={p.platform} onClick={()=>setActivePlatform(p.platform)} style={{ ...tabStyle(activePlatform===p.platform, PCOLOR[p.platform]), display:'flex', alignItems:'center', gap:'7px' }}>
                     <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:PCOLOR[p.platform], display:'inline-block' }}/>
                     {PLABEL[p.platform]}
