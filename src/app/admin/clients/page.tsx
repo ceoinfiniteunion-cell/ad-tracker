@@ -57,7 +57,7 @@ export default function AdminClientsPage() {
           ) : (
             <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
               {clients.map((client,i)=>(
-                <div key={client.id} className="anim-up" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'20px 24px', animationDelay:`${i*50}ms`, opacity:0, transition:'border-color 0.15s' }}
+                <div key={client.id} className="anim-up" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'20px 24px', animationDelay:`${i*50}ms`, transition:'border-color 0.15s' }}
                   onMouseEnter={e=>{ (e.currentTarget).style.borderColor='rgba(230,0,0,0.2)' }}
                   onMouseLeave={e=>{ (e.currentTarget).style.borderColor='rgba(255,255,255,0.06)' }}
                 >
@@ -81,12 +81,12 @@ export default function AdminClientsPage() {
                         </div>
                       </div>
                     </div>
-                    <button style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', background:'transparent', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'rgba(255,255,255,0.35)', fontSize:'12px', cursor:'pointer', transition:'all 0.15s' }}
+                    <Link href={`/admin/clients/${client.id}`} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', background:'transparent', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'rgba(255,255,255,0.35)', fontSize:'12px', cursor:'pointer', transition:'all 0.15s', textDecoration:'none' }}
                       onMouseEnter={e=>{ (e.currentTarget).style.borderColor='rgba(230,0,0,0.25)'; (e.currentTarget).style.color='#ff4444' }}
                       onMouseLeave={e=>{ (e.currentTarget).style.borderColor='rgba(255,255,255,0.07)'; (e.currentTarget).style.color='rgba(255,255,255,0.35)' }}
                     >
                       Деталі <ArrowRight size={12}/>
-                    </button>
+                    </Link>
                   </div>
                 </div>
               ))}
