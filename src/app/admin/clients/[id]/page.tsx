@@ -179,7 +179,7 @@ export default function ClientDetailPage() {
                 {client.adAccounts.map((acc, i) => {
                   const p = PINFO[acc.platform] ?? { label:acc.platform, color:'#888', bg:'rgba(255,255,255,0.06)', dot:'#888' }
                   return (
-                    <div key={acc.id} className="anim-up" style={{ background:'#111', border:`1px solid ${acc.isActive ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)'}`, borderRadius:'12px', padding:'18px 22px', animationDelay:`${i*40}ms`, opacity:0, transition:'border-color 0.2s', display:'flex', alignItems:'center', justifyContent:'space-between' }}
+                    <div key={acc.id} className="anim-up" style={{ background:'#111', border:`1px solid ${acc.isActive ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)'}`, borderRadius:'12px', padding:'18px 22px', animationDelay:`${i*40}ms`, transition:'border-color 0.2s', display:'flex', alignItems:'center', justifyContent:'space-between' }}
                       onMouseEnter={e=>{(e.currentTarget).style.borderColor=acc.isActive?'rgba(230,0,0,0.2)':'rgba(255,255,255,0.06)'}}
                       onMouseLeave={e=>{(e.currentTarget).style.borderColor=acc.isActive?'rgba(255,255,255,0.07)':'rgba(255,255,255,0.03)'}}
                     >
