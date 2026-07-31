@@ -54,7 +54,7 @@ export function ClicksChart({ data, title='Кліки та конверсії', 
               return <span style={{ color:'var(--text3)', fontSize:'11px' }}>{p?.label ?? v}</span>
             }}/>
             {platformData.map(p => (
-              <Bar key={p.platform} dataKey={p.platform} fill={p.color} fillOpacity={0.8} radius={[3,3,0,0]} />
+              <Bar key={p.platform} dataKey={p.platform} fill={p.color} fillOpacity={0.85} radius={[4,4,0,0]} maxBarSize={32} activeBar={{ fillOpacity:1, filter:`drop-shadow(0 0 8px ${p.color}99)` }} />
             ))}
           </BarChart>
         </ResponsiveContainer>
@@ -80,11 +80,11 @@ export function ClicksChart({ data, title='Кліки та конверсії', 
               n==='clicks'?'Кліки':'Конверсії'
             ]}
             labelStyle={{ fontWeight:700, marginBottom:'6px', color:tooltipColor }}
-            cursor={{ fill: theme==='dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', radius:4 }}
+            cursor={{ fill: theme==='dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', radius:6, strokeWidth:0 }}
           />
           <Legend formatter={v => <span style={{ color:'var(--text3)', fontSize:'11px' }}>{v==='clicks'?'Кліки':'Конверсії'}</span>} />
-          <Bar dataKey="clicks" fill="#e60000" fillOpacity={0.8} radius={[3,3,0,0]} activeBar={{ fill:'#ff4444', fillOpacity:1, filter:'drop-shadow(0 0 6px rgba(230,0,0,0.6))' }} />
-          <Bar dataKey="conversions" fill="#00c864" fillOpacity={0.6} radius={[3,3,0,0]} activeBar={{ fill:'#00e874', fillOpacity:1, filter:'drop-shadow(0 0 6px rgba(0,200,100,0.6))' }} />
+          <Bar dataKey="clicks" fill="#e60000" fillOpacity={0.85} radius={[4,4,0,0]} maxBarSize={32} activeBar={{ fill:'#ff4444', fillOpacity:1, filter:'drop-shadow(0 0 8px rgba(230,0,0,0.7))' }} />
+          <Bar dataKey="conversions" fill="#00c864" fillOpacity={0.75} radius={[4,4,0,0]} maxBarSize={32} activeBar={{ fill:'#00e874', fillOpacity:1, filter:'drop-shadow(0 0 8px rgba(0,200,100,0.7))' }} />
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -161,13 +161,13 @@ export default function AdminStatsPage() {
                   <div className="anim-up-2" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
                     <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                       <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Метрики · {period} днів · {currentClient?.name}</p>
-                      <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)', margin:0 }}>{getFrom(period)} → {new Date().toISOString().split('T')[0]}</p>
+                      <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)', margin:0 }}>{getFrom(period)} → {new Date().toISOString().split('T')[0]}</p>
                     </div>
                     <table style={{ width:'100%', borderCollapse:'collapse' }}>
                       <thead>
                         <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                           {['Метрика','Значення','Деталі'].map(h=>(
-                            <th key={h} style={{ padding:'12px 20px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                            <th key={h} style={{ padding:'12px 20px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
@@ -186,7 +186,7 @@ export default function AdminStatsPage() {
                           >
                             <td style={{ padding:'14px 20px', fontSize:'13px', color:'var(--text2)', fontWeight:500 }}>{row.metric}</td>
                             <td style={{ padding:'14px 20px', fontSize:'15px', fontWeight:800, color:row.color, fontFamily:'monospace' }}>{row.value}</td>
-                            <td style={{ padding:'14px 20px', fontSize:'12px', color:'var(--text4)' }}>{row.detail}</td>
+                            <td style={{ padding:'14px 20px', fontSize:'12px', color:'var(--text3)' }}>{row.detail}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -203,7 +203,7 @@ export default function AdminStatsPage() {
                         <thead>
                           <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                             {['Платформа','Витрати','Покази','Кліки','CTR','CPC','ROAS'].map(h=>(
-                              <th key={h} style={{ padding:'12px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                              <th key={h} style={{ padding:'12px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                             ))}
                           </tr>
                         </thead>
@@ -221,7 +221,7 @@ export default function AdminStatsPage() {
                                     <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:c, flexShrink:0, display:'inline-block' }}/>
                                     <span style={{ fontSize:'13px', fontWeight:600, color:'var(--text)' }}>{PLABEL[p.platform]}</span>
                                   </div>
-                                  <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text4)', margin:'3px 0 0 14px' }}>{p.accountId}</p>
+                                  <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', margin:'3px 0 0 14px' }}>{p.accountId}</p>
                                 </td>
                                 <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'#e60000', fontWeight:700 }}>{formatCurrency(p.summary.totalSpend)}</td>
                                 <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatNumber(p.summary.totalImpressions)}</td>

@@ -245,13 +245,13 @@ export default function StatsPage() {
                     Зведені метрики · {period} днів
                     {selectedAccountName && <span style={{ color:'var(--text3)', fontWeight:400 }}> · {selectedAccountName}</span>}
                   </p>
-                  <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)', margin:0 }}>{getFrom(period)} → {new Date().toISOString().split('T')[0]}</p>
+                  <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)', margin:0 }}>{getFrom(period)} → {new Date().toISOString().split('T')[0]}</p>
                 </div>
                 <table style={{ width:'100%', borderCollapse:'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                       {['Метрика','Значення','Деталі'].map(h=>(
-                        <th key={h} style={{ padding:'12px 20px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                        <th key={h} style={{ padding:'12px 20px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -270,7 +270,7 @@ export default function StatsPage() {
                       >
                         <td style={{ padding:'14px 20px', fontSize:'13px', color:'var(--text2)', fontWeight:500 }}>{row.metric}</td>
                         <td style={{ padding:'14px 20px', fontSize:'15px', fontWeight:800, color:row.color, fontFamily:'monospace' }}>{row.value}</td>
-                        <td style={{ padding:'14px 20px', fontSize:'12px', color:'var(--text4)' }}>{row.detail}</td>
+                        <td style={{ padding:'14px 20px', fontSize:'12px', color:'var(--text3)' }}>{row.detail}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -287,7 +287,7 @@ export default function StatsPage() {
                     <thead>
                       <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                         {['Платформа / Кабінет','Витрати','Покази','Охоплення','Кліки','CTR','CPC','CPM','ROAS','Конверсії','Ліди'].map(h=>(
-                          <th key={h} style={{ padding:'12px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                          <th key={h} style={{ padding:'12px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -305,7 +305,7 @@ export default function StatsPage() {
                                 <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:c, display:'inline-block', flexShrink:0 }}/>
                                 <div>
                                   <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)', margin:0 }}>{p.accountName}</p>
-                                  <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text4)', margin:'2px 0 0' }}>{PLABEL[p.platform]} · {p.accountId}</p>
+                                  <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', margin:'2px 0 0' }}>{PLABEL[p.platform]} · {p.accountId}</p>
                                 </div>
                               </div>
                             </td>
