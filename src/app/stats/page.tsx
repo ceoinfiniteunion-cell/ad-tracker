@@ -116,7 +116,7 @@ export default function StatsPage() {
   })
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={gridBg}/>
@@ -126,11 +126,11 @@ export default function StatsPage() {
           {/* Header */}
           <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'28px' }}>
             <div>
-              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>// ДЕТАЛЬНА СТАТИСТИКА</p>
-              <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Статистика</h1>
-              <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>
+              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// ДЕТАЛЬНА СТАТИСТИКА</p>
+              <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Статистика</h1>
+              <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>
                 {(session?.user as any)?.name} · {data?.client?.company}
-                {selectedAccountName && <span style={{ color:'rgba(255,255,255,0.6)', fontWeight:600 }}> · {selectedAccountName}</span>}
+                {selectedAccountName && <span style={{ color:'var(--text2)', fontWeight:600 }}> · {selectedAccountName}</span>}
               </p>
             </div>
             <div style={{ display:'flex', gap:'6px' }}>
@@ -193,17 +193,17 @@ export default function StatsPage() {
 
                   {/* Дропдаун кабінетів */}
                   {dropdown===pl && hasMultiple && (
-                    <div style={{ position:'absolute', top:0, left:'calc(100% + 8px)', minWidth:'240px', background:'#1a1a1a', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:100, overflow:'hidden' }}>
+                    <div style={{ position:'absolute', top:0, left:'calc(100% + 8px)', minWidth:'240px', background:'var(--bg4)', border:'1px solid var(--border2)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:100, overflow:'hidden' }}>
                       {/* Всі кабінети цієї платформи */}
                       <button
                         onClick={()=>{ setActiveAccount('all'); setDropdown(null) }}
-                        style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'transparent', border:'none', borderBottom:'1px solid rgba(255,255,255,0.05)', cursor:'pointer', textAlign:'left' as const, transition:'background 0.15s' }}
+                        style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'transparent', border:'none', borderBottom:'1px solid var(--border)', cursor:'pointer', textAlign:'left' as const, transition:'background 0.15s' }}
                         onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.04)' }}
                         onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
                       >
                         <div>
-                          <p style={{ fontSize:'13px', fontWeight:600, color:'#fff', margin:0 }}>Всі кабінети</p>
-                          <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.35)', margin:'2px 0 0', fontFamily:'monospace' }}>{accounts.length} кабінети</p>
+                          <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)', margin:0 }}>Всі кабінети</p>
+                          <p style={{ fontSize:'11px', color:'var(--text3)', margin:'2px 0 0', fontFamily:'monospace' }}>{accounts.length} кабінети</p>
                         </div>
                         {activeAccount==='all' && <Check size={14} style={{color: color}}/>}
                       </button>
@@ -219,7 +219,7 @@ export default function StatsPage() {
                         >
                           <div>
                             <p style={{ fontSize:'13px', fontWeight:600, color: activeAccount===acc.accountId ? color : '#fff', margin:0 }}>{acc.accountName}</p>
-                            <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.3)', margin:'2px 0 0', fontFamily:'monospace' }}>{acc.accountId}</p>
+                            <p style={{ fontSize:'11px', color:'var(--text3)', margin:'2px 0 0', fontFamily:'monospace' }}>{acc.accountId}</p>
                           </div>
                           {activeAccount===acc.accountId && <Check size={14} style={{color: color}}/>}
                         </button>
@@ -234,24 +234,24 @@ export default function StatsPage() {
           {loading ? (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'80px 0', flexDirection:'column', gap:'16px' }}>
               <div style={{ width:'32px', height:'32px', border:'2px solid rgba(230,0,0,0.2)', borderTopColor:'#e60000', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/>
-              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.3)' }}>Завантаження статистики...</p>
+              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)' }}>Завантаження статистики...</p>
             </div>
           ) : summary && (
             <>
               {/* Зведена таблиця */}
-              <div className="anim-up-2" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
-                <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,0.05)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                  <p style={{ fontSize:'12px', fontWeight:700, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>
+              <div className="anim-up-2" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
+                <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                  <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>
                     Зведені метрики · {period} днів
-                    {selectedAccountName && <span style={{ color:'rgba(255,255,255,0.35)', fontWeight:400 }}> · {selectedAccountName}</span>}
+                    {selectedAccountName && <span style={{ color:'var(--text3)', fontWeight:400 }}> · {selectedAccountName}</span>}
                   </p>
-                  <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.25)', margin:0 }}>{getFrom(period)} → {new Date().toISOString().split('T')[0]}</p>
+                  <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)', margin:0 }}>{getFrom(period)} → {new Date().toISOString().split('T')[0]}</p>
                 </div>
                 <table style={{ width:'100%', borderCollapse:'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                       {['Метрика','Значення','Деталі'].map(h=>(
-                        <th key={h} style={{ padding:'12px 20px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'rgba(255,255,255,0.25)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                        <th key={h} style={{ padding:'12px 20px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -268,9 +268,9 @@ export default function StatsPage() {
                         onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.02)' }}
                         onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
                       >
-                        <td style={{ padding:'14px 20px', fontSize:'13px', color:'rgba(255,255,255,0.5)', fontWeight:500 }}>{row.metric}</td>
+                        <td style={{ padding:'14px 20px', fontSize:'13px', color:'var(--text2)', fontWeight:500 }}>{row.metric}</td>
                         <td style={{ padding:'14px 20px', fontSize:'15px', fontWeight:800, color:row.color, fontFamily:'monospace' }}>{row.value}</td>
-                        <td style={{ padding:'14px 20px', fontSize:'12px', color:'rgba(255,255,255,0.25)' }}>{row.detail}</td>
+                        <td style={{ padding:'14px 20px', fontSize:'12px', color:'var(--text4)' }}>{row.detail}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -279,15 +279,15 @@ export default function StatsPage() {
 
               {/* Розбивка по платформах */}
               {activePlatform === 'all' && data && data.platforms.length > 1 && (
-                <div className="anim-up-3" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
-                  <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
-                    <p style={{ fontSize:'12px', fontWeight:700, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Розбивка по платформах</p>
+                <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
+                  <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)' }}>
+                    <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Розбивка по платформах</p>
                   </div>
                   <table style={{ width:'100%', borderCollapse:'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                         {['Платформа / Кабінет','Витрати','Покази','Охоплення','Кліки','CTR','CPC','CPM','ROAS','Конверсії','Ліди'].map(h=>(
-                          <th key={h} style={{ padding:'12px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'rgba(255,255,255,0.25)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                          <th key={h} style={{ padding:'12px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -304,16 +304,16 @@ export default function StatsPage() {
                               <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
                                 <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:c, display:'inline-block', flexShrink:0 }}/>
                                 <div>
-                                  <p style={{ fontSize:'13px', fontWeight:600, color:'#fff', margin:0 }}>{p.accountName}</p>
-                                  <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.25)', margin:'2px 0 0' }}>{PLABEL[p.platform]} · {p.accountId}</p>
+                                  <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)', margin:0 }}>{p.accountName}</p>
+                                  <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text4)', margin:'2px 0 0' }}>{PLABEL[p.platform]} · {p.accountId}</p>
                                 </div>
                               </div>
                             </td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'#e60000', fontWeight:700 }}>{formatCurrency(p.summary.totalSpend)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatNumber(p.summary.totalImpressions)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatNumber(p.summary.totalClicks)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatPercent(p.summary.ctr)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatCurrency(p.summary.cpc)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatNumber(p.summary.totalImpressions)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatNumber(p.summary.totalClicks)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatPercent(p.summary.ctr)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatCurrency(p.summary.cpc)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', fontWeight:700, color: p.summary.roas>=2?'#00c864':p.summary.roas>=1?'#fbbf24':'#ff4444' }}>{p.summary.roas.toFixed(2)}×</td>
                           </tr>
                         )

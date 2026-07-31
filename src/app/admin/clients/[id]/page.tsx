@@ -18,8 +18,8 @@ const PINFO: Record<string,{label:string;color:string;bg:string;dot:string}> = {
   TIKTOK:   { label:'TikTok Ads',      color:'#bbb',    bg:'rgba(255,255,255,0.07)', dot:'#fff' },
 }
 
-const inp = { width:'100%', padding:'11px 14px', background:'#161616', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'#fff', fontSize:'13px', outline:'none', boxSizing:'border-box' as const, transition:'border-color 0.2s, box-shadow 0.2s' }
-const lbl = { display:'block', fontSize:'10px', fontWeight:600 as const, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'rgba(255,255,255,0.35)', marginBottom:'7px' }
+const inp = { width:'100%', padding:'11px 14px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', boxSizing:'border-box' as const, transition:'border-color 0.2s, box-shadow 0.2s' }
+const lbl = { display:'block', fontSize:'10px', fontWeight:600 as const, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--text3)', marginBottom:'7px' }
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -89,7 +89,7 @@ export default function ClientDetailPage() {
   const bg = { position:'fixed' as const, inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' as const, zIndex:0 }
 
   if (loading) return (
-    <div style={{ display:'flex', height:'100vh', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', background:'var(--bg)' }}>
       <Sidebar />
       <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>
         <div style={{ width:'32px', height:'32px', border:'2px solid rgba(230,0,0,0.2)', borderTopColor:'#e60000', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
@@ -100,7 +100,7 @@ export default function ClientDetailPage() {
   if (!client) return null
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={bg} />
@@ -117,7 +117,7 @@ export default function ClientDetailPage() {
 
           {/* Header */}
           <div className="anim-fade" style={{ marginBottom:'32px' }}>
-            <Link href="/admin/clients" style={{ display:'inline-flex', alignItems:'center', gap:'6px', fontSize:'12px', color:'rgba(255,255,255,0.3)', textDecoration:'none', marginBottom:'20px' }}>
+            <Link href="/admin/clients" style={{ display:'inline-flex', alignItems:'center', gap:'6px', fontSize:'12px', color:'var(--text3)', textDecoration:'none', marginBottom:'20px' }}>
               <ArrowLeft size={13}/>Назад до клієнтів
             </Link>
 
@@ -127,17 +127,17 @@ export default function ClientDetailPage() {
                   <span style={{ fontSize:'22px', fontWeight:800, color:'#e60000' }}>{client.name[0].toUpperCase()}</span>
                 </div>
                 <div>
-                  <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'4px' }}>// КЛІЄНТ</p>
-                  <h1 style={{ fontSize:'24px', fontWeight:800, color:'#fff', margin:0 }}>{client.name}</h1>
+                  <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'4px' }}>// КЛІЄНТ</p>
+                  <h1 style={{ fontSize:'24px', fontWeight:800, color:'var(--text)', margin:0 }}>{client.name}</h1>
                   <div style={{ display:'flex', gap:'16px', marginTop:'6px' }}>
-                    <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', color:'rgba(255,255,255,0.35)' }}><Building2 size={11}/>{client.company}</span>
-                    <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', color:'rgba(255,255,255,0.35)' }}><Mail size={11}/>{client.user.email}</span>
-                    <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', color:'rgba(255,255,255,0.35)' }}><Calendar size={11}/>з {new Date(client.user.createdAt).toLocaleDateString('uk')}</span>
+                    <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', color:'var(--text3)' }}><Building2 size={11}/>{client.company}</span>
+                    <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', color:'var(--text3)' }}><Mail size={11}/>{client.user.email}</span>
+                    <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', color:'var(--text3)' }}><Calendar size={11}/>з {new Date(client.user.createdAt).toLocaleDateString('uk')}</span>
                   </div>
                 </div>
               </div>
               <button onClick={()=>setShowModal(true)}
-                style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'11px 20px', background:'#e60000', color:'#fff', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor:'pointer', transition:'all 0.15s' }}
+                style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'11px 20px', background:'#e60000', color:'var(--text)', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor:'pointer', transition:'all 0.15s' }}
                 onMouseEnter={e=>{(e.currentTarget).style.background='#cc0000';(e.currentTarget).style.boxShadow='0 4px 20px rgba(230,0,0,0.35)';(e.currentTarget).style.transform='translateY(-1px)'}}
                 onMouseLeave={e=>{(e.currentTarget).style.background='#e60000';(e.currentTarget).style.boxShadow='none';(e.currentTarget).style.transform='none'}}
               ><Plus size={15}/>Додати кабінет</button>
@@ -155,21 +155,21 @@ export default function ClientDetailPage() {
           <div>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
               <div>
-                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'4px' }}>// РЕКЛАМНІ КАБІНЕТИ</p>
-                <p style={{ fontSize:'18px', fontWeight:700, color:'#fff', margin:0 }}>Підключені платформи</p>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'4px' }}>// РЕКЛАМНІ КАБІНЕТИ</p>
+                <p style={{ fontSize:'18px', fontWeight:700, color:'var(--text)', margin:0 }}>Підключені платформи</p>
               </div>
-              <div style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.25)' }}>
+              <div style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)' }}>
                 {client.adAccounts.length} кабінет{client.adAccounts.length===1?'':'ів'}
               </div>
             </div>
 
             {client.adAccounts.length === 0 ? (
-              <div style={{ background:'#111', border:'1px dashed rgba(255,255,255,0.08)', borderRadius:'12px', padding:'48px', textAlign:'center' }}>
-                <div style={{ width:'48px', height:'48px', borderRadius:'12px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
-                  <Plus size={20} style={{color:'rgba(255,255,255,0.2)'}}/>
+              <div style={{ background:'var(--bg2)', border:'1px dashed rgba(255,255,255,0.08)', borderRadius:'12px', padding:'48px', textAlign:'center' }}>
+                <div style={{ width:'48px', height:'48px', borderRadius:'12px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
+                  <Plus size={20} style={{color:'var(--text4)'}}/>
                 </div>
-                <p style={{ fontSize:'14px', fontWeight:600, color:'rgba(255,255,255,0.5)', margin:'0 0 8px' }}>Немає підключених кабінетів</p>
-                <p style={{ fontSize:'12px', color:'rgba(255,255,255,0.25)', margin:'0 0 24px' }}>Додайте рекламний кабінет щоб відстежувати статистику</p>
+                <p style={{ fontSize:'14px', fontWeight:600, color:'var(--text2)', margin:'0 0 8px' }}>Немає підключених кабінетів</p>
+                <p style={{ fontSize:'12px', color:'var(--text4)', margin:'0 0 24px' }}>Додайте рекламний кабінет щоб відстежувати статистику</p>
                 <button onClick={()=>setShowModal(true)} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'10px 20px', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.25)', color:'#ff4444', fontSize:'13px', fontWeight:600, borderRadius:'8px', cursor:'pointer' }}>
                   <Plus size={14}/>Додати перший кабінет
                 </button>
@@ -179,7 +179,7 @@ export default function ClientDetailPage() {
                 {client.adAccounts.map((acc, i) => {
                   const p = PINFO[acc.platform] ?? { label:acc.platform, color:'#888', bg:'rgba(255,255,255,0.06)', dot:'#888' }
                   return (
-                    <div key={acc.id} className="anim-up" style={{ background:'#111', border:`1px solid ${acc.isActive ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)'}`, borderRadius:'12px', padding:'18px 22px', animationDelay:`${i*40}ms`, transition:'border-color 0.2s', display:'flex', alignItems:'center', justifyContent:'space-between' }}
+                    <div key={acc.id} className="anim-up" style={{ background:'var(--bg2)', border:`1px solid ${acc.isActive ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)'}`, borderRadius:'12px', padding:'18px 22px', animationDelay:`${i*40}ms`, transition:'border-color 0.2s', display:'flex', alignItems:'center', justifyContent:'space-between' }}
                       onMouseEnter={e=>{(e.currentTarget).style.borderColor=acc.isActive?'rgba(230,0,0,0.2)':'rgba(255,255,255,0.06)'}}
                       onMouseLeave={e=>{(e.currentTarget).style.borderColor=acc.isActive?'rgba(255,255,255,0.07)':'rgba(255,255,255,0.03)'}}
                     >
@@ -192,11 +192,11 @@ export default function ClientDetailPage() {
                         </div>
                         <div style={{ opacity: acc.isActive ? 1 : 0.5 }}>
                           <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'4px' }}>
-                            <p style={{ fontSize:'14px', fontWeight:700, color:'#fff', margin:0 }}>{acc.name}</p>
+                            <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)', margin:0 }}>{acc.name}</p>
                             <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:p.bg, color:p.color, fontWeight:600 }}>{p.label}</span>
-                            {!acc.isActive && <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:'rgba(255,255,255,0.05)', color:'rgba(255,255,255,0.3)' }}>НЕАКТИВНИЙ</span>}
+                            {!acc.isActive && <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:'rgba(255,255,255,0.05)', color:'var(--text3)' }}>НЕАКТИВНИЙ</span>}
                           </div>
-                          <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.3)', margin:0 }}>ID: {acc.accountId}</p>
+                          <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)', margin:0 }}>ID: {acc.accountId}</p>
                         </div>
                       </div>
 
@@ -215,7 +215,7 @@ export default function ClientDetailPage() {
                         {/* Delete */}
                         <button onClick={()=>handleDelete(acc.id)} disabled={deleting===acc.id}
                           title="Видалити кабінет"
-                          style={{ display:'flex', alignItems:'center', justifyContent:'center', width:'36px', height:'36px', background:'transparent', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'7px', color:'rgba(255,255,255,0.25)', cursor:'pointer', transition:'all 0.15s', opacity: deleting===acc.id ? 0.4 : 1 }}
+                          style={{ display:'flex', alignItems:'center', justifyContent:'center', width:'36px', height:'36px', background:'transparent', border:'1px solid var(--border)', borderRadius:'7px', color:'var(--text4)', cursor:'pointer', transition:'all 0.15s', opacity: deleting===acc.id ? 0.4 : 1 }}
                           onMouseEnter={e=>{(e.currentTarget).style.borderColor='rgba(230,0,0,0.3)';(e.currentTarget).style.color='#ff4444';(e.currentTarget).style.background='rgba(230,0,0,0.08)'}}
                           onMouseLeave={e=>{(e.currentTarget).style.borderColor='rgba(255,255,255,0.07)';(e.currentTarget).style.color='rgba(255,255,255,0.25)';(e.currentTarget).style.background='transparent'}}
                         >
@@ -237,14 +237,14 @@ export default function ClientDetailPage() {
       {/* Модальне вікно — додати кабінет */}
       {showModal && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', backdropFilter:'blur(4px)', zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }} onClick={e=>{if(e.target===e.currentTarget)setShowModal(false)}}>
-          <div className="anim-up" style={{ width:'100%', maxWidth:'480px', background:'#111', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'16px', padding:'32px', boxShadow:'0 24px 64px rgba(0,0,0,0.6)' }}>
+          <div className="anim-up" style={{ width:'100%', maxWidth:'480px', background:'var(--bg2)', border:'1px solid var(--border2)', borderRadius:'16px', padding:'32px', boxShadow:'0 24px 64px rgba(0,0,0,0.6)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'24px' }}>
               <div>
-                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'4px' }}>// НОВИЙ КАБІНЕТ</p>
-                <h2 style={{ fontSize:'18px', fontWeight:800, color:'#fff', margin:0 }}>Підключити платформу</h2>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'4px' }}>// НОВИЙ КАБІНЕТ</p>
+                <h2 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', margin:0 }}>Підключити платформу</h2>
               </div>
               <button onClick={()=>{setShowModal(false);setFormError('');setForm({name:'',accountId:'',platform:'FACEBOOK'})}}
-                style={{ width:'32px', height:'32px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'rgba(255,255,255,0.4)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                style={{ width:'32px', height:'32px', background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text3)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <X size={15}/>
               </button>
             </div>
@@ -286,7 +286,7 @@ export default function ClientDetailPage() {
                   onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}}
                   onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)';e.target.style.boxShadow='none'}}
                 />
-                <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.25)', marginTop:'6px', fontFamily:'monospace' }}>
+                <p style={{ fontSize:'11px', color:'var(--text4)', marginTop:'6px', fontFamily:'monospace' }}>
                   {form.platform==='FACEBOOK' && 'Знайди в Meta Business Suite → Налаштування → Рекламні акаунти'}
                   {form.platform==='GOOGLE' && 'Знайди у верхньому правому куті Google Ads → ID клієнта'}
                   {form.platform==='TIKTOK' && 'Знайди в TikTok Ads Manager → Налаштування акаунту'}
@@ -300,7 +300,7 @@ export default function ClientDetailPage() {
               )}
 
               <button type="submit" disabled={saving}
-                style={{ width:'100%', padding:'13px', background: saving?'#333':'#e60000', color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: saving?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}
+                style={{ width:'100%', padding:'13px', background: saving?'#333':'#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: saving?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}
                 onMouseEnter={e=>{if(!saving){(e.currentTarget).style.background='#cc0000';(e.currentTarget).style.boxShadow='0 4px 20px rgba(230,0,0,0.35)'}}}
                 onMouseLeave={e=>{(e.currentTarget).style.background='#e60000';(e.currentTarget).style.boxShadow='none'}}
               >

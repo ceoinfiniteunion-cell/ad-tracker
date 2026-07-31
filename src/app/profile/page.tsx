@@ -5,8 +5,8 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { User, Lock, Mail, Building2, Calendar, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 const gridBg = { position:'fixed' as const, inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' as const, zIndex:0 }
-const inp = (focused: boolean) => ({ width:'100%', padding:'12px 16px', background:'#161616', border:`1px solid ${focused ? '#e60000' : 'rgba(255,255,255,0.07)'}`, borderRadius:'8px', color:'#fff', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, transition:'border-color 0.2s, box-shadow 0.2s', boxShadow: focused ? '0 0 0 3px rgba(230,0,0,0.12)' : 'none' })
-const lbl = { display:'block', fontSize:'11px', fontWeight:600 as const, letterSpacing:'0.08em', textTransform:'uppercase' as const, color:'rgba(255,255,255,0.35)', marginBottom:'8px' }
+const inp = (focused: boolean) => ({ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:`1px solid ${focused ? '#e60000' : 'rgba(255,255,255,0.07)'}`, borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, transition:'border-color 0.2s, box-shadow 0.2s', boxShadow: focused ? '0 0 0 3px rgba(230,0,0,0.12)' : 'none' })
+const lbl = { display:'block', fontSize:'11px', fontWeight:600 as const, letterSpacing:'0.08em', textTransform:'uppercase' as const, color:'var(--text3)', marginBottom:'8px' }
 
 interface Profile { id:string; name:string; email:string; role:string; createdAt:string; client?:{ company:string } }
 
@@ -81,7 +81,7 @@ export default function ProfilePage() {
   const strength = pwdStrength(newPwd)
 
   if (loading) return (
-    <div style={{ display:'flex', height:'100vh', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', background:'var(--bg)' }}>
       <Sidebar />
       <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>
         <div style={{ width:'32px', height:'32px', border:'2px solid rgba(230,0,0,0.2)', borderTopColor:'#e60000', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/>
@@ -90,7 +90,7 @@ export default function ProfilePage() {
   )
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={gridBg}/>
@@ -107,9 +107,9 @@ export default function ProfilePage() {
 
           {/* Header */}
           <div className="anim-fade" style={{ marginBottom:'32px' }}>
-            <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>// ПРОФІЛЬ</p>
-            <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Налаштування акаунту</h1>
-            <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>Керуйте своїми даними та безпекою</p>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// ПРОФІЛЬ</p>
+            <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Налаштування акаунту</h1>
+            <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>Керуйте своїми даними та безпекою</p>
           </div>
 
           {/* Змія */}
@@ -120,16 +120,16 @@ export default function ProfilePage() {
           </div>
 
           {/* Інфо картка */}
-          <div className="anim-up-1" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'24px', marginBottom:'16px', display:'flex', alignItems:'center', gap:'20px' }}>
+          <div className="anim-up-1" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'24px', marginBottom:'16px', display:'flex', alignItems:'center', gap:'20px' }}>
             <div style={{ width:'60px', height:'60px', borderRadius:'16px', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
               <span style={{ fontSize:'24px', fontWeight:800, color:'#e60000' }}>{profile?.name?.[0]?.toUpperCase()}</span>
             </div>
             <div style={{ flex:1 }}>
-              <p style={{ fontSize:'18px', fontWeight:800, color:'#fff', margin:0 }}>{profile?.name}</p>
+              <p style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', margin:0 }}>{profile?.name}</p>
               <div style={{ display:'flex', gap:'16px', marginTop:'6px', flexWrap:'wrap' }}>
-                <span style={{ display:'flex', alignItems:'center', gap:'5px', fontSize:'12px', color:'rgba(255,255,255,0.35)' }}><Mail size={11}/>{profile?.email}</span>
-                {profile?.client?.company && <span style={{ display:'flex', alignItems:'center', gap:'5px', fontSize:'12px', color:'rgba(255,255,255,0.35)' }}><Building2 size={11}/>{profile.client.company}</span>}
-                <span style={{ display:'flex', alignItems:'center', gap:'5px', fontSize:'12px', color:'rgba(255,255,255,0.35)' }}><Calendar size={11}/>з {new Date(profile?.createdAt ?? '').toLocaleDateString('uk', {day:'2-digit',month:'long',year:'numeric'})}</span>
+                <span style={{ display:'flex', alignItems:'center', gap:'5px', fontSize:'12px', color:'var(--text3)' }}><Mail size={11}/>{profile?.email}</span>
+                {profile?.client?.company && <span style={{ display:'flex', alignItems:'center', gap:'5px', fontSize:'12px', color:'var(--text3)' }}><Building2 size={11}/>{profile.client.company}</span>}
+                <span style={{ display:'flex', alignItems:'center', gap:'5px', fontSize:'12px', color:'var(--text3)' }}><Calendar size={11}/>з {new Date(profile?.createdAt ?? '').toLocaleDateString('uk', {day:'2-digit',month:'long',year:'numeric'})}</span>
               </div>
             </div>
             <div style={{ fontFamily:'monospace', fontSize:'10px', padding:'4px 10px', borderRadius:'4px', background:'rgba(230,0,0,0.1)', border:'1px solid rgba(230,0,0,0.2)', color:'#ff4444', fontWeight:700 }}>
@@ -138,14 +138,14 @@ export default function ProfilePage() {
           </div>
 
           {/* Зміна імені */}
-          <div className="anim-up-2" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'24px', marginBottom:'16px' }}>
+          <div className="anim-up-2" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'24px', marginBottom:'16px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'20px' }}>
               <div style={{ width:'32px', height:'32px', borderRadius:'8px', background:'rgba(255,255,255,0.04)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <User size={15} style={{color:'rgba(255,255,255,0.4)'}}/>
+                <User size={15} style={{color:'var(--text3)'}}/>
               </div>
               <div>
-                <p style={{ fontSize:'14px', fontWeight:700, color:'#fff', margin:0 }}>Особисті дані</p>
-                <p style={{ fontSize:'12px', color:'rgba(255,255,255,0.35)', marginTop:'2px' }}>Оновіть своє ім'я</p>
+                <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)', margin:0 }}>Особисті дані</p>
+                <p style={{ fontSize:'12px', color:'var(--text3)', marginTop:'2px' }}>Оновіть своє ім'я</p>
               </div>
             </div>
 
@@ -158,7 +158,7 @@ export default function ProfilePage() {
                 />
               </div>
               <button onClick={handleNameSave} disabled={nameSaving || !name.trim() || name===profile?.name}
-                style={{ padding:'12px 20px', background: (nameSaving || !name.trim() || name===profile?.name) ? 'rgba(230,0,0,0.3)' : '#e60000', color:'#fff', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor: (nameSaving || !name.trim() || name===profile?.name) ? 'not-allowed' : 'pointer', transition:'all 0.15s', whiteSpace:'nowrap' as const }}
+                style={{ padding:'12px 20px', background: (nameSaving || !name.trim() || name===profile?.name) ? 'rgba(230,0,0,0.3)' : '#e60000', color:'var(--text)', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor: (nameSaving || !name.trim() || name===profile?.name) ? 'not-allowed' : 'pointer', transition:'all 0.15s', whiteSpace:'nowrap' as const }}
                 onMouseEnter={e=>{ if(!nameSaving && name.trim() && name!==profile?.name) { e.currentTarget.style.background='#cc0000'; e.currentTarget.style.boxShadow='0 4px 16px rgba(230,0,0,0.3)' }}}
                 onMouseLeave={e=>{ e.currentTarget.style.background=(nameSaving||!name.trim()||name===profile?.name)?'rgba(230,0,0,0.3)':'#e60000'; e.currentTarget.style.boxShadow='none' }}
               >
@@ -168,23 +168,23 @@ export default function ProfilePage() {
 
             <div style={{ marginTop:'16px' }}>
               <label style={lbl}>Email</label>
-              <div style={{ padding:'12px 16px', background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.05)', borderRadius:'8px', fontSize:'14px', color:'rgba(255,255,255,0.35)', display:'flex', alignItems:'center', gap:'8px' }}>
-                <Mail size={13} style={{color:'rgba(255,255,255,0.2)'}}/>
+              <div style={{ padding:'12px 16px', background:'rgba(255,255,255,0.02)', border:'1px solid var(--border)', borderRadius:'8px', fontSize:'14px', color:'var(--text3)', display:'flex', alignItems:'center', gap:'8px' }}>
+                <Mail size={13} style={{color:'var(--text4)'}}/>
                 {profile?.email}
-                <span style={{ marginLeft:'auto', fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.2)' }}>не змінюється</span>
+                <span style={{ marginLeft:'auto', fontFamily:'monospace', fontSize:'10px', color:'var(--text4)' }}>не змінюється</span>
               </div>
             </div>
           </div>
 
           {/* Зміна пароля */}
-          <div className="anim-up-3" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'24px' }}>
+          <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'24px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'20px' }}>
               <div style={{ width:'32px', height:'32px', borderRadius:'8px', background:'rgba(230,0,0,0.08)', border:'1px solid rgba(230,0,0,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <Lock size={15} style={{color:'#e60000'}}/>
               </div>
               <div>
-                <p style={{ fontSize:'14px', fontWeight:700, color:'#fff', margin:0 }}>Зміна пароля</p>
-                <p style={{ fontSize:'12px', color:'rgba(255,255,255,0.35)', marginTop:'2px' }}>Рекомендуємо використовувати надійний пароль</p>
+                <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)', margin:0 }}>Зміна пароля</p>
+                <p style={{ fontSize:'12px', color:'var(--text3)', marginTop:'2px' }}>Рекомендуємо використовувати надійний пароль</p>
               </div>
             </div>
 
@@ -197,7 +197,7 @@ export default function ProfilePage() {
                     style={{ ...inp(focusedField==='current'), paddingRight:'44px' }}
                     onFocus={()=>setFocusedField('current')} onBlur={()=>setFocusedField(null)}
                   />
-                  <button type="button" onClick={()=>setShowCurrent(!showCurrent)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'rgba(255,255,255,0.3)', cursor:'pointer', padding:'4px' }}>
+                  <button type="button" onClick={()=>setShowCurrent(!showCurrent)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'var(--text3)', cursor:'pointer', padding:'4px' }}>
                     {showCurrent ? <EyeOff size={15}/> : <Eye size={15}/>}
                   </button>
                 </div>
@@ -211,7 +211,7 @@ export default function ProfilePage() {
                     style={{ ...inp(focusedField==='new'), paddingRight:'44px' }}
                     onFocus={()=>setFocusedField('new')} onBlur={()=>setFocusedField(null)}
                   />
-                  <button type="button" onClick={()=>setShowNew(!showNew)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'rgba(255,255,255,0.3)', cursor:'pointer', padding:'4px' }}>
+                  <button type="button" onClick={()=>setShowNew(!showNew)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'var(--text3)', cursor:'pointer', padding:'4px' }}>
                     {showNew ? <EyeOff size={15}/> : <Eye size={15}/>}
                   </button>
                 </div>
@@ -219,7 +219,7 @@ export default function ProfilePage() {
                 {newPwd && strength && (
                   <div style={{ marginTop:'8px' }}>
                     <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'5px' }}>
-                      <span style={{ fontSize:'11px', color:'rgba(255,255,255,0.3)' }}>Надійність пароля</span>
+                      <span style={{ fontSize:'11px', color:'var(--text3)' }}>Надійність пароля</span>
                       <span style={{ fontSize:'11px', fontWeight:600, color:strength.color }}>{strength.label}</span>
                     </div>
                     <div style={{ height:'3px', background:'rgba(255,255,255,0.06)', borderRadius:'2px', overflow:'hidden' }}>
@@ -237,7 +237,7 @@ export default function ProfilePage() {
                     style={{ ...inp(focusedField==='confirm'), paddingRight:'44px', borderColor: confirmPwd && confirmPwd!==newPwd ? '#ff4444' : focusedField==='confirm' ? '#e60000' : 'rgba(255,255,255,0.07)' }}
                     onFocus={()=>setFocusedField('confirm')} onBlur={()=>setFocusedField(null)}
                   />
-                  <button type="button" onClick={()=>setShowConfirm(!showConfirm)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'rgba(255,255,255,0.3)', cursor:'pointer', padding:'4px' }}>
+                  <button type="button" onClick={()=>setShowConfirm(!showConfirm)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'var(--text3)', cursor:'pointer', padding:'4px' }}>
                     {showConfirm ? <EyeOff size={15}/> : <Eye size={15}/>}
                   </button>
                 </div>
@@ -254,7 +254,7 @@ export default function ProfilePage() {
               </div>
 
               <button onClick={handlePwdSave} disabled={pwdSaving || !currentPwd || !newPwd || !confirmPwd || newPwd!==confirmPwd}
-                style={{ width:'100%', padding:'13px', background: (pwdSaving||!currentPwd||!newPwd||!confirmPwd||newPwd!==confirmPwd) ? 'rgba(230,0,0,0.3)' : '#e60000', color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor:(pwdSaving||!currentPwd||!newPwd||!confirmPwd||newPwd!==confirmPwd)?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s', marginTop:'4px' }}
+                style={{ width:'100%', padding:'13px', background: (pwdSaving||!currentPwd||!newPwd||!confirmPwd||newPwd!==confirmPwd) ? 'rgba(230,0,0,0.3)' : '#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor:(pwdSaving||!currentPwd||!newPwd||!confirmPwd||newPwd!==confirmPwd)?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s', marginTop:'4px' }}
                 onMouseEnter={e=>{ if(!pwdSaving&&currentPwd&&newPwd&&confirmPwd&&newPwd===confirmPwd){e.currentTarget.style.background='#cc0000';e.currentTarget.style.boxShadow='0 4px 20px rgba(230,0,0,0.35)';e.currentTarget.style.transform='translateY(-1px)'}}}
                 onMouseLeave={e=>{ e.currentTarget.style.background=(pwdSaving||!currentPwd||!newPwd||!confirmPwd||newPwd!==confirmPwd)?'rgba(230,0,0,0.3)':'#e60000';e.currentTarget.style.boxShadow='none';e.currentTarget.style.transform='none' }}
               >

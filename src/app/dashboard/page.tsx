@@ -110,11 +110,11 @@ export default function DashboardPage() {
   }
 
   if (loading) return (
-    <div style={{ display:'flex', height:'100vh', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', background:'var(--bg)' }}>
       <Sidebar />
       <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:'16px' }}>
         <div style={{ width:'36px', height:'36px', border:'2px solid rgba(230,0,0,0.2)', borderTopColor:'#e60000', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
-        <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.3)' }}>Завантаження даних...</p>
+        <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)' }}>Завантаження даних...</p>
       </div>
     </div>
   )
@@ -149,7 +149,7 @@ export default function DashboardPage() {
   const commonSelected = PLATFORM_METRICS.common.filter(m => selectedMetrics.includes(m.key))
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={{ position:'fixed', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none', zIndex:0 }} />
@@ -160,13 +160,13 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'32px' }}>
             <div>
-              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>// ПАНЕЛЬ АНАЛІТИКИ</p>
-              <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Вітаємо, {session?.user?.name}</h1>
-              <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>{data.client.company} · Дані за останні 30 днів</p>
+              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// ПАНЕЛЬ АНАЛІТИКИ</p>
+              <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Вітаємо, {session?.user?.name}</h1>
+              <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>{data.client.company} · Дані за останні 30 днів</p>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
               {/* Кнопка Customize */}
-              <button onClick={()=>setCustomize(true)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'8px', border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.04)', color:'rgba(255,255,255,0.6)', fontSize:'13px', fontWeight:500, cursor:'pointer', transition:'all 0.15s' }}
+              <button onClick={()=>setCustomize(true)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'8px', border:'1px solid var(--border2)', background:'rgba(255,255,255,0.04)', color:'var(--text2)', fontSize:'13px', fontWeight:500, cursor:'pointer', transition:'all 0.15s' }}
                 onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'; e.currentTarget.style.color='#fff' }}
                 onMouseLeave={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; e.currentTarget.style.color='rgba(255,255,255,0.6)' }}
               >
@@ -175,9 +175,9 @@ export default function DashboardPage() {
               <div style={{ textAlign:'right' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'6px', justifyContent:'flex-end', marginBottom:'4px' }}>
                   <span className="anim-pulse" style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#e60000', display:'inline-block' }} />
-                  <span style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.3)', letterSpacing:'0.1em' }}>LIVE</span>
+                  <span style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', letterSpacing:'0.1em' }}>LIVE</span>
                 </div>
-                <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.2)' }}>{new Date().toLocaleDateString('uk',{day:'2-digit',month:'short',year:'numeric'})}</p>
+                <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)' }}>{new Date().toLocaleDateString('uk',{day:'2-digit',month:'short',year:'numeric'})}</p>
               </div>
             </div>
           </div>
@@ -203,12 +203,12 @@ export default function DashboardPage() {
           {/* Загальні метрики (якщо всі платформи) */}
           {activeTab === 'all' && commonSelected.length > 0 && (
             <>
-              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.25)', marginBottom:'12px' }}>// ЗАГАЛЬНІ ПОКАЗНИКИ</p>
+              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text4)', marginBottom:'12px' }}>// ЗАГАЛЬНІ ПОКАЗНИКИ</p>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'12px', marginBottom:'28px' }}>
                 {commonSelected.map(m => (
-                  <div key={m.key} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'16px 20px' }}>
+                  <div key={m.key} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'16px 20px' }}>
                     <p style={{ fontSize:'18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(summary[m.key]>=2?'#00c864':summary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'rgba(255,255,255,0.9)', margin:0 }}>{formatVal(summary[m.key], m.format)}</p>
-                    <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.3)', marginTop:'5px', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600 }}>{m.label}</p>
+                    <p style={{ fontSize:'10px', color:'var(--text3)', marginTop:'5px', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600 }}>{m.label}</p>
                   </div>
                 ))}
               </div>
@@ -246,16 +246,16 @@ export default function DashboardPage() {
               <div key={p.platform} style={{ marginBottom:'28px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'12px' }}>
                   <span style={{ width:'8px', height:'8px', borderRadius:'50%', background:color, display:'inline-block' }}/>
-                  <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.35)', margin:0, textTransform:'uppercase' }}>{PLABEL[p.platform]}</p>
+                  <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text3)', margin:0, textTransform:'uppercase' }}>{PLABEL[p.platform]}</p>
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'10px' }}>
                   {metricsToShow.map(m => (
-                    <div key={m.key} style={{ background:'#111', border:`1px solid ${color}15`, borderRadius:'10px', padding:'14px 18px', transition:'border-color 0.15s' }}
+                    <div key={m.key} style={{ background:'var(--bg2)', border:`1px solid ${color}15`, borderRadius:'10px', padding:'14px 18px', transition:'border-color 0.15s' }}
                       onMouseEnter={e=>{ e.currentTarget.style.borderColor=`${color}35` }}
                       onMouseLeave={e=>{ e.currentTarget.style.borderColor=`${color}15` }}
                     >
                       <p style={{ fontSize:'16px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(platformSummary[m.key]>=2?'#00c864':platformSummary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'rgba(255,255,255,0.9)', margin:0 }}>{formatVal(platformSummary[m.key], m.format)}</p>
-                      <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.3)', marginTop:'4px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>{m.label}</p>
+                      <p style={{ fontSize:'10px', color:'var(--text3)', marginTop:'4px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>{m.label}</p>
                     </div>
                   ))}
                 </div>
@@ -264,7 +264,7 @@ export default function DashboardPage() {
           })}
 
           {/* Charts */}
-          <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.25)', marginBottom:'12px' }}>// ДИНАМІКА</p>
+          <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text4)', marginBottom:'12px' }}>// ДИНАМІКА</p>
           <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
             <SpendChart data={daily} platformData={activeTab==='all' && uniquePlatforms.length>1 ? uniquePlatforms.map(p=>({ platform:p.platform, color:PCOLOR[p.platform], label:PLABEL[p.platform], daily:p.daily })) : undefined} />
             <ClicksChart data={daily} platformData={activeTab==='all' && uniquePlatforms.length>1 ? uniquePlatforms.map(p=>({ platform:p.platform, color:PCOLOR[p.platform], label:PLABEL[p.platform], daily:p.daily })) : undefined} />
@@ -279,20 +279,20 @@ export default function DashboardPage() {
           {/* Overlay */}
           <div onClick={()=>setCustomize(false)} style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.7)' }}/>
           {/* Панель */}
-          <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'400px', background:'#111', borderLeft:'1px solid rgba(255,255,255,0.08)', overflowY:'auto', padding:'28px 24px' }}>
+          <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'400px', background:'var(--bg2)', borderLeft:'1px solid rgba(255,255,255,0.08)', overflowY:'auto', padding:'28px 24px' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'24px' }}>
               <div>
-                <h2 style={{ fontSize:'16px', fontWeight:800, color:'#fff', margin:0 }}>Customize метрики</h2>
-                <p style={{ fontSize:'12px', color:'rgba(255,255,255,0.35)', marginTop:'4px' }}>Оберіть показники для відображення</p>
+                <h2 style={{ fontSize:'16px', fontWeight:800, color:'var(--text)', margin:0 }}>Customize метрики</h2>
+                <p style={{ fontSize:'12px', color:'var(--text3)', marginTop:'4px' }}>Оберіть показники для відображення</p>
               </div>
-              <button onClick={()=>setCustomize(false)} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.4)', padding:'4px' }}>
+              <button onClick={()=>setCustomize(false)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', padding:'4px' }}>
                 <X size={18}/>
               </button>
             </div>
 
             {/* Загальні */}
             <div style={{ marginBottom:'24px' }}>
-              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.3)', marginBottom:'12px', textTransform:'uppercase' }}>Загальні (всі платформи)</p>
+              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text3)', marginBottom:'12px', textTransform:'uppercase' }}>Загальні (всі платформи)</p>
               {PLATFORM_METRICS.common.map(m=>(
                 <label key={m.key} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'8px', cursor:'pointer', marginBottom:'4px', transition:'background 0.15s' }}
                   onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.03)' }}
@@ -310,7 +310,7 @@ export default function DashboardPage() {
             <div style={{ marginBottom:'24px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px' }}>
                 <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#1877f2', display:'inline-block' }}/>
-                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.3)', margin:0, textTransform:'uppercase' }}>Meta / Facebook</p>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text3)', margin:0, textTransform:'uppercase' }}>Meta / Facebook</p>
               </div>
               {PLATFORM_METRICS.meta.map(m=>(
                 <label key={m.key+m.label} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'8px', cursor:'pointer', marginBottom:'4px', transition:'background 0.15s' }}
@@ -329,7 +329,7 @@ export default function DashboardPage() {
             <div style={{ marginBottom:'24px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px' }}>
                 <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#e60000', display:'inline-block' }}/>
-                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.3)', margin:0, textTransform:'uppercase' }}>Google Ads</p>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text3)', margin:0, textTransform:'uppercase' }}>Google Ads</p>
               </div>
               {PLATFORM_METRICS.google.map(m=>(
                 <label key={m.key+m.label} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'8px', cursor:'pointer', marginBottom:'4px', transition:'background 0.15s' }}
@@ -348,7 +348,7 @@ export default function DashboardPage() {
             <div style={{ marginBottom:'24px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px' }}>
                 <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#fff', display:'inline-block' }}/>
-                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.3)', margin:0, textTransform:'uppercase' }}>TikTok Ads</p>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text3)', margin:0, textTransform:'uppercase' }}>TikTok Ads</p>
               </div>
               {PLATFORM_METRICS.tiktok.map(m=>(
                 <label key={m.key+m.label} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'8px', cursor:'pointer', marginBottom:'4px', transition:'background 0.15s' }}
@@ -365,7 +365,7 @@ export default function DashboardPage() {
 
             {/* Reset */}
             <button onClick={()=>{ setSelectedMetrics(DEFAULT_METRICS); localStorage.setItem('dashboard_metrics', JSON.stringify(DEFAULT_METRICS)) }}
-              style={{ width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid rgba(255,255,255,0.08)', background:'transparent', color:'rgba(255,255,255,0.35)', fontSize:'13px', cursor:'pointer', transition:'all 0.15s' }}
+              style={{ width:'100%', padding:'10px', borderRadius:'8px', border:'1px solid var(--border2)', background:'transparent', color:'var(--text3)', fontSize:'13px', cursor:'pointer', transition:'all 0.15s' }}
               onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'; e.currentTarget.style.color='#ff4444' }}
               onMouseLeave={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.color='rgba(255,255,255,0.35)' }}
             >

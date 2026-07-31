@@ -10,7 +10,7 @@ const iconClr: Record<string,string> = { red:'#e60000', white:'rgba(255,255,255,
 
 export function StatCard({ label, value, icon: Icon, trend, color='white', delay=0 }: StatCardProps) {
   return (
-    <div className="anim-up" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'20px', animationDelay:`${delay}ms`, opacity:0, transition:'border-color 0.2s' }}
+    <div className="anim-up" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'20px', animationDelay:`${delay}ms`, opacity:0, transition:'border-color 0.2s' }}
       onMouseEnter={e=>{ (e.currentTarget).style.borderColor='rgba(230,0,0,0.2)' }}
       onMouseLeave={e=>{ (e.currentTarget).style.borderColor='rgba(255,255,255,0.06)' }}
     >
@@ -24,8 +24,8 @@ export function StatCard({ label, value, icon: Icon, trend, color='white', delay
           </span>
         )}
       </div>
-      <p style={{ fontSize:'22px', fontWeight:800, color:'#fff', margin:0, letterSpacing:'-0.02em' }}>{value}</p>
-      <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.35)', marginTop:'6px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>{label}</p>
+      <p style={{ fontSize:'22px', fontWeight:800, color:'var(--text)', margin:0, letterSpacing:'-0.02em' }}>{value}</p>
+      <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'6px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>{label}</p>
     </div>
   )
 }

@@ -19,7 +19,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight:'100vh', background:'#0a0a0a', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', position:'relative', overflow:'hidden' }}>
+    <div style={{ minHeight:'100vh', background:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', position:'relative', overflow:'hidden' }}>
 
       {/* Сітка фон */}
       <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' }} />
@@ -45,26 +45,26 @@ export default function LoginPage() {
               <ellipse cx="44" cy="16" rx="12" ry="10" fill="none" stroke="#e60000" strokeWidth="2.5" opacity="0.9"/>
             </svg>
           </div>
-          <div style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.2em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>INFINITE UNION</div>
-          <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Ad Tracker</h1>
-          <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>Аналітика рекламних кампаній</p>
+          <div style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.2em', color:'var(--text3)', marginBottom:'8px' }}>INFINITE UNION</div>
+          <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Ad Tracker</h1>
+          <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>Аналітика рекламних кампаній</p>
         </div>
 
         {/* Картка форми */}
-        <div style={{ background:'#111', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'16px', padding:'32px', boxShadow:'0 0 60px rgba(230,0,0,0.08)' }}>
+        <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'32px', boxShadow:'0 0 60px rgba(230,0,0,0.08)' }}>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom:'20px' }}>
-              <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'rgba(255,255,255,0.4)', marginBottom:'8px' }}>Email</label>
+              <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'8px' }}>Email</label>
               <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" required
-                style={{ width:'100%', padding:'12px 16px', background:'#161616', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'#fff', fontSize:'14px', outline:'none', transition:'border-color 0.2s, box-shadow 0.2s', boxSizing:'border-box' }}
+                style={{ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', transition:'border-color 0.2s, box-shadow 0.2s', boxSizing:'border-box' }}
                 onFocus={e=>{ e.target.style.borderColor='#e60000'; e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.15)' }}
                 onBlur={e=>{ e.target.style.borderColor='rgba(255,255,255,0.07)'; e.target.style.boxShadow='none' }}
               />
             </div>
             <div style={{ marginBottom:'24px' }}>
-              <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'rgba(255,255,255,0.4)', marginBottom:'8px' }}>Пароль</label>
+              <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'8px' }}>Пароль</label>
               <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" required
-                style={{ width:'100%', padding:'12px 16px', background:'#161616', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'#fff', fontSize:'14px', outline:'none', transition:'border-color 0.2s, box-shadow 0.2s', boxSizing:'border-box' }}
+                style={{ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', transition:'border-color 0.2s, box-shadow 0.2s', boxSizing:'border-box' }}
                 onFocus={e=>{ e.target.style.borderColor='#e60000'; e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.15)' }}
                 onBlur={e=>{ e.target.style.borderColor='rgba(255,255,255,0.07)'; e.target.style.boxShadow='none' }}
               />
@@ -75,7 +75,7 @@ export default function LoginPage() {
               </div>
             )}
             <button type="submit" disabled={loading}
-              style={{ width:'100%', padding:'13px', background: loading ? '#555' : '#e60000', color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading ? 'not-allowed' : 'pointer', transition:'all 0.2s', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', letterSpacing:'0.02em' }}
+              style={{ width:'100%', padding:'13px', background: loading ? '#555' : '#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading ? 'not-allowed' : 'pointer', transition:'all 0.2s', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', letterSpacing:'0.02em' }}
               onMouseEnter={e=>{ if (!loading) { (e.target as HTMLElement).style.background='#cc0000'; (e.target as HTMLElement).style.boxShadow='0 4px 24px rgba(230,0,0,0.4)'; (e.target as HTMLElement).style.transform='translateY(-1px)' }}}
               onMouseLeave={e=>{ (e.target as HTMLElement).style.background='#e60000'; (e.target as HTMLElement).style.boxShadow='none'; (e.target as HTMLElement).style.transform='none' }}
             >

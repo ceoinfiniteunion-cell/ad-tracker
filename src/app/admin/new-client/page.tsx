@@ -8,8 +8,8 @@ import Link from 'next/link'
 type Platform='FACEBOOK'|'GOOGLE'|'TIKTOK'
 interface AdAccountForm { name:string; accountId:string; platform:Platform }
 
-const inp = { width:'100%', padding:'11px 14px', background:'#161616', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'#fff', fontSize:'13px', outline:'none', boxSizing:'border-box' as const, transition:'border-color 0.2s, box-shadow 0.2s' }
-const lbl = { display:'block', fontSize:'10px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'rgba(255,255,255,0.35)', marginBottom:'7px' }
+const inp = { width:'100%', padding:'11px 14px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', boxSizing:'border-box' as const, transition:'border-color 0.2s, box-shadow 0.2s' }
+const lbl = { display:'block', fontSize:'10px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--text3)', marginBottom:'7px' }
 
 export default function NewClientPage() {
   const router=useRouter()
@@ -29,23 +29,23 @@ export default function NewClientPage() {
     else { const d=await res.json(); setError(d.error??'Помилка'); setLoading(false) }
   }
 
-  const section = { background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'24px', marginBottom:'14px' }
-  const sectionTitle = { fontSize:'10px', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'rgba(255,255,255,0.35)', margin:'0 0 20px' }
+  const section = { background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'24px', marginBottom:'14px' }
+  const sectionTitle = { fontSize:'10px', fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'var(--text3)', margin:'0 0 20px' }
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={{ position:'fixed', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none', zIndex:0 }} />
         <div style={{ maxWidth:'680px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
 
           <div className="anim-fade" style={{ marginBottom:'32px' }}>
-            <Link href="/admin/clients" style={{ display:'inline-flex', alignItems:'center', gap:'6px', fontSize:'12px', color:'rgba(255,255,255,0.3)', textDecoration:'none', marginBottom:'20px', transition:'color 0.15s' }}>
+            <Link href="/admin/clients" style={{ display:'inline-flex', alignItems:'center', gap:'6px', fontSize:'12px', color:'var(--text3)', textDecoration:'none', marginBottom:'20px', transition:'color 0.15s' }}>
               <ArrowLeft size={13}/>Назад до клієнтів
             </Link>
-            <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>// НОВИЙ КЛІЄНТ</p>
-            <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Додати клієнта</h1>
-            <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>Заповніть дані та прив'яжіть рекламні кабінети</p>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// НОВИЙ КЛІЄНТ</p>
+            <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Додати клієнта</h1>
+            <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>Заповніть дані та прив'яжіть рекламні кабінети</p>
           </div>
 
           <form onSubmit={handleSubmit} className="anim-up-1">
@@ -62,7 +62,7 @@ export default function NewClientPage() {
             <div style={section}>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
                 <p style={{ ...sectionTitle, margin:0 }}>Рекламні кабінети</p>
-                <button type="button" onClick={addAccount} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 12px', background:'transparent', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'6px', color:'rgba(255,255,255,0.4)', fontSize:'12px', cursor:'pointer', transition:'all 0.15s' }}
+                <button type="button" onClick={addAccount} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 12px', background:'transparent', border:'1px solid var(--border)', borderRadius:'6px', color:'var(--text3)', fontSize:'12px', cursor:'pointer', transition:'all 0.15s' }}
                   onMouseEnter={e=>{ (e.currentTarget).style.borderColor='rgba(230,0,0,0.3)'; (e.currentTarget).style.color='#ff4444' }}
                   onMouseLeave={e=>{ (e.currentTarget).style.borderColor='rgba(255,255,255,0.07)'; (e.currentTarget).style.color='rgba(255,255,255,0.4)' }}
                 >
@@ -81,7 +81,7 @@ export default function NewClientPage() {
                     </div>
                     <div><label style={lbl}>ID кабінету</label><input value={acc.accountId} onChange={e=>updateAccount(i,'accountId',e.target.value)} placeholder="act_123456" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)'}} /></div>
                     <div><label style={lbl}>Назва</label><input value={acc.name} onChange={e=>updateAccount(i,'name',e.target.value)} placeholder="Основний" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)'}} /></div>
-                    <button type="button" onClick={()=>removeAccount(i)} disabled={adAccounts.length===1} style={{ padding:'10px', background:'transparent', border:'none', color:'rgba(255,255,255,0.2)', cursor: adAccounts.length===1 ? 'not-allowed' : 'pointer', opacity: adAccounts.length===1 ? 0.3 : 1, transition:'color 0.15s' }}
+                    <button type="button" onClick={()=>removeAccount(i)} disabled={adAccounts.length===1} style={{ padding:'10px', background:'transparent', border:'none', color:'var(--text4)', cursor: adAccounts.length===1 ? 'not-allowed' : 'pointer', opacity: adAccounts.length===1 ? 0.3 : 1, transition:'color 0.15s' }}
                       onMouseEnter={e=>{ if(adAccounts.length>1)(e.currentTarget).style.color='#ff4444' }}
                       onMouseLeave={e=>{ (e.currentTarget).style.color='rgba(255,255,255,0.2)' }}
                     ><Trash2 size={15}/></button>
@@ -96,7 +96,7 @@ export default function NewClientPage() {
               </div>
             )}
 
-            <button type="submit" disabled={loading} style={{ width:'100%', padding:'13px', background: loading?'#333':'#e60000', color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.2s', letterSpacing:'0.02em' }}
+            <button type="submit" disabled={loading} style={{ width:'100%', padding:'13px', background: loading?'#333':'#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.2s', letterSpacing:'0.02em' }}
               onMouseEnter={e=>{ if(!loading){(e.currentTarget).style.background='#cc0000';(e.currentTarget).style.boxShadow='0 4px 24px rgba(230,0,0,0.35)';(e.currentTarget).style.transform='translateY(-1px)'} }}
               onMouseLeave={e=>{ (e.currentTarget).style.background='#e60000';(e.currentTarget).style.boxShadow='none';(e.currentTarget).style.transform='none' }}
             >

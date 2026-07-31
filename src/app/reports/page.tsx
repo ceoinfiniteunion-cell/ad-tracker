@@ -32,7 +32,7 @@ function merge(metrics: any[]) {
 }
 
 function Trend({ curr, prev }: { curr:number; prev:number }) {
-  if (!prev) return <span style={{color:'rgba(255,255,255,0.2)',fontSize:'11px',fontFamily:'monospace'}}>—</span>
+  if (!prev) return <span style={{color:'var(--text4)',fontSize:'11px',fontFamily:'monospace'}}>—</span>
   const pct = ((curr-prev)/prev)*100
   const up = pct >= 0
   return (
@@ -44,7 +44,7 @@ function Trend({ curr, prev }: { curr:number; prev:number }) {
 }
 
 const gridBg = { position:'fixed' as const, inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' as const, zIndex:0 }
-const inp = { padding:'10px 14px', background:'#161616', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'8px', color:'#fff', fontSize:'13px', outline:'none', cursor:'pointer', fontFamily:'monospace' }
+const inp = { padding:'10px 14px', background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', cursor:'pointer', fontFamily:'monospace' }
 
 export default function ReportsPage() {
   const { data: session } = useSession()
@@ -115,7 +115,7 @@ export default function ReportsPage() {
   const days = Math.ceil((new Date(to).getTime()-new Date(from).getTime())/(1000*60*60*24))+1
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={gridBg}/>
@@ -126,9 +126,9 @@ export default function ReportsPage() {
           {/* Header */}
           <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'24px', flexWrap:'wrap', gap:'16px' }}>
             <div>
-              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>// ЗВІТИ</p>
-              <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Звіти та аналітика</h1>
-              <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>
+              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// ЗВІТИ</p>
+              <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Звіти та аналітика</h1>
+              <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>
                 {data?.client?.company} · {days} {days===1?'день':days<5?'дні':'днів'} · {from} → {to}
               </p>
             </div>
@@ -136,7 +136,7 @@ export default function ReportsPage() {
               <button onClick={()=>setCompare(!compare)} style={{ ...tabStyle(compare), fontSize:'12px' }}>
                 {compare ? '✓ Порівняння' : 'Порівняння'}
               </button>
-              <button onClick={exportCSV} style={{ display:'flex', alignItems:'center', gap:'7px', padding:'9px 16px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'8px', color:'rgba(255,255,255,0.6)', fontSize:'13px', fontWeight:600, cursor:'pointer', transition:'all 0.15s' }}
+              <button onClick={exportCSV} style={{ display:'flex', alignItems:'center', gap:'7px', padding:'9px 16px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text2)', fontSize:'13px', fontWeight:600, cursor:'pointer', transition:'all 0.15s' }}
                 onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'; e.currentTarget.style.color='#ff4444' }}
                 onMouseLeave={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.color='rgba(255,255,255,0.6)' }}
               >
@@ -146,7 +146,7 @@ export default function ReportsPage() {
           </div>
 
           {/* Пресети + дати */}
-          <div className="anim-up-1" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'20px', marginBottom:'16px' }}>
+          <div className="anim-up-1" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'20px', marginBottom:'16px' }}>
             <div style={{ display:'flex', gap:'6px', flexWrap:'wrap', marginBottom:'16px' }}>
               {PRESETS.map(p=>(
                 <button key={p.label} onClick={()=>applyPreset(p)} style={{ padding:'6px 12px', borderRadius:'6px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s', background: activePreset===p.label ? 'rgba(230,0,0,0.12)' : 'transparent', color: activePreset===p.label ? '#ff4444' : 'rgba(255,255,255,0.4)', borderColor: activePreset===p.label ? 'rgba(230,0,0,0.3)' : 'rgba(255,255,255,0.07)' }}>
@@ -157,17 +157,17 @@ export default function ReportsPage() {
 
             <div style={{ display:'flex', gap:'12px', alignItems:'center', flexWrap:'wrap' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                <Calendar size={14} style={{color:'rgba(255,255,255,0.3)'}}/>
-                <span style={{ fontSize:'12px', color:'rgba(255,255,255,0.35)' }}>Від</span>
+                <Calendar size={14} style={{color:'var(--text3)'}}/>
+                <span style={{ fontSize:'12px', color:'var(--text3)' }}>Від</span>
                 <input type="date" value={from} onChange={e=>{ setFrom(e.target.value); setActivePreset('') }} max={to}
                   style={{ ...inp, colorScheme:'dark' }}
                   onFocus={e=>{ e.target.style.borderColor='#e60000' }}
                   onBlur={e=>{ e.target.style.borderColor='rgba(255,255,255,0.08)' }}
                 />
               </div>
-              <span style={{ fontSize:'12px', color:'rgba(255,255,255,0.2)' }}>→</span>
+              <span style={{ fontSize:'12px', color:'var(--text4)' }}>→</span>
               <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                <span style={{ fontSize:'12px', color:'rgba(255,255,255,0.35)' }}>До</span>
+                <span style={{ fontSize:'12px', color:'var(--text3)' }}>До</span>
                 <input type="date" value={to} onChange={e=>{ setTo(e.target.value); setActivePreset('') }} min={from} max={today}
                   style={{ ...inp, colorScheme:'dark' }}
                   onFocus={e=>{ e.target.style.borderColor='#e60000' }}
@@ -175,7 +175,7 @@ export default function ReportsPage() {
                 />
               </div>
               {compare && prevData && (
-                <span style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.25)', marginLeft:'8px' }}>
+                <span style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)', marginLeft:'8px' }}>
                   vs попередній період
                 </span>
               )}
@@ -196,7 +196,7 @@ export default function ReportsPage() {
           {loading ? (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'80px 0', flexDirection:'column', gap:'16px' }}>
               <div style={{ width:'32px', height:'32px', border:'2px solid rgba(230,0,0,0.2)', borderTopColor:'#e60000', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/>
-              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.3)' }}>Завантаження звіту...</p>
+              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)' }}>Завантаження звіту...</p>
             </div>
           ) : summary && (
             <>
@@ -208,11 +208,11 @@ export default function ReportsPage() {
                   { label:'Кліки', value:formatNumber(summary.totalClicks), prev:prevSummary?.totalClicks, color:'rgba(255,255,255,0.8)' },
                   { label:'Конверсії', value:formatNumber(summary.totalConversions), prev:prevSummary?.totalConversions, color:'#00c864' },
                 ].map(card=>(
-                  <div key={card.label} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'18px 20px' }}
+                  <div key={card.label} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 20px' }}
                     onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.15)' }}
                     onMouseLeave={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.06)' }}
                   >
-                    <p style={{ fontSize:'11px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'rgba(255,255,255,0.3)', margin:'0 0 10px' }}>{card.label}</p>
+                    <p style={{ fontSize:'11px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--text3)', margin:'0 0 10px' }}>{card.label}</p>
                     <p style={{ fontSize:'20px', fontWeight:800, color:card.color, margin:'0 0 8px', fontFamily:'monospace' }}>{card.value}</p>
                     {compare && card.prev !== undefined && <Trend curr={typeof summary.totalSpend==='number' ? (card.label==='Витрати'?summary.totalSpend:card.label==='Покази'?summary.totalImpressions:card.label==='Кліки'?summary.totalClicks:summary.totalConversions) : 0} prev={card.prev}/>}
                   </div>
@@ -225,8 +225,8 @@ export default function ReportsPage() {
                   { label:'CPC', value:formatCurrency(summary.cpc), prev:prevSummary?.cpc, color:'rgba(255,255,255,0.8)', curr:summary.cpc },
                   { label:'ROAS', value:`${summary.roas.toFixed(2)}×`, prev:prevSummary?.roas, color: summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444', curr:summary.roas },
                 ].map(card=>(
-                  <div key={card.label} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'18px 20px', textAlign:'center' as const }}>
-                    <p style={{ fontSize:'11px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'rgba(255,255,255,0.3)', margin:'0 0 8px' }}>{card.label}</p>
+                  <div key={card.label} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 20px', textAlign:'center' as const }}>
+                    <p style={{ fontSize:'11px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--text3)', margin:'0 0 8px' }}>{card.label}</p>
                     <p style={{ fontSize:'22px', fontWeight:800, color:card.color, margin:'0 0 6px', fontFamily:'monospace' }}>{card.value}</p>
                     {compare && card.prev !== undefined && <Trend curr={card.curr} prev={card.prev}/>}
                   </div>
@@ -235,16 +235,16 @@ export default function ReportsPage() {
 
               {/* Таблиця по платформах */}
               {activePlatform==='all' && data && data.platforms.length > 0 && (
-                <div className="anim-up-3" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
-                  <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,0.05)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                    <p style={{ fontSize:'12px', fontWeight:700, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Розбивка по платформах</p>
-                    <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.25)', margin:0 }}>{from} → {to}</p>
+                <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
+                  <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Розбивка по платформах</p>
+                    <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)', margin:0 }}>{from} → {to}</p>
                   </div>
                   <table style={{ width:'100%', borderCollapse:'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                         {['Платформа','Витрати','Дохід','Покази','Кліки','CTR','CPC','ROAS'].map(h=>(
-                          <th key={h} style={{ padding:'11px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'rgba(255,255,255,0.25)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                          <th key={h} style={{ padding:'11px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -262,8 +262,8 @@ export default function ReportsPage() {
                               <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
                                 <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:c, flexShrink:0, display:'inline-block' }}/>
                                 <div>
-                                  <p style={{ fontSize:'13px', fontWeight:600, color:'#fff', margin:0 }}>{PLABEL[p.platform]}</p>
-                                  <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.25)', margin:'2px 0 0' }}>{p.accountId}</p>
+                                  <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)', margin:0 }}>{PLABEL[p.platform]}</p>
+                                  <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text4)', margin:'2px 0 0' }}>{p.accountId}</p>
                                 </div>
                               </div>
                             </td>
@@ -274,10 +274,10 @@ export default function ReportsPage() {
                             <td style={{ padding:'14px 16px' }}>
                               <p style={{ fontFamily:'monospace', fontSize:'13px', color:'#00c864', fontWeight:700, margin:0 }}>{formatCurrency(p.summary.totalRevenue)}</p>
                             </td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatNumber(p.summary.totalImpressions)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatNumber(p.summary.totalClicks)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatPercent(p.summary.ctr)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>{formatCurrency(p.summary.cpc)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatNumber(p.summary.totalImpressions)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatNumber(p.summary.totalClicks)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatPercent(p.summary.ctr)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatCurrency(p.summary.cpc)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', fontWeight:700, color: p.summary.roas>=2?'#00c864':p.summary.roas>=1?'#fbbf24':'#ff4444' }}>{p.summary.roas.toFixed(2)}×</td>
                           </tr>
                         )
@@ -288,17 +288,17 @@ export default function ReportsPage() {
               )}
 
               {/* Щоденна таблиця */}
-              <div className="anim-up-3" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
-                <div style={{ padding:'16px 20px', borderBottom:'1px solid rgba(255,255,255,0.05)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                  <p style={{ fontSize:'12px', fontWeight:700, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Щоденна розбивка</p>
-                  <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.25)', margin:0 }}>{daily.length} днів</p>
+              <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
+                <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Щоденна розбивка</p>
+                  <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)', margin:0 }}>{daily.length} днів</p>
                 </div>
                 <div style={{ maxHeight:'320px', overflowY:'auto' }}>
                   <table style={{ width:'100%', borderCollapse:'collapse' }}>
-                    <thead style={{ position:'sticky', top:0, background:'#111', zIndex:1 }}>
+                    <thead style={{ position:'sticky', top:0, background:'var(--bg2)', zIndex:1 }}>
                       <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                         {['Дата','Витрати','Дохід','Покази','Кліки','Конверсії','CTR','CPC'].map(h=>(
-                          <th key={h} style={{ padding:'11px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'rgba(255,255,255,0.25)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                          <th key={h} style={{ padding:'11px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -308,20 +308,20 @@ export default function ReportsPage() {
                           onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.02)' }}
                           onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
                         >
-                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'rgba(255,255,255,0.5)', fontWeight:600 }}>
+                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', fontWeight:600 }}>
                             {new Date(d.date).toLocaleDateString('uk',{day:'2-digit',month:'short',year:'numeric'})}
                           </td>
                           <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'#e60000', fontWeight:700 }}>{formatCurrency(d.spend)}</td>
                           <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'#00c864', fontWeight:700 }}>{formatCurrency(d.revenue)}</td>
-                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'rgba(255,255,255,0.5)' }}>{formatNumber(d.impressions)}</td>
-                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'rgba(255,255,255,0.5)' }}>{formatNumber(d.clicks)}</td>
-                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'rgba(255,255,255,0.5)' }}>{formatNumber(d.conversions)}</td>
-                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'rgba(255,255,255,0.5)' }}>{d.impressions>0?formatPercent((d.clicks/d.impressions)*100):'—'}</td>
-                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'rgba(255,255,255,0.5)' }}>{d.clicks>0?formatCurrency(d.spend/d.clicks):'—'}</td>
+                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.impressions)}</td>
+                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.clicks)}</td>
+                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.conversions)}</td>
+                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{d.impressions>0?formatPercent((d.clicks/d.impressions)*100):'—'}</td>
+                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{d.clicks>0?formatCurrency(d.spend/d.clicks):'—'}</td>
                         </tr>
                       ))}
                       {daily.length===0 && (
-                        <tr><td colSpan={8} style={{ padding:'40px', textAlign:'center', color:'rgba(255,255,255,0.2)', fontSize:'13px' }}>Немає даних за обраний період</td></tr>
+                        <tr><td colSpan={8} style={{ padding:'40px', textAlign:'center', color:'var(--text4)', fontSize:'13px' }}>Немає даних за обраний період</td></tr>
                       )}
                     </tbody>
                   </table>

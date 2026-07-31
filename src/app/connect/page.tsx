@@ -22,7 +22,7 @@ const PLATFORMS = {
 const TOKEN_STATUS: Record<string, {label:string;color:string;bg:string}> = {
   valid: { label:'✓ Активний', color:'#00c864', bg:'rgba(0,200,100,0.1)' },
   invalid: { label:'✗ Недійсний', color:'#ff4444', bg:'rgba(230,0,0,0.1)' },
-  no_token: { label:'— Без токена', color:'rgba(255,255,255,0.35)', bg:'rgba(255,255,255,0.05)' },
+  no_token: { label:'— Без токена', color:'var(--text3)', bg:'rgba(255,255,255,0.05)' },
 }
 
 // Покрокові інструкції з скріншотами-описами
@@ -151,13 +151,13 @@ export default function ConnectPage() {
     setDeleting(null)
   }
 
-  const inp = (focused: boolean) => ({ width:'100%', padding:'12px 16px', background:'#161616', border:`1px solid ${focused?'#e60000':'rgba(255,255,255,0.07)'}`, borderRadius:'8px', color:'#fff', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, transition:'all 0.2s', boxShadow:focused?'0 0 0 3px rgba(230,0,0,0.12)':'none' })
+  const inp = (focused: boolean) => ({ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:`1px solid ${focused?'#e60000':'rgba(255,255,255,0.07)'}`, borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, transition:'all 0.2s', boxShadow:focused?'0 0 0 3px rgba(230,0,0,0.12)':'none' })
 
   const pInfo = selectedPlatform ? PLATFORMS[selectedPlatform] : null
   const instructions = selectedPlatform ? INSTRUCTIONS[selectedPlatform] : null
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar/>
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={gridBg}/>
@@ -172,31 +172,31 @@ export default function ConnectPage() {
 
           {/* Header */}
           <div className="anim-fade" style={{ marginBottom:'32px' }}>
-            <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>// МОЇ РЕКЛАМНІ КАБІНЕТИ</p>
-            <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Підключені кабінети</h1>
-            <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>Підключіть рекламні кабінети — статистика завантажиться автоматично</p>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// МОЇ РЕКЛАМНІ КАБІНЕТИ</p>
+            <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Підключені кабінети</h1>
+            <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>Підключіть рекламні кабінети — статистика завантажиться автоматично</p>
           </div>
 
           {/* ВИБІР ПЛАТФОРМИ */}
           {!selectedPlatform && (
             <div className="anim-up-1">
-              <p style={{ fontSize:'13px', fontWeight:600, color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'16px' }}>
+              <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'16px' }}>
                 {accounts.length > 0 ? '+ Додати ще кабінет' : 'Виберіть платформу'}
               </p>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px' }}>
                 {(Object.entries(PLATFORMS) as [Platform, typeof PLATFORMS.FACEBOOK][]).map(([pl, p])=>(
                   <button key={pl} onClick={()=>{ setSelectedPlatform(pl); setStep('guide') }}
-                    style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'14px', padding:'28px 20px', cursor:'pointer', textAlign:'left' as const, transition:'all 0.2s' }}
+                    style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'14px', padding:'28px 20px', cursor:'pointer', textAlign:'left' as const, transition:'all 0.2s' }}
                     onMouseEnter={e=>{e.currentTarget.style.borderColor=p.color+'60';e.currentTarget.style.background='#161616'}}
                     onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.06)';e.currentTarget.style.background='#111'}}
                   >
                     <div style={{ width:'48px', height:'48px', borderRadius:'12px', background:p.bg, border:`1px solid ${p.color}40`, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'16px' }}>
                       <span style={{ fontSize:'11px', fontWeight:800, color:p.color, fontFamily:'monospace' }}>{p.short}</span>
                     </div>
-                    <p style={{ fontSize:'15px', fontWeight:700, color:'#fff', margin:'0 0 6px' }}>{p.label}</p>
+                    <p style={{ fontSize:'15px', fontWeight:700, color:'var(--text)', margin:'0 0 6px' }}>{p.label}</p>
                     {p.autoSync
                       ? <p style={{ fontSize:'12px', color:'#00c864', margin:0, display:'flex', alignItems:'center', gap:'5px' }}>⚡ Автосинхронізація</p>
-                      : <p style={{ fontSize:'12px', color:'rgba(255,255,255,0.35)', margin:0 }}>Ручне завантаження</p>
+                      : <p style={{ fontSize:'12px', color:'var(--text3)', margin:0 }}>Ручне завантаження</p>
                     }
                     <div style={{ marginTop:'16px', display:'flex', alignItems:'center', gap:'4px', color:p.color, fontSize:'12px', fontWeight:600 }}>
                       Підключити <ChevronRight size={14}/>
@@ -210,18 +210,18 @@ export default function ConnectPage() {
           {/* ПОКРОКОВА ІНСТРУКЦІЯ */}
           {selectedPlatform && step === 'guide' && pInfo && instructions && (
             <div className="anim-up-1">
-              <button onClick={()=>setSelectedPlatform(null)} style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'12px', color:'rgba(255,255,255,0.3)', background:'none', border:'none', cursor:'pointer', marginBottom:'24px', padding:0 }}>
+              <button onClick={()=>setSelectedPlatform(null)} style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'12px', color:'var(--text3)', background:'none', border:'none', cursor:'pointer', marginBottom:'24px', padding:0 }}>
                 ← Назад
               </button>
 
-              <div style={{ background:'#111', border:`1px solid ${pInfo.color}30`, borderRadius:'16px', overflow:'hidden', marginBottom:'16px' }}>
-                <div style={{ background:`linear-gradient(135deg, ${pInfo.bg}, rgba(0,0,0,0))`, padding:'28px', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ background:'var(--bg2)', border:`1px solid ${pInfo.color}30`, borderRadius:'16px', overflow:'hidden', marginBottom:'16px' }}>
+                <div style={{ background:`linear-gradient(135deg, ${pInfo.bg}, rgba(0,0,0,0))`, padding:'28px', borderBottom:'1px solid var(--border)' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:'14px', marginBottom:'8px' }}>
                     <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:pInfo.bg, border:`1px solid ${pInfo.color}40`, display:'flex', alignItems:'center', justifyContent:'center' }}>
                       <span style={{ fontSize:'11px', fontWeight:800, color:pInfo.color, fontFamily:'monospace' }}>{pInfo.short}</span>
                     </div>
                     <div>
-                      <p style={{ fontSize:'18px', fontWeight:800, color:'#fff', margin:0 }}>{instructions.title}</p>
+                      <p style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', margin:0 }}>{instructions.title}</p>
                       {pInfo.autoSync && <p style={{ fontSize:'12px', color:'#00c864', margin:'4px 0 0' }}>⚡ Після підключення дані завантажаться автоматично</p>}
                     </div>
                   </div>
@@ -235,8 +235,8 @@ export default function ConnectPage() {
                           {s.icon}
                         </div>
                         <div style={{ flex:1 }}>
-                          <p style={{ fontSize:'14px', fontWeight:700, color:'#fff', margin:'0 0 6px' }}>{s.title}</p>
-                          <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.5)', margin:0, lineHeight:1.6 }}>{s.desc}</p>
+                          <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)', margin:'0 0 6px' }}>{s.title}</p>
+                          <p style={{ fontSize:'13px', color:'var(--text2)', margin:0, lineHeight:1.6 }}>{s.desc}</p>
                           {s.link && (
                             <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ display:'inline-flex', alignItems:'center', gap:'6px', marginTop:'10px', padding:'8px 16px', background:pInfo.bg, border:`1px solid ${pInfo.color}40`, borderRadius:'8px', color:pInfo.color, fontSize:'13px', fontWeight:600, textDecoration:'none', transition:'all 0.15s' }}>
                               <ExternalLink size={13}/>{s.linkText}
@@ -247,7 +247,7 @@ export default function ConnectPage() {
                     ))}
                   </div>
 
-                  <button onClick={()=>setStep('form')} style={{ width:'100%', padding:'14px', background:pInfo.color === 'rgba(255,255,255,0.8)' ? '#333' : pInfo.color, color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
+                  <button onClick={()=>setStep('form')} style={{ width:'100%', padding:'14px', background:pInfo.color === 'rgba(255,255,255,0.8)' ? '#333' : pInfo.color, color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
                     Я готовий — ввести дані →
                   </button>
                 </div>
@@ -258,25 +258,25 @@ export default function ConnectPage() {
           {/* ФОРМА ПІДКЛЮЧЕННЯ */}
           {selectedPlatform && step === 'form' && pInfo && instructions && (
             <div className="anim-up-1">
-              <button onClick={()=>setStep('guide')} style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'12px', color:'rgba(255,255,255,0.3)', background:'none', border:'none', cursor:'pointer', marginBottom:'24px', padding:0 }}>
+              <button onClick={()=>setStep('guide')} style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'12px', color:'var(--text3)', background:'none', border:'none', cursor:'pointer', marginBottom:'24px', padding:0 }}>
                 ← Назад до інструкції
               </button>
 
-              <div style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'16px', padding:'32px' }}>
-                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>// КРОК 4 — ВВЕДІТЬ ДАНІ</p>
-                <h2 style={{ fontSize:'20px', fontWeight:800, color:'#fff', margin:'0 0 24px' }}>Підключити {pInfo.label}</h2>
+              <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'32px' }}>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// КРОК 4 — ВВЕДІТЬ ДАНІ</p>
+                <h2 style={{ fontSize:'20px', fontWeight:800, color:'var(--text)', margin:'0 0 24px' }}>Підключити {pInfo.label}</h2>
 
                 <form onSubmit={handleAdd} style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
                   <div>
-                    <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' as const, color:'rgba(255,255,255,0.4)', marginBottom:'8px' }}>Назва кабінету</label>
+                    <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' as const, color:'var(--text3)', marginBottom:'8px' }}>Назва кабінету</label>
                     <input value={currentForm.name} onChange={e=>setCurrentForm({name:e.target.value})} placeholder="напр. Основний · Ремаркетинг" required style={inp(focusedField==='name')} onFocus={()=>setFocusedField('name')} onBlur={()=>setFocusedField(null)}/>
-                    <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.25)', marginTop:'6px' }}>Назва тільки для вас — щоб розрізняти кабінети</p>
+                    <p style={{ fontSize:'11px', color:'var(--text4)', marginTop:'6px' }}>Назва тільки для вас — щоб розрізняти кабінети</p>
                   </div>
 
                   <div>
-                    <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' as const, color:'rgba(255,255,255,0.4)', marginBottom:'8px' }}>ID рекламного кабінету</label>
+                    <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' as const, color:'var(--text3)', marginBottom:'8px' }}>ID рекламного кабінету</label>
                     <input value={currentForm.accountId} onChange={e=>setCurrentForm({accountId:e.target.value})} placeholder={instructions.idPlaceholder} required style={inp(focusedField==='accountId')} onFocus={()=>setFocusedField('accountId')} onBlur={()=>setFocusedField(null)}/>
-                    <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.25)', marginTop:'6px' }}>Знайди в рекламному кабінеті (крок 1 з інструкції)</p>
+                    <p style={{ fontSize:'11px', color:'var(--text4)', marginTop:'6px' }}>Знайди в рекламному кабінеті (крок 1 з інструкції)</p>
                   </div>
 
                   <div>
@@ -285,7 +285,7 @@ export default function ConnectPage() {
                     </label>
                     <div style={{ position:'relative' }}>
                       <input type={showToken?'text':'password'} value={currentForm.accessToken} onChange={e=>setCurrentForm({accessToken:e.target.value})} placeholder={instructions.tokenPlaceholder} style={{ ...inp(focusedField==='token'), paddingRight:'44px' }} onFocus={()=>setFocusedField('token')} onBlur={()=>setFocusedField(null)}/>
-                      <button type="button" onClick={()=>setShowToken(!showToken)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'rgba(255,255,255,0.3)', cursor:'pointer' }}>
+                      <button type="button" onClick={()=>setShowToken(!showToken)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'var(--text3)', cursor:'pointer' }}>
                         {showToken?<EyeOff size={15}/>:<Eye size={15}/>}
                       </button>
                     </div>
@@ -293,10 +293,10 @@ export default function ConnectPage() {
                   </div>
 
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 2fr', gap:'12px' }}>
-                    <button type="button" onClick={()=>{setSelectedPlatform(null);setStep('platform')}} style={{ padding:'13px', background:'transparent', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'10px', color:'rgba(255,255,255,0.4)', fontSize:'14px', fontWeight:600, cursor:'pointer' }}>
+                    <button type="button" onClick={()=>{setSelectedPlatform(null);setStep('platform')}} style={{ padding:'13px', background:'transparent', border:'1px solid var(--border2)', borderRadius:'10px', color:'var(--text3)', fontSize:'14px', fontWeight:600, cursor:'pointer' }}>
                       Скасувати
                     </button>
-                    <button type="submit" disabled={saving} style={{ padding:'13px', background:saving?'#333':'#e60000', color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:saving?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }} onMouseEnter={e=>{if(!saving)e.currentTarget.style.background='#cc0000'}} onMouseLeave={e=>{e.currentTarget.style.background=saving?'#333':'#e60000'}}>
+                    <button type="submit" disabled={saving} style={{ padding:'13px', background:saving?'#333':'#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:saving?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }} onMouseEnter={e=>{if(!saving)e.currentTarget.style.background='#cc0000'}} onMouseLeave={e=>{e.currentTarget.style.background=saving?'#333':'#e60000'}}>
                       {saving?<><div style={{width:'14px',height:'14px',border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>Підключаємо...</>:'✓ Підключити кабінет'}
                     </button>
                   </div>
@@ -308,7 +308,7 @@ export default function ConnectPage() {
           {!selectedPlatform && accounts.length > 0 && (
             <div style={{ display:'flex', alignItems:'center', gap:'16px', margin:'8px 0 24px' }}>
               <div style={{ flex:1, height:'1px', background:'rgba(255,255,255,0.06)' }}/>
-              <span style={{ fontSize:'11px', fontWeight:600, letterSpacing:'0.1em', color:'rgba(255,255,255,0.2)', textTransform:'uppercase' }}>Підключені кабінети</span>
+              <span style={{ fontSize:'11px', fontWeight:600, letterSpacing:'0.1em', color:'var(--text4)', textTransform:'uppercase' }}>Підключені кабінети</span>
               <div style={{ flex:1, height:'1px', background:'rgba(255,255,255,0.06)' }}/>
             </div>
           )}
@@ -321,7 +321,7 @@ export default function ConnectPage() {
                   const p = PLATFORMS[acc.platform]
                   const ts = TOKEN_STATUS[acc.tokenStatus??'no_token']
                   return (
-                    <div key={acc.id} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'18px 22px' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.06)'}}>
+                    <div key={acc.id} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 22px' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.06)'}}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
                           <div style={{ width:'44px', height:'44px', borderRadius:'10px', background:p.bg, border:`1px solid ${p.color}30`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
@@ -329,12 +329,12 @@ export default function ConnectPage() {
                           </div>
                           <div>
                             <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'5px' }}>
-                              <p style={{ fontSize:'14px', fontWeight:700, color:'#fff', margin:0 }}>{acc.name}</p>
+                              <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)', margin:0 }}>{acc.name}</p>
                               <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:p.bg, color:p.color, fontWeight:600 }}>{p.label}</span>
                               {p.autoSync && acc.tokenStatus==='valid' && <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:'rgba(0,200,100,0.1)', color:'#00c864', fontWeight:600 }}>⚡ Автосинк</span>}
                             </div>
                             <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.3)', margin:0 }}>ID: {acc.accountId}</p>
+                              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)', margin:0 }}>ID: {acc.accountId}</p>
                               <span style={{ fontFamily:'monospace', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:ts.bg, color:ts.color, fontWeight:600 }}>{ts.label}</span>
                             </div>
                           </div>
@@ -346,10 +346,10 @@ export default function ConnectPage() {
                               {syncing===acc.id?'Синк...':'Оновити'}
                             </button>
                           )}
-                          <button onClick={()=>{ setShowTokenModal(acc); setTokenInput('') }} style={{ padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'7px', color:'rgba(255,255,255,0.5)', fontSize:'12px', fontWeight:600, cursor:'pointer' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'}} onMouseLeave={e=>{e.currentTarget.style.color='rgba(255,255,255,0.5)';e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'}}>
+                          <button onClick={()=>{ setShowTokenModal(acc); setTokenInput('') }} style={{ padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'7px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'}} onMouseLeave={e=>{e.currentTarget.style.color='rgba(255,255,255,0.5)';e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'}}>
                             {acc.tokenStatus==='valid'?'Оновити токен':'+ Додати токен'}
                           </button>
-                          <button onClick={()=>handleDelete(acc.id)} disabled={deleting===acc.id} style={{ width:'36px', height:'36px', background:'transparent', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'7px', color:'rgba(255,255,255,0.25)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.background='rgba(230,0,0,0.08)'}} onMouseLeave={e=>{e.currentTarget.style.color='rgba(255,255,255,0.25)';e.currentTarget.style.background='transparent'}}>
+                          <button onClick={()=>handleDelete(acc.id)} disabled={deleting===acc.id} style={{ width:'36px', height:'36px', background:'transparent', border:'1px solid var(--border)', borderRadius:'7px', color:'var(--text4)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.background='rgba(230,0,0,0.08)'}} onMouseLeave={e=>{e.currentTarget.style.color='rgba(255,255,255,0.25)';e.currentTarget.style.background='transparent'}}>
                             {deleting===acc.id?<div style={{width:'13px',height:'13px',border:'2px solid rgba(230,0,0,0.2)',borderTopColor:'#e60000',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>:<Trash2 size={14}/>}
                           </button>
                         </div>
@@ -367,38 +367,38 @@ export default function ConnectPage() {
       {/* Модал оновлення токена */}
       {showTokenModal && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', backdropFilter:'blur(4px)', zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }} onClick={e=>{if(e.target===e.currentTarget){setShowTokenModal(null);setTokenInput('')}}}>
-          <div className="anim-up" style={{ width:'100%', maxWidth:'480px', background:'#111', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'16px', padding:'28px', boxShadow:'0 24px 64px rgba(0,0,0,0.6)' }}>
+          <div className="anim-up" style={{ width:'100%', maxWidth:'480px', background:'var(--bg2)', border:'1px solid var(--border2)', borderRadius:'16px', padding:'28px', boxShadow:'0 24px 64px rgba(0,0,0,0.6)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
               <div>
-                <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.3)', marginBottom:'4px' }}>// ОНОВИТИ ТОКЕН</p>
-                <h2 style={{ fontSize:'18px', fontWeight:800, color:'#fff', margin:0 }}>{showTokenModal.name}</h2>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', marginBottom:'4px' }}>// ОНОВИТИ ТОКЕН</p>
+                <h2 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', margin:0 }}>{showTokenModal.name}</h2>
               </div>
-              <button onClick={()=>{setShowTokenModal(null);setTokenInput('')}} style={{ width:'32px', height:'32px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'rgba(255,255,255,0.4)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <button onClick={()=>{setShowTokenModal(null);setTokenInput('')}} style={{ width:'32px', height:'32px', background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text3)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <X size={15}/>
               </button>
             </div>
 
             {showTokenModal.platform === 'FACEBOOK' && (
               <div style={{ marginBottom:'16px', background:'rgba(24,119,242,0.06)', border:'1px solid rgba(24,119,242,0.15)', borderRadius:'8px', padding:'12px 14px' }}>
-                <p style={{ fontSize:'12px', color:'rgba(255,255,255,0.5)', margin:0, lineHeight:1.6 }}>
+                <p style={{ fontSize:'12px', color:'var(--text2)', margin:0, lineHeight:1.6 }}>
                   Зайди на <a href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noopener noreferrer" style={{color:'#1877f2',fontWeight:600}}>Graph API Explorer</a> → Generate Access Token → скопіюй і встав нижче
                 </p>
               </div>
             )}
 
             <div style={{ marginBottom:'16px' }}>
-              <label style={{ display:'block', fontSize:'11px', fontWeight:600, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'rgba(255,255,255,0.4)', marginBottom:'8px' }}>Новий Access Token</label>
+              <label style={{ display:'block', fontSize:'11px', fontWeight:600, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text3)', marginBottom:'8px' }}>Новий Access Token</label>
               <div style={{ position:'relative' }}>
-                <input type={showToken?'text':'password'} value={tokenInput} onChange={e=>setTokenInput(e.target.value)} placeholder="Вставте токен..." style={{ width:'100%', padding:'12px 44px 12px 16px', background:'#161616', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'#fff', fontSize:'13px', outline:'none', boxSizing:'border-box' as const }} onFocus={e=>{e.target.style.borderColor='#e60000'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)'}}/>
-                <button type="button" onClick={()=>setShowToken(!showToken)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'rgba(255,255,255,0.3)', cursor:'pointer' }}>
+                <input type={showToken?'text':'password'} value={tokenInput} onChange={e=>setTokenInput(e.target.value)} placeholder="Вставте токен..." style={{ width:'100%', padding:'12px 44px 12px 16px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', boxSizing:'border-box' as const }} onFocus={e=>{e.target.style.borderColor='#e60000'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)'}}/>
+                <button type="button" onClick={()=>setShowToken(!showToken)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'var(--text3)', cursor:'pointer' }}>
                   {showToken?<EyeOff size={15}/>:<Eye size={15}/>}
                 </button>
               </div>
             </div>
 
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
-              <button onClick={()=>{setShowTokenModal(null);setTokenInput('')}} style={{ padding:'12px', background:'transparent', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'8px', color:'rgba(255,255,255,0.4)', fontSize:'13px', fontWeight:600, cursor:'pointer' }}>Скасувати</button>
-              <button onClick={handleUpdateToken} disabled={tokenSaving||!tokenInput} style={{ padding:'12px', background:(tokenSaving||!tokenInput)?'rgba(230,0,0,0.3)':'#e60000', color:'#fff', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor:(tokenSaving||!tokenInput)?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
+              <button onClick={()=>{setShowTokenModal(null);setTokenInput('')}} style={{ padding:'12px', background:'transparent', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text3)', fontSize:'13px', fontWeight:600, cursor:'pointer' }}>Скасувати</button>
+              <button onClick={handleUpdateToken} disabled={tokenSaving||!tokenInput} style={{ padding:'12px', background:(tokenSaving||!tokenInput)?'rgba(230,0,0,0.3)':'#e60000', color:'var(--text)', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor:(tokenSaving||!tokenInput)?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
                 {tokenSaving?<><div style={{width:'13px',height:'13px',border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>Перевірка...</>:'Зберегти і перевірити'}
               </button>
             </div>

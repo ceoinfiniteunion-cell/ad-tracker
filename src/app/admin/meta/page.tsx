@@ -71,8 +71,8 @@ function parseCPL(cpa?: any[]) {
 }
 
 const gridBg = { position:'fixed' as const, inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' as const, zIndex:0 }
-const thStyle = { padding:'11px 14px', textAlign:'left' as const, fontSize:'10px', fontWeight:600 as const, color:'rgba(255,255,255,0.25)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace', whiteSpace:'nowrap' as const }
-const tdStyle = { padding:'12px 14px', fontFamily:'monospace', fontSize:'12px', color:'rgba(255,255,255,0.6)', whiteSpace:'nowrap' as const }
+const thStyle = { padding:'11px 14px', textAlign:'left' as const, fontSize:'10px', fontWeight:600 as const, color:'var(--text4)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace', whiteSpace:'nowrap' as const }
+const tdStyle = { padding:'12px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' as const }
 
 const tabBtn = (active: boolean) => ({
   padding:'8px 16px', borderRadius:'7px', fontSize:'12px', fontWeight:600 as const, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
@@ -157,7 +157,7 @@ export default function MetaPage() {
   const cpl = totalLeads>0?(totalSpend/totalLeads).toFixed(2):null
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'#0a0a0a' }}>
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar/>
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={gridBg}/>
@@ -173,9 +173,9 @@ export default function MetaPage() {
           {/* Header */}
           <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'20px', flexWrap:'wrap', gap:'12px' }}>
             <div>
-              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'rgba(255,255,255,0.3)', marginBottom:'8px' }}>// META ADS API · РЕАЛЬНІ ДАНІ</p>
-              <h1 style={{ fontSize:'26px', fontWeight:800, color:'#fff', margin:0 }}>Meta інтеграція</h1>
-              <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)', marginTop:'6px' }}>Facebook / Instagram Ads · {metaAccounts[0]?.name}</p>
+              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// META ADS API · РЕАЛЬНІ ДАНІ</p>
+              <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Meta інтеграція</h1>
+              <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>Facebook / Instagram Ads · {metaAccounts[0]?.name}</p>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap' }}>
               {[7,14,30,90].map(d=>(
@@ -200,12 +200,12 @@ export default function MetaPage() {
           {loading ? (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'80px', flexDirection:'column', gap:'16px' }}>
               <div style={{ width:'32px', height:'32px', border:'2px solid rgba(230,0,0,0.2)', borderTopColor:'#e60000', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/>
-              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'rgba(255,255,255,0.3)' }}>Підключення до Meta API...</p>
+              <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)' }}>Підключення до Meta API...</p>
             </div>
           ) : metaError ? (
             <div style={{ background:'rgba(230,0,0,0.08)', border:'1px solid rgba(230,0,0,0.2)', borderRadius:'12px', padding:'40px', textAlign:'center' }}>
               <AlertCircle size={32} style={{ color:'#ff4444', margin:'0 auto 12px' }}/>
-              <p style={{ fontSize:'14px', color:'rgba(255,255,255,0.5)', fontFamily:'monospace' }}>{metaError}</p>
+              <p style={{ fontSize:'14px', color:'var(--text2)', fontFamily:'monospace' }}>{metaError}</p>
             </div>
           ) : (
             <>
@@ -225,30 +225,30 @@ export default function MetaPage() {
                     sub: cpl ? `CPL: $${cpl}` : 'Конверсії'
                   },
                 ].map(card=>(
-                  <div key={card.label} style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'10px', padding:'14px 16px', transition:'border-color 0.15s' }}
+                  <div key={card.label} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'10px', padding:'14px 16px', transition:'border-color 0.15s' }}
                     onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.2)'}}
                     onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.06)'}}
                   >
-                    <p style={{ fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'rgba(255,255,255,0.3)', margin:'0 0 8px' }}>{card.label}</p>
+                    <p style={{ fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--text3)', margin:'0 0 8px' }}>{card.label}</p>
                     <p style={{ fontSize:'18px', fontWeight:800, color:card.color, margin:'0 0 4px', fontFamily:'monospace' }}>{card.value}</p>
-                    <p style={{ fontSize:'10px', color:'rgba(255,255,255,0.2)', margin:0 }}>{card.sub}</p>
+                    <p style={{ fontSize:'10px', color:'var(--text4)', margin:0 }}>{card.sub}</p>
                   </div>
                 ))}
               </div>
 
               {/* Синхронізація */}
-              <div className="anim-up-2" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', padding:'18px 20px', marginBottom:'14px' }}>
-                <p style={{ fontSize:'11px', fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.08em', margin:'0 0 12px' }}>Синхронізувати реальні дані в систему</p>
+              <div className="anim-up-2" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 20px', marginBottom:'14px' }}>
+                <p style={{ fontSize:'11px', fontWeight:700, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.08em', margin:'0 0 12px' }}>Синхронізувати реальні дані в систему</p>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr auto', gap:'12px', alignItems:'end' }}>
                   <div>
-                    <label style={{ display:'block', fontSize:'10px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'rgba(255,255,255,0.3)', marginBottom:'7px' }}>Meta кабінет</label>
-                    <select value={selectedMeta?.id??''} onChange={e=>{const a=metaAccounts.find(x=>x.id===e.target.value)??null;setSelectedMeta(a);if(a)loadDetails(a,period)}} style={{ width:'100%', padding:'10px 14px', background:'#161616', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'#fff', fontSize:'13px', outline:'none' }}>
+                    <label style={{ display:'block', fontSize:'10px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'7px' }}>Meta кабінет</label>
+                    <select value={selectedMeta?.id??''} onChange={e=>{const a=metaAccounts.find(x=>x.id===e.target.value)??null;setSelectedMeta(a);if(a)loadDetails(a,period)}} style={{ width:'100%', padding:'10px 14px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none' }}>
                       {metaAccounts.map(a=><option key={a.id} value={a.id}>{a.name} · {a.currency}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label style={{ display:'block', fontSize:'10px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'rgba(255,255,255,0.3)', marginBottom:'7px' }}>Кабінет в системі</label>
-                    <select value={selectedDbAccount} onChange={e=>setSelectedDbAccount(e.target.value)} style={{ width:'100%', padding:'10px 14px', background:'#161616', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', color:'#fff', fontSize:'13px', outline:'none' }}>
+                    <label style={{ display:'block', fontSize:'10px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'7px' }}>Кабінет в системі</label>
+                    <select value={selectedDbAccount} onChange={e=>setSelectedDbAccount(e.target.value)} style={{ width:'100%', padding:'10px 14px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none' }}>
                       <option value="">— Виберіть —</option>
                       {dbClients.map(c=>c.adAccounts.filter(a=>a.platform==='FACEBOOK').map(a=>(
                         <option key={a.id} value={a.id}>{c.name} · {a.name}</option>
@@ -256,7 +256,7 @@ export default function MetaPage() {
                     </select>
                   </div>
                   <button onClick={handleSync} disabled={syncing||!selectedMeta||!selectedDbAccount}
-                    style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 20px', background:syncing?'#333':'#e60000', color:'#fff', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor:(syncing||!selectedDbAccount)?'not-allowed':'pointer', opacity:(syncing||!selectedDbAccount)?0.6:1, transition:'all 0.15s', whiteSpace:'nowrap' as const }}
+                    style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 20px', background:syncing?'#333':'#e60000', color:'var(--text)', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor:(syncing||!selectedDbAccount)?'not-allowed':'pointer', opacity:(syncing||!selectedDbAccount)?0.6:1, transition:'all 0.15s', whiteSpace:'nowrap' as const }}
                     onMouseEnter={e=>{if(!syncing&&selectedDbAccount)e.currentTarget.style.background='#cc0000'}}
                     onMouseLeave={e=>{e.currentTarget.style.background=syncing?'#333':'#e60000'}}
                   >
@@ -273,8 +273,8 @@ export default function MetaPage() {
               </div>
 
               {/* Таблиці */}
-              <div className="anim-up-3" style={{ background:'#111', border:'1px solid rgba(255,255,255,0.06)', borderRadius:'12px', overflow:'hidden' }}>
-                <div style={{ padding:'14px 20px', borderBottom:'1px solid rgba(255,255,255,0.05)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden' }}>
+                <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                   <div style={{ display:'flex', gap:'8px' }}>
                     <button onClick={()=>setActiveTab('campaigns')} style={tabBtn(activeTab==='campaigns')}><Target size={13}/>Кампанії ({campaigns.length})</button>
                     <button onClick={()=>setActiveTab('adsets')} style={tabBtn(activeTab==='adsets')}><Zap size={13}/>Адсети ({adsets.length})</button>
@@ -282,7 +282,7 @@ export default function MetaPage() {
                   {loadingDetails && (
                     <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
                       <div style={{ width:'14px', height:'14px', border:'2px solid rgba(230,0,0,0.2)', borderTopColor:'#e60000', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/>
-                      <span style={{ fontSize:'11px', color:'rgba(255,255,255,0.3)', fontFamily:'monospace' }}>Завантаження...</span>
+                      <span style={{ fontSize:'11px', color:'var(--text3)', fontFamily:'monospace' }}>Завантаження...</span>
                     </div>
                   )}
                 </div>
@@ -299,7 +299,7 @@ export default function MetaPage() {
                       </thead>
                       <tbody>
                         {campaigns.length===0 && !loadingDetails ? (
-                          <tr><td colSpan={13} style={{ padding:'48px', textAlign:'center', color:'rgba(255,255,255,0.2)', fontSize:'13px' }}>Немає кампаній за обраний період</td></tr>
+                          <tr><td colSpan={13} style={{ padding:'48px', textAlign:'center', color:'var(--text4)', fontSize:'13px' }}>Немає кампаній за обраний період</td></tr>
                         ) : campaigns.map(c=>{
                           const leads = parseLeads(c.insights?.actions)
                           const purchases = parsePurchases(c.insights?.actions)
@@ -309,7 +309,7 @@ export default function MetaPage() {
                               onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,0.02)'}}
                               onMouseLeave={e=>{e.currentTarget.style.background='transparent'}}
                             >
-                              <td style={{ ...tdStyle, maxWidth:'180px', overflow:'hidden', textOverflow:'ellipsis', color:'#fff', fontWeight:700 }} title={c.name}>{c.name}</td>
+                              <td style={{ ...tdStyle, maxWidth:'180px', overflow:'hidden', textOverflow:'ellipsis', color:'var(--text)', fontWeight:700 }} title={c.name}>{c.name}</td>
                               <td style={tdStyle}>
                                 <span style={{ fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:`${CAMP_STATUS_COLOR[c.status]??'rgba(255,255,255,0.1)'}20`, color:CAMP_STATUS_COLOR[c.status]??'rgba(255,255,255,0.4)', fontWeight:700, border:`1px solid ${CAMP_STATUS_COLOR[c.status]??'rgba(255,255,255,0.1)'}50` }}>
                                   {c.status==='ACTIVE'?'● ACTIVE':c.status==='PAUSED'?'⏸ PAUSED':c.status}
@@ -344,7 +344,7 @@ export default function MetaPage() {
                       </thead>
                       <tbody>
                         {adsets.length===0 && !loadingDetails ? (
-                          <tr><td colSpan={11} style={{ padding:'48px', textAlign:'center', color:'rgba(255,255,255,0.2)', fontSize:'13px' }}>
+                          <tr><td colSpan={11} style={{ padding:'48px', textAlign:'center', color:'var(--text4)', fontSize:'13px' }}>
                             Немає адсетів за обраний період
                             <br/><span style={{ fontSize:'11px', marginTop:'8px', display:'block', color:'rgba(255,255,255,0.15)' }}>Спробуйте збільшити період або перевірте кабінет</span>
                           </td></tr>
@@ -357,7 +357,7 @@ export default function MetaPage() {
                               onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,0.02)'}}
                               onMouseLeave={e=>{e.currentTarget.style.background='transparent'}}
                             >
-                              <td style={{ ...tdStyle, maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', color:'#fff', fontWeight:600 }} title={a.name}>{a.name}</td>
+                              <td style={{ ...tdStyle, maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', color:'var(--text)', fontWeight:600 }} title={a.name}>{a.name}</td>
                               <td style={tdStyle}>
                                 <span style={{ fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:`${CAMP_STATUS_COLOR[a.status]??'rgba(255,255,255,0.1)'}20`, color:CAMP_STATUS_COLOR[a.status]??'rgba(255,255,255,0.4)', fontWeight:700, border:`1px solid ${CAMP_STATUS_COLOR[a.status]??'rgba(255,255,255,0.1)'}50` }}>
                                   {a.status==='ACTIVE'?'● ACTIVE':a.status==='PAUSED'?'⏸ PAUSED':a.status}
