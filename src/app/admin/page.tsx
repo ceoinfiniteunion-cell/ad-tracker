@@ -41,7 +41,7 @@ export default function AdminDashboardPage() {
           const res = await fetch(`/api/metrics?clientId=${c.id}&from=${from}&to=${to}`)
           const data = await res.json()
           const t = data.totals ?? {}
-          const platforms = [...new Set((data.platforms ?? []).map((p: any) => p.platform))] as string[]
+          const platforms = Array.from(new Set((data.platforms ?? []).map((p: any) => p.platform))) as string[]
           return {
             id: c.id,
             name: c.name,
