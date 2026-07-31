@@ -1,18 +1,25 @@
 import { LucideIcon } from 'lucide-react'
-
 interface StatCardProps {
   label: string; value: string; icon: LucideIcon
   trend?: number; color?: 'red'|'white'|'green'|'blue'; delay?: number
 }
-
-const iconBg: Record<string,string> = { red:'rgba(230,0,0,0.12)', white:'rgba(255,255,255,0.06)', green:'rgba(0,200,100,0.1)', blue:'rgba(59,130,246,0.1)' }
-const iconClr: Record<string,string> = { red:'#e60000', white:'rgba(255,255,255,0.6)', green:'#00c864', blue:'#3b82f6' }
-
+const iconBg: Record<string,string> = {
+  red:'rgba(230,0,0,0.12)',
+  white:'var(--bg3)',
+  green:'rgba(0,200,100,0.1)',
+  blue:'rgba(59,130,246,0.1)'
+}
+const iconClr: Record<string,string> = {
+  red:'#e60000',
+  white:'var(--text2)',
+  green:'#00c864',
+  blue:'#3b82f6'
+}
 export function StatCard({ label, value, icon: Icon, trend, color='white', delay=0 }: StatCardProps) {
   return (
-    <div className="anim-up" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'20px', animationDelay:`${delay}ms`, opacity:0, transition:'border-color 0.2s' }}
-      onMouseEnter={e=>{ (e.currentTarget).style.borderColor='rgba(230,0,0,0.2)' }}
-      onMouseLeave={e=>{ (e.currentTarget).style.borderColor='rgba(255,255,255,0.06)' }}
+    <div className="anim-up" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'20px', animationDelay:`${delay}ms`, transition:'border-color 0.2s' }}
+      onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.2)' }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor='var(--border)' }}
     >
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'14px' }}>
         <div style={{ width:'36px', height:'36px', borderRadius:'8px', background:iconBg[color], display:'flex', alignItems:'center', justifyContent:'center' }}>

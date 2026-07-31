@@ -203,8 +203,8 @@ export default function AdminReportsPage() {
               <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'12px', marginBottom:'12px' }}>
                 {[
                   { label:'Витрати', value:formatCurrency(summary.totalSpend), curr:summary.totalSpend, prev:prevSummary?.totalSpend, color:'#e60000' },
-                  { label:'Покази', value:formatNumber(summary.totalImpressions), curr:summary.totalImpressions, prev:prevSummary?.totalImpressions, color:'rgba(255,255,255,0.8)' },
-                  { label:'Кліки', value:formatNumber(summary.totalClicks), curr:summary.totalClicks, prev:prevSummary?.totalClicks, color:'rgba(255,255,255,0.8)' },
+                  { label:'Покази', value:formatNumber(summary.totalImpressions), curr:summary.totalImpressions, prev:prevSummary?.totalImpressions, color:'var(--text)' },
+                  { label:'Кліки', value:formatNumber(summary.totalClicks), curr:summary.totalClicks, prev:prevSummary?.totalClicks, color:'var(--text)' },
                   { label:'Конверсії', value:formatNumber(summary.totalConversions), curr:summary.totalConversions, prev:prevSummary?.totalConversions, color:'#00c864' },
                 ].map(card=>(
                   <div key={card.label} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 20px' }}
@@ -220,8 +220,8 @@ export default function AdminReportsPage() {
 
               <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'16px' }}>
                 {[
-                  { label:'CTR', value:formatPercent(summary.ctr), curr:summary.ctr, prev:prevSummary?.ctr, color:'rgba(255,255,255,0.8)' },
-                  { label:'CPC', value:formatCurrency(summary.cpc), curr:summary.cpc, prev:prevSummary?.cpc, color:'rgba(255,255,255,0.8)' },
+                  { label:'CTR', value:formatPercent(summary.ctr), curr:summary.ctr, prev:prevSummary?.ctr, color:'var(--text)' },
+                  { label:'CPC', value:formatCurrency(summary.cpc), curr:summary.cpc, prev:prevSummary?.cpc, color:'var(--text)' },
                   { label:'ROAS', value:`${summary.roas.toFixed(2)}×`, curr:summary.roas, prev:prevSummary?.roas, color:summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444' },
                 ].map(card=>(
                   <div key={card.label} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 20px', textAlign:'center' as const }}>
