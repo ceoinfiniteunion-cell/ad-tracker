@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { ArrowLeft, Plus, Trash2, Power, AlertCircle, CheckCircle, Building2, Mail, Calendar, X } from 'lucide-react'
+import { CommentsSection } from '@/components/ui/CommentsSection'
 
 interface AdAccount { id:string; name:string; accountId:string; platform:string; isActive:boolean; createdAt:string }
 interface ClientDetail {
@@ -150,6 +151,9 @@ export default function ClientDetailPage() {
               <path d="M0,8 C40,2 80,14 120,8 C160,2 200,14 240,8 C280,2 320,14 360,8 C400,2 440,14 480,8 C520,2 560,14 600,8 C640,2 680,14 720,8 C760,2 800,14 840,8" fill="none" stroke="rgba(230,0,0,0.2)" strokeWidth="1.5" strokeDasharray="6 6"/>
             </svg>
           </div>
+
+          {/* Коментарі */}
+          <CommentsSection clientId={id} isAdmin={true} />
 
           {/* Секція кабінетів */}
           <div>

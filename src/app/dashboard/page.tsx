@@ -8,6 +8,7 @@ import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
 import { DollarSign, Eye, MousePointer, ShoppingCart, Users, Play, Heart, TrendingUp, Settings2, X, Check } from 'lucide-react'
 import { GoalsSection } from '@/components/ui/GoalsSection'
+import { CommentsSection } from '@/components/ui/CommentsSection'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#fff' }
@@ -200,6 +201,9 @@ export default function DashboardPage() {
 
           {/* Цілі */}
           <GoalsSection totals={data.totals} />
+
+          {/* Коментарі */}
+          <CommentsSection clientId={(session?.user as any)?.clientId ?? ''} isAdmin={false} />
 
           {/* Tabs */}
           <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'28px', flexWrap:'wrap' }}>

@@ -26,6 +26,7 @@ model Client {
   updatedAt DateTime @updatedAt
   adAccounts AdAccount[]
   goals       Goal[]
+  comments    Comment[]
   @@map("clients")
 }
 model AdAccount {
@@ -44,6 +45,18 @@ model AdAccount {
   @@unique([accountId, platform])
   @@map("ad_accounts")
 }
+model Comment {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  authorId  String
+  text      String
+  period    String?
+  createdAt DateTime @default(now())
+
+  @@map("comments")
+}
+
 model Goal {
   id          String   @id @default(cuid())
   clientId    String
