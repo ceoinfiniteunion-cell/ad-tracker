@@ -38,7 +38,7 @@ export function ClicksChart({ data, title='Кліки та конверсії', 
         <p style={{ fontSize:'13px', fontWeight:700, color:'var(--text)', margin:'0 0 4px' }}>{title}</p>
         <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)', margin:'0 0 20px' }}>{subtitle ?? 'Порівняння платформ'}</p>
         <ResponsiveContainer width="100%" height={230}>
-          <BarChart data={merged} margin={{ top:4, right:4, left:0, bottom:0 }} barGap={2}>
+          <BarChart data={merged} margin={{ top:4, right:4, left:0, bottom:0 }} barGap={2} barCategoryGap="20%">
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="date" tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} />
@@ -69,7 +69,7 @@ export function ClicksChart({ data, title='Кліки та конверсії', 
       <p style={{ fontSize:'13px', fontWeight:700, color:'var(--text)', margin:'0 0 4px' }}>{title}</p>
       <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)', margin:'0 0 20px' }}>{subtitle ?? 'За останні 30 днів'}</p>
       <ResponsiveContainer width="100%" height={230}>
-        <BarChart data={formatted} margin={{ top:4, right:4, left:0, bottom:0 }} barGap={2}>
+        <BarChart data={formatted} margin={{ top:4, right:4, left:0, bottom:0 }} barGap={2} barCategoryGap="20%">
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis dataKey="date" tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} />
