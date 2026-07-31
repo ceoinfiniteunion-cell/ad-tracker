@@ -198,7 +198,7 @@ export default function StatsPage() {
                       <button
                         onClick={()=>{ setActiveAccount('all'); setDropdown(null) }}
                         style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'transparent', border:'none', borderBottom:'1px solid var(--border)', cursor:'pointer', textAlign:'left' as const, transition:'background 0.15s' }}
-                        onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.04)' }}
+                        onMouseEnter={e=>{ e.currentTarget.style.background='var(--bg3)' }}
                         onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
                       >
                         <div>
