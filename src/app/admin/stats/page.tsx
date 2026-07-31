@@ -186,11 +186,7 @@ export default function AdminStatsPage() {
                           >
                             <td style={{ padding:'14px 20px', fontSize:'13px', color:'var(--text2)', fontWeight:500 }}>{row.metric}</td>
                             <td style={{ padding:'14px 20px', fontSize:'15px', fontWeight:800, color:row.color, fontFamily:'monospace' }}>{row.value}</td>
-                            <td style={{ padding:'14px 20px' }}>
-                              <span style={{ display:'inline-flex', alignItems:'center', gap:'6px', fontSize:'11px', fontWeight:600, fontFamily:'monospace', color:'var(--text3)', background:'var(--bg3)', padding:'4px 10px', borderRadius:'6px', border:'1px solid var(--border)' }}>
-                                {row.detail}
-                              </span>
-                            </td>
+                            <td style={{ padding:'14px 20px', fontSize:'14px', fontWeight:600, color:'var(--text3)', fontFamily:'monospace' }}>{row.detail}</td>
                           </tr>
                         ))}
                       </tbody>
