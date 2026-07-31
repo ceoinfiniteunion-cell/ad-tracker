@@ -6,6 +6,7 @@ import { SpendChart } from '@/components/charts/SpendChart'
 import { ClicksChart } from '@/components/charts/ClicksChart'
 import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
+import { generateReportPDF } from '@/lib/generatePDF'
 import { Calendar, Download, TrendingUp, TrendingDown, Minus, ChevronDown } from 'lucide-react'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
@@ -135,6 +136,24 @@ export default function ReportsPage() {
             <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
               <button onClick={()=>setCompare(!compare)} style={{ ...tabStyle(compare), fontSize:'12px' }}>
                 {compare ? '✓ Порівняння' : 'Порівняння'}
+              </button>
+              <button onClick={async()=>{
+                if(!data) return
+                const {generateReportPDF} = await import('@/lib/generatePDF')
+                const pdf = await generateReportPDF({
+                  clientName: data.client?.name ?? 'Клієнт',
+                  company: data.client?.company ?? '',
+                  dateRange: `${from} → ${to}`,
+                  totals: data.totals,
+                  platforms: data.platforms,
+                })
+                pdf.save(`звіт-${data.client?.name ?? 'client'}-${from}.pdf`)
+              }} style={{ display:'flex', alignItems:'center', gap:'7px', padding:'9px 16px', background:'rgba(230,0,0,0.08)', border:'1px solid rgba(230,0,0,0.2)', borderRadius:'8px', color:'#ff4444', fontSize:'13px', fontWeight:600, cursor:'pointer', transition:'all 0.15s' }}
+                onMouseEnter={e=>{e.currentTarget.style.background='rgba(230,0,0,0.15)'}}
+                onMouseLeave={e=>{e.currentTarget.style.background='rgba(230,0,0,0.08)'}}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                PDF звіт
               </button>
               <button onClick={exportCSV} style={{ display:'flex', alignItems:'center', gap:'7px', padding:'9px 16px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text2)', fontSize:'13px', fontWeight:600, cursor:'pointer', transition:'all 0.15s' }}
                 onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'; e.currentTarget.style.color='#ff4444' }}
