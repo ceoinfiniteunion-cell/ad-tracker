@@ -180,13 +180,13 @@ export default function AdminStatsPage() {
                           { metric:'CPC', value:formatCurrency(summary.cpc), detail:'Середня вартість кліку', color:'var(--text2)' },
                           { metric:'ROAS', value:`${summary.roas.toFixed(2)}×`, detail:`$1 витрат → $${summary.roas.toFixed(2)} доходу`, color: summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444' },
                         ].map(row=>(
-                          <tr key={row.metric} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', transition:'background 0.15s' }}
-                            onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.02)' }}
+                          <tr key={row.metric} style={{ borderBottom:'1px solid var(--border)', transition:'background 0.15s' }}
+                            onMouseEnter={e=>{ e.currentTarget.style.background='var(--bg3)' }}
                             onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
                           >
-                            <td style={{ padding:'14px 20px', fontSize:'13px', color:'var(--text2)', fontWeight:500 }}>{row.metric}</td>
-                            <td style={{ padding:'14px 20px', fontSize:'15px', fontWeight:800, color:row.color, fontFamily:'monospace' }}>{row.value}</td>
-                            <td style={{ padding:'14px 20px', fontSize:'14px', fontWeight:600, color:'var(--text3)', fontFamily:'monospace' }}>{row.detail}</td>
+                            <td style={{ padding:'14px 20px', fontSize:'13px', color:'var(--text)', fontWeight:600 }}>{row.metric}</td>
+                            <td style={{ padding:'14px 20px', fontSize:'14px', fontWeight:800, color:row.color, fontFamily:'monospace' }}>{row.value}</td>
+                            <td style={{ padding:'14px 20px', fontSize:'13px', fontWeight:600, color:'var(--text2)', fontFamily:'monospace' }}>{row.detail}</td>
                           </tr>
                         ))}
                       </tbody>
