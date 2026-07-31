@@ -23,6 +23,12 @@
     --option-bg: #161616;
   }
 
+  [data-theme="light"] body,
+  [data-theme="light"] main,
+  [data-theme="light"] aside {
+    color-scheme: light;
+  }
+
   [data-theme="light"] {
     --bg: #f4f4f5;
     --bg2: #ffffff;

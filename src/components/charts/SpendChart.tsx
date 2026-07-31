@@ -2,6 +2,7 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { format } from 'date-fns'
 import { uk } from 'date-fns/locale'
+import { useTheme } from '@/lib/theme'
 
 interface Props {
   data: any[]
@@ -11,6 +12,12 @@ interface Props {
 }
 
 export function SpendChart({ data, title='Витрати та дохід', subtitle, platformData }: Props) {
+  const { theme } = useTheme()
+  const gridColor = theme === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)'
+  const textColor = theme === 'dark' ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.4)'
+  const tooltipBg = theme === 'dark' ? '#1a1a1a' : '#ffffff'
+  const tooltipBorder = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+  const tooltipColor = theme === 'dark' ? '#fff' : '#000'
   // Якщо є platformData — показуємо порівняння платформ
   if (platformData && platformData.length > 1) {
     // Мержимо всі дати
@@ -42,10 +49,10 @@ export function SpendChart({ data, title='Витрати та дохід', subti
               ))}
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="date" tick={{ fontSize:10, fill:'var(--text3)', fontFamily:'monospace' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize:10, fill:'var(--text3)', fontFamily:'monospace' }} axisLine={false} tickLine={false} tickFormatter={v=>`$${v}`} />
+            <XAxis dataKey="date" tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} tickFormatter={v=>`$${v}`} />
             <Tooltip
-              contentStyle={{ background:'var(--bg4)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'12px' }}
+              contentStyle={{ background:tooltipBg, border:`1px solid ${tooltipBorder}`, borderRadius:'8px', color:tooltipColor, fontSize:'12px' }}
               formatter={(v: number, name: string) => {
                 const p = platformData.find(x => x.platform === name)
                 return [`$${v.toFixed(0)}`, p?.label ?? name]
@@ -83,10 +90,10 @@ export function SpendChart({ data, title='Витрати та дохід', subti
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis dataKey="date" tick={{ fontSize:10, fill:'var(--text3)', fontFamily:'monospace' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize:10, fill:'var(--text3)', fontFamily:'monospace' }} axisLine={false} tickLine={false} tickFormatter={v=>`$${v}`} />
+          <XAxis dataKey="date" tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} tickFormatter={v=>`$${v}`} />
           <Tooltip
-            contentStyle={{ background:'var(--bg4)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'12px' }}
+            contentStyle={{ background:tooltipBg, border:`1px solid ${tooltipBorder}`, borderRadius:'8px', color:tooltipColor, fontSize:'12px' }}
             formatter={(v: number, n: string) => [`$${v.toFixed(0)}`, n==='spend'?'Витрати':'Дохід']}
           />
           <Legend formatter={v => <span style={{ color:'var(--text3)', fontSize:'11px' }}>{v==='spend'?'Витрати':'Дохід'}</span>} />

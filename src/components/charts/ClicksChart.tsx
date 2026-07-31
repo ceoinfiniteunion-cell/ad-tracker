@@ -2,6 +2,7 @@
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { format } from 'date-fns'
 import { uk } from 'date-fns/locale'
+import { useTheme } from '@/lib/theme'
 
 interface Props {
   data: any[]
@@ -11,6 +12,12 @@ interface Props {
 }
 
 export function ClicksChart({ data, title='Кліки та конверсії', subtitle, platformData }: Props) {
+  const { theme } = useTheme()
+  const gridColor = theme === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)'
+  const textColor = theme === 'dark' ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.4)'
+  const tooltipBg = theme === 'dark' ? '#1a1a1a' : '#ffffff'
+  const tooltipBorder = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+  const tooltipColor = theme === 'dark' ? '#fff' : '#000'
   // Порівняння платформ
   if (platformData && platformData.length > 1) {
     const dateSet = new Set<string>()
@@ -33,10 +40,10 @@ export function ClicksChart({ data, title='Кліки та конверсії', 
         <ResponsiveContainer width="100%" height={230}>
           <BarChart data={merged} margin={{ top:4, right:4, left:0, bottom:0 }} barGap={2}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="date" tick={{ fontSize:10, fill:'var(--text3)', fontFamily:'monospace' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize:10, fill:'var(--text3)', fontFamily:'monospace' }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="date" tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} />
             <Tooltip
-              contentStyle={{ background:'var(--bg4)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'12px' }}
+              contentStyle={{ background:tooltipBg, border:`1px solid ${tooltipBorder}`, borderRadius:'8px', color:tooltipColor, fontSize:'12px' }}
               formatter={(v: number, name: string) => {
                 const p = platformData.find(x => x.platform === name)
                 return [v.toLocaleString(), p?.label ?? name]
@@ -64,10 +71,10 @@ export function ClicksChart({ data, title='Кліки та конверсії', 
       <ResponsiveContainer width="100%" height={230}>
         <BarChart data={formatted} margin={{ top:4, right:4, left:0, bottom:0 }} barGap={2}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis dataKey="date" tick={{ fontSize:10, fill:'var(--text3)', fontFamily:'monospace' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize:10, fill:'var(--text3)', fontFamily:'monospace' }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="date" tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize:10, fill:textColor, fontFamily:'monospace' }} axisLine={false} tickLine={false} />
           <Tooltip
-            contentStyle={{ background:'var(--bg4)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'12px' }}
+            contentStyle={{ background:tooltipBg, border:`1px solid ${tooltipBorder}`, borderRadius:'8px', color:tooltipColor, fontSize:'12px' }}
             formatter={(v: number, n: string) => [v.toLocaleString(), n==='clicks'?'Кліки':'Конверсії']}
           />
           <Legend formatter={v => <span style={{ color:'var(--text3)', fontSize:'11px' }}>{v==='clicks'?'Кліки':'Конверсії'}</span>} />
