@@ -219,7 +219,7 @@ export default function DashboardPage() {
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'12px', marginBottom:'28px' }}>
                 {commonSelected.map(m => (
                   <div key={m.key} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'16px 20px' }}>
-                    <p style={{ fontSize:'18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(summary[m.key]>=2?'#00c864':summary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'rgba(255,255,255,0.9)', margin:0 }}>{formatVal(summary[m.key], m.format)}</p>
+                    <p style={{ fontSize:'18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(summary[m.key]>=2?'#00c864':summary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'var(--text)', margin:0 }}>{formatVal(summary[m.key], m.format)}</p>
                     <p style={{ fontSize:'10px', color:'var(--text3)', marginTop:'5px', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600 }}>{m.label}</p>
                   </div>
                 ))}
@@ -266,7 +266,7 @@ export default function DashboardPage() {
                       onMouseEnter={e=>{ e.currentTarget.style.borderColor=`${color}35` }}
                       onMouseLeave={e=>{ e.currentTarget.style.borderColor=`${color}15` }}
                     >
-                      <p style={{ fontSize:'16px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(platformSummary[m.key]>=2?'#00c864':platformSummary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'rgba(255,255,255,0.9)', margin:0 }}>{formatVal(platformSummary[m.key], m.format)}</p>
+                      <p style={{ fontSize:'16px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(platformSummary[m.key]>=2?'#00c864':platformSummary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'var(--text)', margin:0 }}>{formatVal(platformSummary[m.key], m.format)}</p>
                       <p style={{ fontSize:'10px', color:'var(--text3)', marginTop:'4px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>{m.label}</p>
                     </div>
                   ))}
