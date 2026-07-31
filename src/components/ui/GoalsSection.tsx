@@ -46,12 +46,13 @@ export function GoalsSection({ totals, clientId }: Props) {
 
   useEffect(() => {
     const url = clientId ? `/api/goals?clientId=${clientId}` : '/api/goals'
-    fetch(url).then(r=>r.json()).then(d=>{ if(Array.isArray(d)) setGoals(d) })
+    fetch(url).then(r=>{ if(r.ok) return r.json(); return [] }).then(d=>{ if(Array.isArray(d)) setGoals(d) }).catch(()=>{})
   }, [clientId])
 
   const handleAdd = async () => {
     if (!form.target) return
     setSaving(true)
+    try {
     const res = await fetch('/api/goals', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ ...form, clientId })
@@ -62,6 +63,7 @@ export function GoalsSection({ totals, clientId }: Props) {
       setShowModal(false)
       setForm({ metric:'spend', target:'', period:'monthly', label:'' })
     }
+    } catch(e) { console.error(e) }
     setSaving(false)
   }
 
