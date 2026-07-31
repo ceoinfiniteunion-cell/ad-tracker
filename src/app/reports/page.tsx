@@ -139,14 +139,13 @@ export default function ReportsPage() {
               <button onClick={async()=>{
                 if(!data) return
                 const {generateReportPDF} = await import('@/lib/generatePDF')
-                const pdf = await generateReportPDF({
+                await generateReportPDF({
                   clientName: data.client?.name ?? 'Клієнт',
                   company: data.client?.company ?? '',
                   dateRange: `${from} → ${to}`,
                   totals: data.totals,
                   platforms: data.platforms,
                 })
-                pdf.save(`звіт-${data.client?.name ?? 'client'}-${from}.pdf`)
               }} style={{ display:'flex', alignItems:'center', gap:'7px', padding:'9px 16px', background:'rgba(230,0,0,0.08)', border:'1px solid rgba(230,0,0,0.2)', borderRadius:'8px', color:'#ff4444', fontSize:'13px', fontWeight:600, cursor:'pointer', transition:'all 0.15s' }}
                 onMouseEnter={e=>{e.currentTarget.style.background='rgba(230,0,0,0.15)'}}
                 onMouseLeave={e=>{e.currentTarget.style.background='rgba(230,0,0,0.08)'}}
