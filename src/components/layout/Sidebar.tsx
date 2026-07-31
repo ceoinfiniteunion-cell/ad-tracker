@@ -2,11 +2,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings, FileText, Zap, Link2 } from 'lucide-react'
+import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings, FileText, Zap, Link2, Sun, Moon } from 'lucide-react'
+import { useTheme } from '@/lib/theme'
 
 export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
+  const { theme, toggle } = useTheme()
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
 
   const links = isAdmin ? [
@@ -25,8 +27,8 @@ export function Sidebar() {
   ]
 
   return (
-    <aside style={{ width:'220px', minWidth:'220px', background:'#0d0d0d', borderRight:'1px solid rgba(255,255,255,0.05)', display:'flex', flexDirection:'column', height:'100vh', position:'sticky', top:0 }}>
-      <div style={{ padding:'20px', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+    <aside style={{ width:'220px', minWidth:'220px', background:'var(--bg2)', borderRight:'1px solid var(--border)', display:'flex', flexDirection:'column', height:'100vh', position:'sticky', top:0, transition:'background 0.3s' }}>
+      <div style={{ padding:'20px', borderBottom:'1px solid var(--border)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
           <div style={{ width:'36px', height:'36px', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.25)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
             <svg width="22" height="11" viewBox="0 0 44 22">
@@ -35,8 +37,8 @@ export function Sidebar() {
             </svg>
           </div>
           <div>
-            <p style={{ fontWeight:800, color:'#fff', fontSize:'14px', lineHeight:1, margin:0 }}>Ad Tracker</p>
-            <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.28)', marginTop:'3px' }}>by Infinite Union</p>
+            <p style={{ fontWeight:800, color:'var(--text)', fontSize:'14px', lineHeight:1, margin:0 }}>Ad Tracker</p>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', marginTop:'3px' }}>by Infinite Union</p>
           </div>
         </div>
       </div>
@@ -51,25 +53,35 @@ export function Sidebar() {
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
-            <Link key={href} href={href} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', fontWeight:500, textDecoration:'none', transition:'all 0.15s', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'rgba(255,255,255,0.45)', borderLeft:active?'2px solid #e60000':'2px solid transparent' }}>
+            <Link key={href} href={href} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', fontWeight:500, textDecoration:'none', transition:'all 0.15s', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent' }}>
               <Icon size={15}/>{label}
             </Link>
           )
         })}
       </nav>
 
-      <div style={{ padding:'12px 10px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
+      <div style={{ padding:'12px 10px', borderTop:'1px solid var(--border)' }}>
+        <button onClick={toggle}
+          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, marginBottom:'4px' }}
+          onMouseEnter={e=>{ e.currentTarget.style.color='var(--text)'; e.currentTarget.style.background='var(--bg3)' }}
+          onMouseLeave={e=>{ e.currentTarget.style.color='var(--text3)'; e.currentTarget.style.background='transparent' }}
+        >
+          {theme==='dark' ? <Sun size={14}/> : <Moon size={14}/>}
+          {theme==='dark' ? 'Світла тема' : 'Темна тема'}
+        </button>
+
         <div style={{ padding:'8px 12px', marginBottom:'4px', borderRadius:'8px' }}>
           <div style={{ width:'28px', height:'28px', borderRadius:'50%', background:'rgba(230,0,0,0.15)', border:'1px solid rgba(230,0,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginBottom:'6px' }}>
             <span style={{ fontSize:'11px', fontWeight:700, color:'#e60000' }}>{session?.user?.name?.[0]?.toUpperCase()}</span>
           </div>
-          <p style={{ fontSize:'13px', fontWeight:600, color:'#fff', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.name}</p>
-          <p style={{ fontFamily:'monospace', fontSize:'10px', color:'rgba(255,255,255,0.28)', marginTop:'1px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.email}</p>
+          <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.name}</p>
+          <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', marginTop:'1px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.email}</p>
         </div>
+
         <button onClick={()=>signOut({callbackUrl:'/auth/login'})}
-          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', color:'rgba(255,255,255,0.3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500 }}
+          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500 }}
           onMouseEnter={e=>{ e.currentTarget.style.color='#ff4444'; e.currentTarget.style.background='rgba(230,0,0,0.08)' }}
-          onMouseLeave={e=>{ e.currentTarget.style.color='rgba(255,255,255,0.3)'; e.currentTarget.style.background='transparent' }}
+          onMouseLeave={e=>{ e.currentTarget.style.color='var(--text3)'; e.currentTarget.style.background='transparent' }}
         >
           <LogOut size={14}/>Вийти
         </button>
