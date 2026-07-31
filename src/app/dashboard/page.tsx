@@ -7,6 +7,7 @@ import { ClicksChart } from '@/components/charts/ClicksChart'
 import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
 import { DollarSign, Eye, MousePointer, ShoppingCart, Users, Play, Heart, TrendingUp, Settings2, X, Check } from 'lucide-react'
+import { GoalsSection } from '@/components/ui/GoalsSection'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#fff' }
@@ -188,6 +189,9 @@ export default function DashboardPage() {
               <path d="M0,8 C50,2 100,14 150,8 C200,2 250,14 300,8 C350,2 400,14 450,8 C500,2 550,14 600,8 C650,2 700,14 750,8 C800,2 850,14 900,8 C950,2 1000,14 1050,8" fill="none" stroke="rgba(230,0,0,0.25)" strokeWidth="1.5" strokeDasharray="6 6"/>
             </svg>
           </div>
+
+          {/* Цілі */}
+          <GoalsSection totals={data.totals} />
 
           {/* Tabs */}
           <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'28px', flexWrap:'wrap' }}>
