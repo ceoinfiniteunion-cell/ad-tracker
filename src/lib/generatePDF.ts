@@ -1,199 +1,181 @@
-import jsPDF from 'jspdf'
-
-interface PDFData {
+export async function generateReportPDF(data: {
   clientName: string
   company: string
   dateRange: string
   totals: any
   platforms: any[]
-}
-
-export async function generateReportPDF(data: PDFData) {
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-  const W = 210
-  const margin = 20
-  let y = 0
-
-  // Кольори
-  const RED = [230, 0, 0] as [number,number,number]
-  const DARK = [10, 10, 10] as [number,number,number]
-  const GRAY = [120, 120, 120] as [number,number,number]
-  const LIGHT = [240, 240, 240] as [number,number,number]
-  const WHITE = [255, 255, 255] as [number,number,number]
-  const GREEN = [0, 200, 100] as [number,number,number]
-
-  // Фон шапки
-  pdf.setFillColor(...RED)
-  pdf.rect(0, 0, W, 45, 'F')
-
-  // Логотип — знак нескінченності (два кола)
-  pdf.setDrawColor(...WHITE)
-  pdf.setLineWidth(1.5)
-  pdf.circle(margin + 6, 16, 5, 'S')
-  pdf.circle(margin + 16, 16, 5, 'S')
-
-  // Назва агентства
-  pdf.setTextColor(...WHITE)
-  pdf.setFontSize(18)
-  pdf.setFont('helvetica', 'bold')
-  pdf.text('Infinite Union', margin + 26, 18)
-
-  pdf.setFontSize(9)
-  pdf.setFont('helvetica', 'normal')
-  pdf.text('AD TRACKER · ЗВІТ ПО РЕКЛАМІ', margin + 26, 24)
-
-  // Дата в шапці
-  pdf.setFontSize(9)
-  pdf.text(data.dateRange, W - margin, 18, { align: 'right' })
-  pdf.text(new Date().toLocaleDateString('uk'), W - margin, 24, { align: 'right' })
-
-  y = 55
-
-  // Інфо про клієнта
-  pdf.setTextColor(...DARK)
-  pdf.setFontSize(20)
-  pdf.setFont('helvetica', 'bold')
-  pdf.text(data.clientName, margin, y)
-  y += 7
-
-  pdf.setFontSize(11)
-  pdf.setFont('helvetica', 'normal')
-  pdf.setTextColor(...GRAY)
-  pdf.text(data.company, margin, y)
-  y += 12
-
-  // Лінія
-  pdf.setDrawColor(...LIGHT)
-  pdf.setLineWidth(0.5)
-  pdf.line(margin, y, W - margin, y)
-  y += 10
-
-  // Заголовок метрик
-  pdf.setTextColor(...DARK)
-  pdf.setFontSize(12)
-  pdf.setFont('helvetica', 'bold')
-  pdf.text('ЗВЕДЕНІ МЕТРИКИ', margin, y)
-  y += 8
-
-  // Картки метрик — 2x2 сітка
+}) {
   const t = data.totals
-  const metrics = [
-    { label: 'ВИТРАТИ', value: `$${(t.totalSpend ?? 0).toLocaleString('uk', {minimumFractionDigits:0,maximumFractionDigits:0})}`, color: RED },
-    { label: 'ДОХІД', value: `$${(t.totalRevenue ?? 0).toLocaleString('uk', {minimumFractionDigits:0,maximumFractionDigits:0})}`, color: GREEN },
-    { label: 'ПОКАЗИ', value: (t.totalImpressions ?? 0).toLocaleString('uk'), color: DARK },
-    { label: 'КЛІКИ', value: (t.totalClicks ?? 0).toLocaleString('uk'), color: DARK },
-    { label: 'КОНВЕРСІЇ', value: (t.totalConversions ?? 0).toLocaleString('uk'), color: GREEN },
-    { label: 'CTR', value: `${(t.ctr ?? 0).toFixed(2)}%`, color: DARK },
-    { label: 'CPC', value: `$${(t.cpc ?? 0).toFixed(2)}`, color: DARK },
-    { label: 'ROAS', value: `${(t.roas ?? 0).toFixed(2)}x`, color: t.roas >= 2 ? GREEN : t.roas >= 1 ? [251,191,36] as [number,number,number] : RED },
-  ]
+  const fmt = (n: number) => n?.toLocaleString('uk', {minimumFractionDigits:0,maximumFractionDigits:0}) ?? '0'
+  const fmtUSD = (n: number) => `$${fmt(n)}`
+  const fmtPct = (n: number) => `${(n??0).toFixed(2)}%`
+  const PLABEL: Record<string,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 
-  const cardW = (W - margin * 2 - 10) / 4
-  const cardH = 22
-  const cols = 4
-
-  metrics.forEach((m, i) => {
-    const col = i % cols
-    const row = Math.floor(i / cols)
-    const x = margin + col * (cardW + 3.3)
-    const cy = y + row * (cardH + 4)
-
-    // Фон картки
-    pdf.setFillColor(...LIGHT)
-    pdf.roundedRect(x, cy, cardW, cardH, 2, 2, 'F')
-
-    // Значення
-    pdf.setTextColor(...m.color)
-    pdf.setFontSize(13)
-    pdf.setFont('helvetica', 'bold')
-    pdf.text(m.value, x + cardW/2, cy + 10, { align: 'center' })
-
-    // Лейбл
-    pdf.setTextColor(...GRAY)
-    pdf.setFontSize(7)
-    pdf.setFont('helvetica', 'normal')
-    pdf.text(m.label, x + cardW/2, cy + 17, { align: 'center' })
+  const seen = new Set<string>()
+  const uniquePlatforms = data.platforms.filter(p => {
+    if (seen.has(p.platform)) return false
+    seen.add(p.platform)
+    return true
   })
 
-  y += Math.ceil(metrics.length / cols) * (cardH + 4) + 10
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Arial, sans-serif; background:#fff; color:#111; }
+  
+  .header { background:#e60000; color:#fff; padding:24px 32px; display:flex; justify-content:space-between; align-items:center; }
+  .logo { display:flex; align-items:center; gap:14px; }
+  .logo-icon { display:flex; gap:-4px; }
+  .logo-circle { width:22px; height:22px; border:3px solid #fff; border-radius:50%; display:inline-block; margin-right:-6px; }
+  .logo-text h1 { font-size:20px; font-weight:800; }
+  .logo-text p { font-size:10px; opacity:0.8; letter-spacing:0.15em; margin-top:2px; }
+  .header-date { text-align:right; font-size:11px; opacity:0.85; line-height:1.6; }
 
-  // Розбивка по платформах
-  if (data.platforms.length > 0) {
-    pdf.setTextColor(...DARK)
-    pdf.setFontSize(12)
-    pdf.setFont('helvetica', 'bold')
-    pdf.text('РОЗБИВКА ПО ПЛАТФОРМАХ', margin, y)
-    y += 8
+  .client-section { padding:28px 32px 20px; border-bottom:1px solid #eee; }
+  .client-name { font-size:24px; font-weight:800; margin-bottom:4px; }
+  .client-company { font-size:13px; color:#666; }
+  .date-range { font-size:12px; color:#e60000; font-weight:600; margin-top:6px; }
 
-    // Заголовки таблиці
-    const cols2 = ['Платформа', 'Витрати', 'Покази', 'Кліки', 'CTR', 'ROAS']
-    const colW = [50, 28, 28, 25, 22, 22]
-    let cx = margin
+  .section { padding:24px 32px; }
+  .section-title { font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#999; margin-bottom:14px; }
 
-    pdf.setFillColor(...DARK)
-    pdf.rect(margin, y, W - margin*2, 8, 'F')
+  .metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .metric-card { background:#f5f5f5; border-radius:8px; padding:14px 16px; }
+  .metric-value { font-size:18px; font-weight:800; font-family:monospace; margin-bottom:4px; }
+  .metric-label { font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#999; }
 
-    pdf.setTextColor(...WHITE)
-    pdf.setFontSize(8)
-    pdf.setFont('helvetica', 'bold')
-    cols2.forEach((h, i) => {
-      pdf.text(h, cx + 2, y + 5.5)
-      cx += colW[i]
-    })
-    y += 8
+  .table { width:100%; border-collapse:collapse; margin-top:8px; }
+  .table th { background:#111; color:#fff; padding:8px 12px; text-align:left; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; }
+  .table td { padding:10px 12px; font-size:12px; border-bottom:1px solid #f0f0f0; }
+  .table tr:nth-child(even) td { background:#fafafa; }
 
-    // Рядки платформ — дедублікуємо
-    const seen = new Set<string>()
-    const uniquePlatforms = data.platforms.filter(p => {
-      if (seen.has(p.platform)) return false
-      seen.add(p.platform)
-      return true
-    })
+  .footer { background:#111; color:#fff; padding:10px 32px; display:flex; justify-content:space-between; font-size:9px; opacity:0.9; position:fixed; bottom:0; left:0; right:0; }
 
-    uniquePlatforms.forEach((p, i) => {
-      const s = p.summary
-      const isEven = i % 2 === 0
-      pdf.setFillColor(isEven ? 248 : 255, isEven ? 248 : 255, isEven ? 248 : 255)
-      pdf.rect(margin, y, W - margin*2, 9, 'F')
+  .red { color:#e60000; }
+  .green { color:#00a855; }
+  .yellow { color:#d97706; }
 
-      pdf.setTextColor(...DARK)
-      pdf.setFontSize(8)
-      pdf.setFont('helvetica', 'normal')
+  .watermark { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-45deg); font-size:80px; font-weight:900; color:rgba(230,0,0,0.04); white-space:nowrap; pointer-events:none; z-index:0; letter-spacing:0.1em; }
 
-      const PLABEL: Record<string,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
-      const row2 = [
-        PLABEL[p.platform] ?? p.platform,
-        `$${(s.totalSpend ?? 0).toFixed(0)}`,
-        (s.totalImpressions ?? 0).toLocaleString('uk'),
-        (s.totalClicks ?? 0).toLocaleString('uk'),
-        `${(s.ctr ?? 0).toFixed(2)}%`,
-        `${(s.roas ?? 0).toFixed(2)}x`,
-      ]
-
-      cx = margin
-      row2.forEach((val, j) => {
-        pdf.text(val, cx + 2, y + 6)
-        cx += colW[j]
-      })
-      y += 9
-    })
-    y += 8
+  @media print {
+    .footer { position:fixed; bottom:0; }
+    body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
+</style>
+</head>
+<body>
 
-  // Водяний знак
-  pdf.setTextColor(230, 230, 230)
-  pdf.setFontSize(60)
-  pdf.setFont('helvetica', 'bold')
-  pdf.text('INFINITE UNION', W/2, 200, { align:'center', angle:45 })
+<div class="watermark">INFINITE UNION</div>
 
-  // Футер
-  pdf.setFillColor(...DARK)
-  pdf.rect(0, 287, W, 10, 'F')
-  pdf.setTextColor(...WHITE)
-  pdf.setFontSize(7)
-  pdf.setFont('helvetica', 'normal')
-  pdf.text('Infinite Union · Ad Tracker · Конфіденційний звіт', margin, 293)
-  pdf.text(`Згенеровано: ${new Date().toLocaleString('uk')}`, W - margin, 293, { align: 'right' })
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">
+      <span class="logo-circle"></span>
+      <span class="logo-circle"></span>
+    </div>
+    <div class="logo-text">
+      <h1>Infinite Union</h1>
+      <p>AD TRACKER · ЗВІТ ПО РЕКЛАМІ</p>
+    </div>
+  </div>
+  <div class="header-date">
+    <div>${data.dateRange}</div>
+    <div>${new Date().toLocaleDateString('uk')}</div>
+  </div>
+</div>
 
-  return pdf
+<div class="client-section">
+  <div class="client-name">${data.clientName}</div>
+  <div class="client-company">${data.company}</div>
+  <div class="date-range">Період: ${data.dateRange}</div>
+</div>
+
+<div class="section">
+  <div class="section-title">Зведені метрики</div>
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-value red">${fmtUSD(t.totalSpend)}</div>
+      <div class="metric-label">Витрати</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value green">${fmtUSD(t.totalRevenue)}</div>
+      <div class="metric-label">Дохід</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">${fmt(t.totalImpressions)}</div>
+      <div class="metric-label">Покази</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">${fmt(t.totalClicks)}</div>
+      <div class="metric-label">Кліки</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value green">${fmt(t.totalConversions)}</div>
+      <div class="metric-label">Конверсії</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">${fmtPct(t.ctr)}</div>
+      <div class="metric-label">CTR</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">${fmtUSD(t.cpc)}</div>
+      <div class="metric-label">CPC</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value ${t.roas>=2?'green':t.roas>=1?'yellow':'red'}">${(t.roas??0).toFixed(2)}×</div>
+      <div class="metric-label">ROAS</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Розбивка по платформах</div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Платформа</th>
+        <th>Витрати</th>
+        <th>Дохід</th>
+        <th>Покази</th>
+        <th>Кліки</th>
+        <th>CTR</th>
+        <th>ROAS</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${uniquePlatforms.map(p => {
+        const s = p.summary
+        const roas = s.roas ?? 0
+        const roasClass = roas>=2?'green':roas>=1?'yellow':'red'
+        return `<tr>
+          <td><strong>${PLABEL[p.platform] ?? p.platform}</strong></td>
+          <td class="red"><strong>${fmtUSD(s.totalSpend)}</strong></td>
+          <td class="green">${fmtUSD(s.totalRevenue)}</td>
+          <td>${fmt(s.totalImpressions)}</td>
+          <td>${fmt(s.totalClicks)}</td>
+          <td>${fmtPct(s.ctr)}</td>
+          <td class="${roasClass}"><strong>${roas.toFixed(2)}×</strong></td>
+        </tr>`
+      }).join('')}
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  <span>Infinite Union · Ad Tracker · Конфіденційний звіт</span>
+  <span>Згенеровано: ${new Date().toLocaleString('uk')}</span>
+</div>
+
+<script>window.onload = () => { window.print(); }</script>
+</body>
+</html>`
+
+  const win = window.open('', '_blank')
+  if (win) {
+    win.document.write(html)
+    win.document.close()
+  }
 }
