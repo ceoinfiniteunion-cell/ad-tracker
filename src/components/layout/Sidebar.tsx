@@ -12,7 +12,8 @@ export function Sidebar() {
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
 
   const links = isAdmin ? [
-    { href:'/admin/stats', label:'Дашборд', icon:BarChart2 },
+    { href:'/admin', label:'Дашборд', icon:BarChart2 },
+    { href:'/admin/stats', label:'Статистика', icon:BarChart2 },
     { href:'/admin/clients', label:'Клієнти', icon:Users },
     { href:'/admin/new-client', label:'Новий клієнт', icon:Plus },
     { href:'/admin/reports', label:'Звіти', icon:FileText },
