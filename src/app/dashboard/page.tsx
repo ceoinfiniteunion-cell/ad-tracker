@@ -266,8 +266,8 @@ export default function DashboardPage() {
           {/* Charts */}
           <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'rgba(255,255,255,0.25)', marginBottom:'12px' }}>// ДИНАМІКА</p>
           <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
-            <SpendChart data={daily} />
-            <ClicksChart data={daily} />
+            <SpendChart data={daily} platformData={activeTab==='all' && uniquePlatforms.length>1 ? uniquePlatforms.map(p=>({ platform:p.platform, color:PCOLOR[p.platform], label:PLABEL[p.platform], daily:p.daily })) : undefined} />
+            <ClicksChart data={daily} platformData={activeTab==='all' && uniquePlatforms.length>1 ? uniquePlatforms.map(p=>({ platform:p.platform, color:PCOLOR[p.platform], label:PLABEL[p.platform], daily:p.daily })) : undefined} />
           </div>
 
         </div>
