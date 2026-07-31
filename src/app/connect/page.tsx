@@ -16,13 +16,13 @@ const defaultForm = { name:'', accountId:'', accessToken:'' }
 const PLATFORMS = {
   FACEBOOK: { label:'Meta / Facebook', color:'#1877f2', bg:'rgba(24,119,242,0.1)', short:'META', autoSync:true },
   GOOGLE: { label:'Google Ads', color:'#e60000', bg:'rgba(230,0,0,0.1)', short:'GGL', autoSync:false },
-  TIKTOK: { label:'TikTok Ads', color:'rgba(255,255,255,0.8)', bg:'rgba(255,255,255,0.07)', short:'TIK', autoSync:false },
+  TIKTOK: { label:'TikTok Ads', color:'rgba(255,255,255,0.8)', bg:'var(--border)', short:'TIK', autoSync:false },
 }
 
 const TOKEN_STATUS: Record<string, {label:string;color:string;bg:string}> = {
   valid: { label:'✓ Активний', color:'#00c864', bg:'rgba(0,200,100,0.1)' },
   invalid: { label:'✗ Недійсний', color:'#ff4444', bg:'rgba(230,0,0,0.1)' },
-  no_token: { label:'— Без токена', color:'var(--text3)', bg:'rgba(255,255,255,0.05)' },
+  no_token: { label:'— Без токена', color:'var(--text3)', bg:'var(--border)' },
 }
 
 // Покрокові інструкції з скріншотами-описами
@@ -151,7 +151,7 @@ export default function ConnectPage() {
     setDeleting(null)
   }
 
-  const inp = (focused: boolean) => ({ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:`1px solid ${focused?'#e60000':'rgba(255,255,255,0.07)'}`, borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, transition:'all 0.2s', boxShadow:focused?'0 0 0 3px rgba(230,0,0,0.12)':'none' })
+  const inp = (focused: boolean) => ({ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:`1px solid ${focused?'#e60000':'var(--border)'}`, borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, transition:'all 0.2s', boxShadow:focused?'0 0 0 3px rgba(230,0,0,0.12)':'none' })
 
   const pInfo = selectedPlatform ? PLATFORMS[selectedPlatform] : null
   const instructions = selectedPlatform ? INSTRUCTIONS[selectedPlatform] : null
@@ -280,7 +280,7 @@ export default function ConnectPage() {
                   </div>
 
                   <div>
-                    <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' as const, color:pInfo.autoSync?'#00c864':'rgba(255,255,255,0.4)', marginBottom:'8px' }}>
+                    <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' as const, color:pInfo.autoSync?'#00c864':'var(--text3)', marginBottom:'8px' }}>
                       Access Token {pInfo.autoSync ? '— для автосинхронізації ⚡' : '(опційно)'}
                     </label>
                     <div style={{ position:'relative' }}>
@@ -373,7 +373,7 @@ export default function ConnectPage() {
                 <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', marginBottom:'4px' }}>// ОНОВИТИ ТОКЕН</p>
                 <h2 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', margin:0 }}>{showTokenModal.name}</h2>
               </div>
-              <button onClick={()=>{setShowTokenModal(null);setTokenInput('')}} style={{ width:'32px', height:'32px', background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text3)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <button onClick={()=>{setShowTokenModal(null);setTokenInput('')}} style={{ width:'32px', height:'32px', background:'var(--border)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text3)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <X size={15}/>
               </button>
             </div>
@@ -389,7 +389,7 @@ export default function ConnectPage() {
             <div style={{ marginBottom:'16px' }}>
               <label style={{ display:'block', fontSize:'11px', fontWeight:600, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text3)', marginBottom:'8px' }}>Новий Access Token</label>
               <div style={{ position:'relative' }}>
-                <input type={showToken?'text':'password'} value={tokenInput} onChange={e=>setTokenInput(e.target.value)} placeholder="Вставте токен..." style={{ width:'100%', padding:'12px 44px 12px 16px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', boxSizing:'border-box' as const }} onFocus={e=>{e.target.style.borderColor='#e60000'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)'}}/>
+                <input type={showToken?'text':'password'} value={tokenInput} onChange={e=>setTokenInput(e.target.value)} placeholder="Вставте токен..." style={{ width:'100%', padding:'12px 44px 12px 16px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', boxSizing:'border-box' as const }} onFocus={e=>{e.target.style.borderColor='#e60000'}} onBlur={e=>{e.target.style.borderColor='var(--border)'}}/>
                 <button type="button" onClick={()=>setShowToken(!showToken)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'var(--text3)', cursor:'pointer' }}>
                   {showToken?<EyeOff size={15}/>:<Eye size={15}/>}
                 </button>

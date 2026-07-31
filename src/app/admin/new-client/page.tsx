@@ -52,11 +52,11 @@ export default function NewClientPage() {
             <div style={section}>
               <p style={sectionTitle}>Основна інформація</p>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px', marginBottom:'14px' }}>
-                <div><label style={lbl}>Ім'я</label><input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Іван Петренко" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)';e.target.style.boxShadow='none'}} /></div>
-                <div><label style={lbl}>Компанія</label><input value={form.company} onChange={e=>setForm({...form,company:e.target.value})} placeholder="ТОВ Компанія" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)';e.target.style.boxShadow='none'}} /></div>
+                <div><label style={lbl}>Ім'я</label><input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Іван Петренко" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}} onBlur={e=>{e.target.style.borderColor='var(--border)';e.target.style.boxShadow='none'}} /></div>
+                <div><label style={lbl}>Компанія</label><input value={form.company} onChange={e=>setForm({...form,company:e.target.value})} placeholder="ТОВ Компанія" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}} onBlur={e=>{e.target.style.borderColor='var(--border)';e.target.style.boxShadow='none'}} /></div>
               </div>
-              <div style={{ marginBottom:'14px' }}><label style={lbl}>Email</label><input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="client@company.com" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)';e.target.style.boxShadow='none'}} /></div>
-              <div><label style={lbl}>Пароль</label><input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="Мінімум 8 символів" required minLength={8} style={inp} onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)';e.target.style.boxShadow='none'}} /></div>
+              <div style={{ marginBottom:'14px' }}><label style={lbl}>Email</label><input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="client@company.com" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}} onBlur={e=>{e.target.style.borderColor='var(--border)';e.target.style.boxShadow='none'}} /></div>
+              <div><label style={lbl}>Пароль</label><input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="Мінімум 8 символів" required minLength={8} style={inp} onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}} onBlur={e=>{e.target.style.borderColor='var(--border)';e.target.style.boxShadow='none'}} /></div>
             </div>
 
             <div style={section}>
@@ -64,7 +64,7 @@ export default function NewClientPage() {
                 <p style={{ ...sectionTitle, margin:0 }}>Рекламні кабінети</p>
                 <button type="button" onClick={addAccount} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'7px 12px', background:'transparent', border:'1px solid var(--border)', borderRadius:'6px', color:'var(--text3)', fontSize:'12px', cursor:'pointer', transition:'all 0.15s' }}
                   onMouseEnter={e=>{ (e.currentTarget).style.borderColor='rgba(230,0,0,0.3)'; (e.currentTarget).style.color='#ff4444' }}
-                  onMouseLeave={e=>{ (e.currentTarget).style.borderColor='rgba(255,255,255,0.07)'; (e.currentTarget).style.color='rgba(255,255,255,0.4)' }}
+                  onMouseLeave={e=>{ (e.currentTarget).style.borderColor='var(--border)'; (e.currentTarget).style.color='var(--text3)' }}
                 >
                   <Plus size={13}/>Додати
                 </button>
@@ -79,8 +79,8 @@ export default function NewClientPage() {
                         <option value="TIKTOK">TikTok Ads</option>
                       </select>
                     </div>
-                    <div><label style={lbl}>ID кабінету</label><input value={acc.accountId} onChange={e=>updateAccount(i,'accountId',e.target.value)} placeholder="act_123456" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)'}} /></div>
-                    <div><label style={lbl}>Назва</label><input value={acc.name} onChange={e=>updateAccount(i,'name',e.target.value)} placeholder="Основний" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000'}} onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)'}} /></div>
+                    <div><label style={lbl}>ID кабінету</label><input value={acc.accountId} onChange={e=>updateAccount(i,'accountId',e.target.value)} placeholder="act_123456" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000'}} onBlur={e=>{e.target.style.borderColor='var(--border)'}} /></div>
+                    <div><label style={lbl}>Назва</label><input value={acc.name} onChange={e=>updateAccount(i,'name',e.target.value)} placeholder="Основний" required style={inp} onFocus={e=>{e.target.style.borderColor='#e60000'}} onBlur={e=>{e.target.style.borderColor='var(--border)'}} /></div>
                     <button type="button" onClick={()=>removeAccount(i)} disabled={adAccounts.length===1} style={{ padding:'10px', background:'transparent', border:'none', color:'var(--text4)', cursor: adAccounts.length===1 ? 'not-allowed' : 'pointer', opacity: adAccounts.length===1 ? 0.3 : 1, transition:'color 0.15s' }}
                       onMouseEnter={e=>{ if(adAccounts.length>1)(e.currentTarget).style.color='#ff4444' }}
                       onMouseLeave={e=>{ (e.currentTarget).style.color='rgba(255,255,255,0.2)' }}

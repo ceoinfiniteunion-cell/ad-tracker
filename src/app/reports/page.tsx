@@ -9,7 +9,7 @@ import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
 import { Calendar, Download, TrendingUp, TrendingDown, Minus, ChevronDown } from 'lucide-react'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
-const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'rgba(255,255,255,0.7)' }
+const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#555' }
 
 const PRESETS = [
   { label:'Сьогодні', getValue: () => { const t=new Date().toISOString().split('T')[0]; return {from:t,to:t} } },
@@ -103,8 +103,8 @@ export default function ReportsPage() {
   const tabStyle = (active: boolean, color?: string) => ({
     padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
     background: active ? (color?`${color}18`:'rgba(230,0,0,0.12)') : 'transparent',
-    color: active ? (color??'#ff4444') : 'rgba(255,255,255,0.4)',
-    borderColor: active ? (color?`${color}40`:'rgba(230,0,0,0.3)') : 'rgba(255,255,255,0.07)',
+    color: active ? (color??'#ff4444') : 'var(--text3)',
+    borderColor: active ? (color?`${color}40`:'rgba(230,0,0,0.3)') : 'var(--border)',
   })
 
   const ap = activePlatform==='all' ? null : data?.platforms.find(p=>p.platform===activePlatform)
@@ -149,7 +149,7 @@ export default function ReportsPage() {
           <div className="anim-up-1" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'20px', marginBottom:'16px' }}>
             <div style={{ display:'flex', gap:'6px', flexWrap:'wrap', marginBottom:'16px' }}>
               {PRESETS.map(p=>(
-                <button key={p.label} onClick={()=>applyPreset(p)} style={{ padding:'6px 12px', borderRadius:'6px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s', background: activePreset===p.label ? 'rgba(230,0,0,0.12)' : 'transparent', color: activePreset===p.label ? '#ff4444' : 'rgba(255,255,255,0.4)', borderColor: activePreset===p.label ? 'rgba(230,0,0,0.3)' : 'rgba(255,255,255,0.07)' }}>
+                <button key={p.label} onClick={()=>applyPreset(p)} style={{ padding:'6px 12px', borderRadius:'6px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s', background: activePreset===p.label ? 'rgba(230,0,0,0.12)' : 'transparent', color: activePreset===p.label ? '#ff4444' : 'var(--text3)', borderColor: activePreset===p.label ? 'rgba(230,0,0,0.3)' : 'var(--border)' }}>
                   {p.label}
                 </button>
               ))}

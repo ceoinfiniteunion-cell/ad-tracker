@@ -77,8 +77,8 @@ const tdStyle = { padding:'12px 14px', fontFamily:'monospace', fontSize:'12px', 
 const tabBtn = (active: boolean) => ({
   padding:'8px 16px', borderRadius:'7px', fontSize:'12px', fontWeight:600 as const, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
   background: active?'rgba(230,0,0,0.12)':'transparent',
-  color: active?'#ff4444':'rgba(255,255,255,0.4)',
-  borderColor: active?'rgba(230,0,0,0.3)':'rgba(255,255,255,0.07)',
+  color: active?'#ff4444':'var(--text3)',
+  borderColor: active?'rgba(230,0,0,0.3)':'var(--border)',
   display:'flex', alignItems:'center' as const, gap:'6px',
 })
 
@@ -179,7 +179,7 @@ export default function MetaPage() {
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap' }}>
               {[7,14,30,90].map(d=>(
-                <button key={d} onClick={()=>setPeriod(d)} style={{ padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s', background:period===d?'rgba(230,0,0,0.12)':'transparent', color:period===d?'#ff4444':'rgba(255,255,255,0.4)', borderColor:period===d?'rgba(230,0,0,0.3)':'rgba(255,255,255,0.07)' }}>
+                <button key={d} onClick={()=>setPeriod(d)} style={{ padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s', background:period===d?'rgba(230,0,0,0.12)':'transparent', color:period===d?'#ff4444':'var(--text3)', borderColor:period===d?'rgba(230,0,0,0.3)':'var(--border)' }}>
                   {d} днів
                 </button>
               ))}
@@ -311,7 +311,7 @@ export default function MetaPage() {
                             >
                               <td style={{ ...tdStyle, maxWidth:'180px', overflow:'hidden', textOverflow:'ellipsis', color:'var(--text)', fontWeight:700 }} title={c.name}>{c.name}</td>
                               <td style={tdStyle}>
-                                <span style={{ fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:`${CAMP_STATUS_COLOR[c.status]??'rgba(255,255,255,0.1)'}20`, color:CAMP_STATUS_COLOR[c.status]??'rgba(255,255,255,0.4)', fontWeight:700, border:`1px solid ${CAMP_STATUS_COLOR[c.status]??'rgba(255,255,255,0.1)'}50` }}>
+                                <span style={{ fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:`${CAMP_STATUS_COLOR[c.status]??'var(--border2)'}20`, color:CAMP_STATUS_COLOR[c.status]??'var(--text3)', fontWeight:700, border:`1px solid ${CAMP_STATUS_COLOR[c.status]??'var(--border2)'}50` }}>
                                   {c.status==='ACTIVE'?'● ACTIVE':c.status==='PAUSED'?'⏸ PAUSED':c.status}
                                 </span>
                               </td>
@@ -359,7 +359,7 @@ export default function MetaPage() {
                             >
                               <td style={{ ...tdStyle, maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', color:'var(--text)', fontWeight:600 }} title={a.name}>{a.name}</td>
                               <td style={tdStyle}>
-                                <span style={{ fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:`${CAMP_STATUS_COLOR[a.status]??'rgba(255,255,255,0.1)'}20`, color:CAMP_STATUS_COLOR[a.status]??'rgba(255,255,255,0.4)', fontWeight:700, border:`1px solid ${CAMP_STATUS_COLOR[a.status]??'rgba(255,255,255,0.1)'}50` }}>
+                                <span style={{ fontSize:'10px', padding:'2px 8px', borderRadius:'4px', background:`${CAMP_STATUS_COLOR[a.status]??'var(--border2)'}20`, color:CAMP_STATUS_COLOR[a.status]??'var(--text3)', fontWeight:700, border:`1px solid ${CAMP_STATUS_COLOR[a.status]??'var(--border2)'}50` }}>
                                   {a.status==='ACTIVE'?'● ACTIVE':a.status==='PAUSED'?'⏸ PAUSED':a.status}
                                 </span>
                               </td>

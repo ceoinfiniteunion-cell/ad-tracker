@@ -134,8 +134,8 @@ export default function DashboardPage() {
   const tabStyle = (active: boolean) => ({
     padding:'8px 16px', borderRadius:'8px', fontSize:'13px', fontWeight:500, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
     background: active ? 'rgba(230,0,0,0.12)' : 'transparent',
-    color: active ? '#ff4444' : 'rgba(255,255,255,0.4)',
-    borderColor: active ? 'rgba(230,0,0,0.3)' : 'rgba(255,255,255,0.07)',
+    color: active ? '#ff4444' : 'var(--text3)',
+    borderColor: active ? 'rgba(230,0,0,0.3)' : 'var(--border)',
   })
 
   // Метрики для поточної платформи
@@ -168,7 +168,7 @@ export default function DashboardPage() {
               {/* Кнопка Customize */}
               <button onClick={()=>setCustomize(true)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'8px', border:'1px solid var(--border2)', background:'rgba(255,255,255,0.04)', color:'var(--text2)', fontSize:'13px', fontWeight:500, cursor:'pointer', transition:'all 0.15s' }}
                 onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'; e.currentTarget.style.color='#fff' }}
-                onMouseLeave={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; e.currentTarget.style.color='rgba(255,255,255,0.6)' }}
+                onMouseLeave={e=>{ e.currentTarget.style.borderColor='var(--border2)'; e.currentTarget.style.color='rgba(255,255,255,0.6)' }}
               >
                 <Settings2 size={14}/> Customize
               </button>
@@ -355,7 +355,7 @@ export default function DashboardPage() {
                   onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.03)' }}
                   onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
                 >
-                  <div onClick={()=>toggleMetric(m.key)} style={{ width:'18px', height:'18px', borderRadius:'5px', border:`1px solid ${selectedMetrics.includes(m.key)?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.15)'}`, background: selectedMetrics.includes(m.key)?'rgba(255,255,255,0.1)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, cursor:'pointer', transition:'all 0.15s' }}>
+                  <div onClick={()=>toggleMetric(m.key)} style={{ width:'18px', height:'18px', borderRadius:'5px', border:`1px solid ${selectedMetrics.includes(m.key)?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.15)'}`, background: selectedMetrics.includes(m.key)?'var(--border2)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, cursor:'pointer', transition:'all 0.15s' }}>
                     {selectedMetrics.includes(m.key) && <Check size={11} color="#fff"/>}
                   </div>
                   <span style={{ fontSize:'13px', color: selectedMetrics.includes(m.key)?'#fff':'rgba(255,255,255,0.5)', fontWeight: selectedMetrics.includes(m.key)?600:400 }}>{m.label}</span>

@@ -9,7 +9,7 @@ import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
 import { ChevronDown, Check } from 'lucide-react'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
-const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'rgba(255,255,255,0.7)' }
+const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#555' }
 const PERIODS = [
   { label:'7 днів', days:7 },
   { label:'14 днів', days:14 },
@@ -111,8 +111,8 @@ export default function StatsPage() {
   const tabStyle = (active: boolean, color?: string) => ({
     padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600 as const, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
     background: active ? (color ? `${color}18` : 'rgba(230,0,0,0.12)') : 'transparent',
-    color: active ? (color ?? '#ff4444') : 'rgba(255,255,255,0.4)',
-    borderColor: active ? (color ? `${color}40` : 'rgba(230,0,0,0.3)') : 'rgba(255,255,255,0.07)',
+    color: active ? (color ?? '#ff4444') : 'var(--text3)',
+    borderColor: active ? (color ? `${color}40` : 'rgba(230,0,0,0.3)') : 'var(--border)',
   })
 
   return (

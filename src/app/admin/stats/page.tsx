@@ -8,7 +8,7 @@ import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
 import { ChevronDown, Users } from 'lucide-react'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
-const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'rgba(255,255,255,0.7)' }
+const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#555' }
 
 const PERIODS = [
   { label:'7 днів', days:7 },
@@ -57,8 +57,8 @@ export default function AdminStatsPage() {
   const tabStyle = (active: boolean, color?: string) => ({
     padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
     background: active ? (color ? `${color}18` : 'rgba(230,0,0,0.12)') : 'transparent',
-    color: active ? (color ?? '#ff4444') : 'rgba(255,255,255,0.4)',
-    borderColor: active ? (color ? `${color}40` : 'rgba(230,0,0,0.3)') : 'rgba(255,255,255,0.07)',
+    color: active ? (color ?? '#ff4444') : 'var(--text3)',
+    borderColor: active ? (color ? `${color}40` : 'rgba(230,0,0,0.3)') : 'var(--border)',
   })
 
   const ap = activePlatform==='all' ? null : data?.platforms.find(p=>p.platform===activePlatform)
@@ -133,7 +133,7 @@ export default function AdminStatsPage() {
 
           {clients.length === 0 ? (
             <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'60px', textAlign:'center' }}>
-              <Users size={36} style={{ color:'rgba(255,255,255,0.1)', margin:'0 auto 16px' }}/>
+              <Users size={36} style={{ color:'var(--border2)', margin:'0 auto 16px' }}/>
               <p style={{ fontSize:'15px', fontWeight:600, color:'var(--text)', margin:'0 0 8px' }}>Немає клієнтів</p>
               <p style={{ fontSize:'13px', color:'var(--text3)', margin:0 }}>Спочатку створіть клієнта в розділі "Клієнти"</p>
             </div>
