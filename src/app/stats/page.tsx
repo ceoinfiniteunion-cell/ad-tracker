@@ -213,12 +213,12 @@ export default function StatsPage() {
                         <button
                           key={acc.accountId}
                           onClick={()=>{ setActiveAccount(acc.accountId); setDropdown(null) }}
-                          style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'transparent', border:'none', borderBottom:'1px solid rgba(255,255,255,0.04)', cursor:'pointer', textAlign:'left' as const, transition:'background 0.15s' }}
-                          onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.04)' }}
+                          style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'transparent', border:'none', borderBottom:'1px solid var(--border)', cursor:'pointer', textAlign:'left' as const, transition:'background 0.15s' }}
+                          onMouseEnter={e=>{ e.currentTarget.style.background='var(--bg3)' }}
                           onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
                         >
                           <div>
-                            <p style={{ fontSize:'13px', fontWeight:600, color: activeAccount===acc.accountId ? color : '#fff', margin:0 }}>{acc.accountName}</p>
+                            <p style={{ fontSize:'13px', fontWeight:600, color: activeAccount===acc.accountId ? color : 'var(--text)', margin:0 }}>{acc.accountName}</p>
                             <p style={{ fontSize:'11px', color:'var(--text3)', margin:'2px 0 0', fontFamily:'monospace' }}>{acc.accountId}</p>
                           </div>
                           {activeAccount===acc.accountId && <Check size={14} style={{color: color}}/>}
