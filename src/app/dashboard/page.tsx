@@ -125,7 +125,15 @@ export default function DashboardPage() {
   const ap = activeTab==='all' ? null : data.platforms.find(p=>p.platform===activeTab)
   const summary: any = ap ? ap.summary : data.totals
   const daily = activeTab==='all' ? merge(data.platforms.map(p=>p.daily).flat()) : ap?.daily ?? []
-  const uniquePlatforms = Array.from(new Map(data.platforms.map(p=>[p.platform,p])).values())
+  // Дедублікуємо платформи — беремо ту що має більше даних
+  const uniquePlatforms = Object.values(
+    data.platforms.reduce((acc: any, p) => {
+      if (!acc[p.platform] || p.daily.length > acc[p.platform].daily.length) {
+        acc[p.platform] = p
+      }
+      return acc
+    }, {})
+  ) as typeof data.platforms
 
   // Групуємо платформи для секцій
   const platformGroups = activeTab === 'all'

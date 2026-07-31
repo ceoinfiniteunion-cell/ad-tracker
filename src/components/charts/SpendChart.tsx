@@ -19,7 +19,7 @@ export function SpendChart({ data, title='Витрати та дохід', subti
   const tooltipBorder = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
   const tooltipColor = theme === 'dark' ? '#fff' : '#000'
   // Якщо є platformData — показуємо порівняння платформ
-  if (platformData && platformData.length > 1) {
+  if (platformData && platformData.length > 1 && platformData.some(p => p.daily.length > 0)) {
     // Мержимо всі дати
     const dateSet = new Set<string>()
     platformData.forEach(p => p.daily.forEach((d: any) => dateSet.add(d.date)))

@@ -33,10 +33,15 @@ export async function POST(request: NextRequest) {
   const resolvedClientId = role === 'ADMIN' ? clientId : sessionClientId
   if (!resolvedClientId) return NextResponse.json({ error: 'Client not found' }, { status: 404 })
 
-  const goal = await prisma.goal.create({
-    data: { clientId: resolvedClientId, metric, target: parseFloat(target), period, label }
-  })
-  return NextResponse.json(goal, { status: 201 })
+  try {
+    const goal = await prisma.goal.create({
+      data: { clientId: resolvedClientId, metric, target: parseFloat(target), period, label }
+    })
+    return NextResponse.json(goal, { status: 201 })
+  } catch(e: any) {
+    console.error('Goal create error:', e.message, e.code)
+    return NextResponse.json({ error: e.message }, { status: 500 })
+  }
 }
 
 export async function DELETE(request: NextRequest) {

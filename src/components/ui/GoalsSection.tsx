@@ -57,13 +57,16 @@ export function GoalsSection({ totals, clientId }: Props) {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ ...form, clientId })
     })
+    console.log('Goals API status:', res.status)
+    const text = await res.text()
+    console.log('Goals API response:', text)
     if (res.ok) {
-      const g = await res.json()
+      const g = JSON.parse(text)
       setGoals(prev => [g, ...prev])
       setShowModal(false)
       setForm({ metric:'spend', target:'', period:'monthly', label:'' })
     }
-    } catch(e) { console.error(e) }
+    } catch(e) { console.error('Goals error:', e) }
     setSaving(false)
   }
 
