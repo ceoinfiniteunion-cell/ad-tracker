@@ -7,7 +7,7 @@ import { ArrowLeft, Plus, Trash2, Power, AlertCircle, CheckCircle, Building2, Ma
 import { CommentsSection } from '@/components/ui/CommentsSection'
 
 interface AdAccount { id:string; name:string; accountId:string; platform:string; isActive:boolean; createdAt:string }
-interface Goal { id:string; metric:string; target:number; period:string; current:number }
+interface Goal { id:string; metric:string; target:number; period:string; label?:string }
 interface ClientDetail {
   id:string; name:string; company:string
   user:{ email:string; name:string; createdAt:string }
@@ -168,7 +168,7 @@ export default function ClientDetailPage() {
               <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'14px' }}>// ЦІЛІ КЛІЄНТА</p>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:'12px' }}>
                 {goals.map(goal => {
-                  const pct = Math.min(Math.round((goal.current / goal.target) * 100), 100)
+                  const pct = goal.target ? Math.min(Math.round(((goal.current ?? 0) / goal.target) * 100), 100) : 0
                   const done = pct >= 100
                   return (
                     <div key={goal.id} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px' }}>
@@ -181,8 +181,8 @@ export default function ClientDetailPage() {
                         <div style={{ height:'100%', width:`${pct}%`, background: done ? '#00c864' : '#e60000', borderRadius:'3px', transition:'width 0.5s' }}/>
                       </div>
                       <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px' }}>
-                        <span style={{ color: done ? '#00c864' : '#e60000', fontWeight:700 }}>{goal.current.toLocaleString()} USD</span>
-                        <span style={{ color:'var(--text3)' }}>з {goal.target.toLocaleString()} USD · {pct}%</span>
+                        <span style={{ color: done ? '#00c864' : '#e60000', fontWeight:700 }}>{(goal.current ?? 0).toLocaleString()} USD</span>
+                        <span style={{ color:'var(--text3)' }}>з {(goal.target ?? 0).toLocaleString()} USD · {pct}%</span>
                       </div>
                       {done && <div style={{ marginTop:'8px', textAlign:'center', fontSize:'11px', color:'#00c864', fontWeight:600 }}>✓Ціль досягнута!</div>}
                     </div>
