@@ -362,7 +362,73 @@ export default function ReportsPage() {
           )}
         </div>
       </main>
-    </div>
 
+      {/* Email модалка */}
+      {emailModal && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', backdropFilter:'blur(4px)', zIndex:300, display:'flex', alignItems:'center', justifyContent:'center' }}
+          onClick={e=>{ if(e.target===e.currentTarget){ setEmailModal(false); setEmailSent(false); setEmailTo('') } }}
+        >
+          <div style={{ background:'var(--bg2)', border:'1px solid var(--border2)', borderRadius:'16px', padding:'32px', width:'400px', boxShadow:'0 24px 64px rgba(0,0,0,0.4)' }}>
+            {emailSent ? (
+              <div style={{ textAlign:'center', padding:'16px 0' }}>
+                <div style={{ width:'56px', height:'56px', borderRadius:'50%', background:'rgba(0,200,100,0.12)', border:'1px solid rgba(0,200,100,0.25)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00c864" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <h3 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', margin:'0 0 8px' }}>Звіт відправлено!</h3>
+                <p style={{ fontSize:'13px', color:'var(--text3)', margin:'0 0 24px' }}>Звіт надіслано на {emailTo}</p>
+                <button onClick={()=>{ setEmailModal(false); setEmailSent(false); setEmailTo('') }}
+                  style={{ padding:'10px 24px', background:'#e60000', color:'#fff', borderRadius:'8px', border:'none', fontSize:'13px', fontWeight:700, cursor:'pointer' }}>
+                  Закрити
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'20px' }}>
+                  <div style={{ width:'40px', height:'40px', borderRadius:'10px', background:'rgba(230,0,0,0.1)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e60000" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize:'16px', fontWeight:800, color:'var(--text)', margin:0 }}>Відправити звіт</h3>
+                    <p style={{ fontSize:'12px', color:'var(--text3)', margin:0 }}>Звіт буде надіслано на вказаний email</p>
+                  </div>
+                </div>
+                <div style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', padding:'14px 16px', marginBottom:'16px' }}>
+                  <p style={{ fontSize:'11px', fontWeight:600, color:'var(--text3)', margin:'0 0 4px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Звіт включає</p>
+                  <p style={{ fontSize:'13px', color:'var(--text)', margin:0 }}>{data?.client?.name} · {from} → {to}</p>
+                </div>
+                <div style={{ marginBottom:'20px' }}>
+                  <label style={{ display:'block', fontSize:'10px', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'8px' }}>Email отримувача</label>
+                  <input type="email" value={emailTo} onChange={e=>setEmailTo(e.target.value)} placeholder="client@example.com" autoFocus
+                    style={{ width:'100%', padding:'11px 14px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', boxSizing:'border-box' as const }}
+                    onFocus={e=>{ e.target.style.borderColor='#e60000'; e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)' }}
+                    onBlur={e=>{ e.target.style.borderColor='var(--border)'; e.target.style.boxShadow='none' }}
+                  />
+                </div>
+                <div style={{ display:'flex', gap:'8px' }}>
+                  <button onClick={()=>{ setEmailModal(false); setEmailTo('') }}
+                    style={{ flex:1, padding:'11px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text3)', fontSize:'13px', fontWeight:600, cursor:'pointer' }}>
+                    Скасувати
+                  </button>
+                  <button disabled={emailSending || !emailTo}
+                    onClick={async()=>{
+                      if(!emailTo || !data) return
+                      setEmailSending(true)
+                      const res = await fetch('/api/send-report', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ to:emailTo, clientName:data.client?.name??'Клієнт', company:data.client?.company??'', dateRange:`${from} → ${to}`, totals:data.totals, platforms:data.platforms }) })
+                      setEmailSending(false)
+                      if(res.ok) setEmailSent(true)
+                    }}
+                    style={{ flex:2, padding:'11px', background: emailSending||!emailTo?'#555':'#e60000', color:'#fff', border:'none', borderRadius:'8px', fontSize:'13px', fontWeight:700, cursor: emailSending||!emailTo?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
+                    {emailSending
+                      ? <><div style={{ width:'14px', height:'14px', border:'2px solid rgba(255,255,255,0.3)', borderTopColor:'#fff', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/> Відправляємо...</>
+                      : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Відправити звіт</>
+                    }
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
