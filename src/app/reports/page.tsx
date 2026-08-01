@@ -59,6 +59,10 @@ export default function ReportsPage() {
   const [prevData, setPrevData] = useState<ClientDashboardData|null>(null)
   const [loading, setLoading] = useState(false)
   const [compare, setCompare] = useState(true)
+  const [emailModal, setEmailModal] = useState(false)
+  const [emailTo, setEmailTo] = useState('')
+  const [emailSending, setEmailSending] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   const fetchData = async (f: string, t: string) => {
     setLoading(true)
