@@ -128,7 +128,7 @@ export function GoalsSection({ totals, clientId }: Props) {
 
               {/* Прогрес бар */}
               <div style={{ marginBottom:'8px' }}>
-                <div style={{ height:'6px', background:'var(--bg3)', borderRadius:'3px', overflow:'hidden' }}>
+                <div className='progress-bar' style={{ height:'6px', background:'var(--bg3)', borderRadius:'3px', overflow:'hidden' }}>
                   <div style={{ height:'100%', width:`${pct}%`, background: color, borderRadius:'3px', transition:'width 0.5s ease' }}/>
                 </div>
               </div>

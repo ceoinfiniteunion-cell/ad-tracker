@@ -23,12 +23,6 @@
     --option-bg: #161616;
   }
 
-  [data-theme="light"] body,
-  [data-theme="light"] main,
-  [data-theme="light"] aside {
-    color-scheme: light;
-  }
-
   [data-theme="light"] {
     --bg: #f4f4f5;
     --bg2: #ffffff;
@@ -55,13 +49,53 @@
   select { -webkit-appearance: none; appearance: none; }
   option { background: var(--option-bg); color: var(--text); }
 
+  /* ── Базові анімації ── */
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideLeft { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
   @keyframes snake { 0% { stroke-dashoffset: 1000; } 100% { stroke-dashoffset: 0; } }
   @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
   @keyframes scanline { 0% { top: 0%; } 100% { top: 100%; } }
+
+  /* ── Преміум анімації ── */
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(230,0,0,0); }
+    50% { box-shadow: 0 0 20px 4px rgba(230,0,0,0.15); }
+  }
+  @keyframes borderGlow {
+    0%, 100% { border-color: rgba(255,255,255,0.06); }
+    50% { border-color: rgba(230,0,0,0.3); }
+  }
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(8px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes ripple {
+    0% { transform: scale(0); opacity: 0.6; }
+    100% { transform: scale(4); opacity: 0; }
+  }
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+
+  /* ── Класи анімацій ── */
   .anim-fade { animation: fadeIn 0.5s ease forwards; }
   .anim-up { animation: slideUp 0.5s ease forwards; }
   .anim-up-1 { animation: slideUp 0.5s 0.05s ease forwards; opacity: 0; }
@@ -70,4 +104,150 @@
   .anim-up-4 { animation: slideUp 0.5s 0.2s ease forwards; opacity: 0; }
   .anim-float { animation: float 4s ease-in-out infinite; }
   .anim-pulse { animation: pulse 2s ease-in-out infinite; }
+  .anim-scale { animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  .anim-slide-left { animation: slideLeft 0.4s ease forwards; }
+  .anim-count { animation: countUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+  /* ── Преміум кнопки ── */
+  .btn-premium {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+  .btn-premium::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn-premium:hover::before { opacity: 1; }
+  .btn-premium:hover { transform: translateY(-2px) !important; box-shadow: 0 8px 24px rgba(230,0,0,0.25) !important; }
+  .btn-premium:active { transform: translateY(0) scale(0.97) !important; }
+
+  /* Ripple ефект */
+  .btn-ripple { position: relative; overflow: hidden; }
+  .btn-ripple::after {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    transition: transform 0.5s, opacity 0.5s;
+  }
+  .btn-ripple:active::after {
+    transform: translate(-50%, -50%) scale(8);
+    opacity: 0;
+    transition: 0s;
+  }
+
+  /* ── Преміум картки ── */
+  .card-premium {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    position: relative;
+  }
+  .card-premium::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(230,0,0,0.03) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .card-premium:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(230,0,0,0.15) !important;
+  }
+  .card-premium:hover::after { opacity: 1; }
+
+  /* ── Shimmer для числових значень ── */
+  .shimmer-text {
+    background: linear-gradient(90deg, var(--text) 0%, #e60000 50%, var(--text) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+  }
+
+  /* ── Glow для активних елементів ── */
+  .glow-red { animation: glow 2s ease-in-out infinite; }
+
+  /* ── Навігаційні посилання ── */
+  .nav-link {
+    position: relative;
+    transition: all 0.2s ease !important;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -2px;
+    height: 1px;
+    background: #e60000;
+    transform: scaleX(0);
+    transition: transform 0.2s ease;
+  }
+  .nav-link:hover::after { transform: scaleX(1); }
+
+  /* ── Таблиці ── */
+  .table-row-hover {
+    transition: background 0.15s ease, transform 0.15s ease !important;
+  }
+  .table-row-hover:hover {
+    background: var(--bg3) !important;
+    transform: translateX(2px);
+  }
+
+  /* ── Input фокус ── */
+  .input-premium {
+    transition: all 0.2s ease !important;
+  }
+  .input-premium:focus {
+    border-color: #e60000 !important;
+    box-shadow: 0 0 0 3px rgba(230,0,0,0.12), 0 0 20px rgba(230,0,0,0.05) !important;
+    transform: translateY(-1px);
+  }
+
+  /* ── Статусні індикатори ── */
+  .status-live {
+    position: relative;
+  }
+  .status-live::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: rgba(230,0,0,0.3);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  /* ── Прогрес бар ── */
+  .progress-bar {
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  /* ── Модальні вікна ── */
+  .modal-enter {
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  /* ── Тег badge ── */
+  .badge-pulse {
+    animation: borderGlow 2s ease-in-out infinite;
+  }
 }

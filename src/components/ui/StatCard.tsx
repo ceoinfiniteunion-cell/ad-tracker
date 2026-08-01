@@ -17,7 +17,7 @@ const iconClr: Record<string,string> = {
 }
 export function StatCard({ label, value, icon: Icon, trend, color='white', delay=0 }: StatCardProps) {
   return (
-    <div className="anim-up" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'20px', animationDelay:`${delay}ms`, transition:'border-color 0.2s' }}
+    <div className="anim-up card-premium" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'20px', animationDelay:`${delay}ms` }}
       onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.2)' }}
       onMouseLeave={e=>{ e.currentTarget.style.borderColor='var(--border)' }}
     >
@@ -31,7 +31,7 @@ export function StatCard({ label, value, icon: Icon, trend, color='white', delay
           </span>
         )}
       </div>
-      <p style={{ fontSize:'22px', fontWeight:800, color:'var(--text)', margin:0, letterSpacing:'-0.02em' }}>{value}</p>
+      <p className="anim-count" style={{ fontSize:'22px', fontWeight:800, color:'var(--text)', margin:0, letterSpacing:'-0.02em' }}>{value}</p>
       <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'6px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>{label}</p>
     </div>
   )
