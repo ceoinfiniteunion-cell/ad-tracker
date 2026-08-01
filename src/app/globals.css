@@ -49,7 +49,7 @@
 
 
   /* Монограмний фон з ∞ */
-    html::before {
+      html::before {
     content: '';
     position: fixed;
     inset: 0;
@@ -61,7 +61,7 @@
     z-index: 0;
   }
 
-    [data-theme="light"] html::before {
+      [data-theme="light"] html::before {
     opacity: 0.03;
   }
 
