@@ -36,7 +36,7 @@ export default function NewClientPage() {
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
-        <div style={{ position:'fixed', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none', zIndex:0 }} />
+        
         <div style={{ maxWidth:'680px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
 
           <div className="anim-fade" style={{ marginBottom:'32px' }}>

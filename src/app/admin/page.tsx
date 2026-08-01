@@ -87,7 +87,7 @@ export default function AdminDashboardPage() {
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
-        <div style={{ position:'fixed', inset:0, backgroundImage:'linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none', zIndex:0, opacity:0.5 }} />
+        
 
         <div style={{ maxWidth:'1200px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
 
