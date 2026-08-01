@@ -162,7 +162,7 @@ export default function DashboardPage() {
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
-        <div style={{ position:'fixed', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none', zIndex:0 }} />
+        <div style={{ position:'fixed', inset:0,  pointerEvents:'none', zIndex:0 }} />
         <div style={{ position:'fixed', top:'-100px', right:'20%', width:'400px', height:'400px', borderRadius:'50%', background:'radial-gradient(circle,rgba(230,0,0,0.07) 0%,transparent 70%)', pointerEvents:'none', zIndex:0 }} />
 
         <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
@@ -278,6 +278,15 @@ export default function DashboardPage() {
               </div>
             )
           })}
+
+          {/* Координати — деталь бренду */}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'20px 0 0', gap:'16px' }}>
+            <span style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text4)', letterSpacing:'0.1em' }}>49° 59′ N / 36° 14′ E</span>
+            <span style={{ width:'3px', height:'3px', borderRadius:'50%', background:'var(--text4)', display:'inline-block' }}/>
+            <span style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text4)', letterSpacing:'0.1em' }}>INFINITE UNION · AD TRACKER</span>
+            <span style={{ width:'3px', height:'3px', borderRadius:'50%', background:'var(--text4)', display:'inline-block' }}/>
+            <span style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text4)', letterSpacing:'0.1em' }}>KHARKIV, UKRAINE</span>
+          </div>
 
           {/* Charts */}
           <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text4)', marginBottom:'12px' }}>// ДИНАМІКА</p>

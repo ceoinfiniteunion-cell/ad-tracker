@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { User, Lock, Mail, Building2, Calendar, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
-const gridBg = { position:'fixed' as const, inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' as const, zIndex:0 }
+const gridBg = { position:'fixed' as const, inset:0,  pointerEvents:'none' as const, zIndex:0 }
 const inp = (focused: boolean) => ({ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:`1px solid ${focused ? '#e60000' : 'rgba(255,255,255,0.07)'}`, borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, transition:'border-color 0.2s, box-shadow 0.2s', boxShadow: focused ? '0 0 0 3px rgba(230,0,0,0.12)' : 'none' })
 const lbl = { display:'block', fontSize:'11px', fontWeight:600 as const, letterSpacing:'0.08em', textTransform:'uppercase' as const, color:'var(--text3)', marginBottom:'8px' }
 

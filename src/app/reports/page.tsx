@@ -43,7 +43,7 @@ function Trend({ curr, prev }: { curr:number; prev:number }) {
   )
 }
 
-const gridBg = { position:'fixed' as const, inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' as const, zIndex:0 }
+const gridBg = { position:'fixed' as const, inset:0,  pointerEvents:'none' as const, zIndex:0 }
 const inp = { padding:'10px 14px', background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', cursor:'pointer', fontFamily:'monospace' }
 
 export default function ReportsPage() {

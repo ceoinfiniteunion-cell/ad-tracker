@@ -10,7 +10,7 @@ interface AdAccount {
   isActive: boolean; tokenStatus: string | null; createdAt: string; updatedAt: string
 }
 
-const gridBg = { position:'fixed' as const, inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' as const, zIndex:0 }
+const gridBg = { position:'fixed' as const, inset:0,  pointerEvents:'none' as const, zIndex:0 }
 const defaultForm = { name:'', accountId:'', accessToken:'' }
 
 const PLATFORMS = {
