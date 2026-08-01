@@ -28,7 +28,7 @@ export function Sidebar() {
   ]
 
   return (
-    <aside style={{ width:'220px', minWidth:'220px', background:'var(--bg2)', borderRight:'1px solid var(--border2)', display:'flex', flexDirection:'column', height:'100vh', position:'sticky', top:0, transition:'background 0.3s' }}>
+    <aside style={{ width:'220px', minWidth:'220px', background:'var(--bg2)', borderRight:'1px solid var(--border2)', boxShadow:'2px 0 12px rgba(0,0,0,0.15)', display:'flex', flexDirection:'column', height:'100vh', position:'sticky', top:0, transition:'background 0.3s' }}>
       <div style={{ padding:'20px', borderBottom:'1px solid var(--border)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
           <div style={{ width:'36px', height:'36px', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.25)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
