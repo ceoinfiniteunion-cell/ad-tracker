@@ -5,8 +5,8 @@ import nodemailer from 'nodemailer'
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { to, clientName, company, dateRange, totals, platforms } = await request.json()
