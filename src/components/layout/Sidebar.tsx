@@ -38,7 +38,7 @@ export function Sidebar() {
             </svg>
           </div>
           <div>
-            <p style={{ fontWeight:800, color:'var(--text)', fontSize:'14px', lineHeight:1, margin:0 }}>Ad Tracker</p>
+            <p style={{ fontWeight:800, color:'var(--text)', fontSize:'15px', lineHeight:1, margin:0 }}>Ad Tracker</p>
             <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', marginTop:'3px' }}>by Infinite Union</p>
           </div>
         </div>
@@ -54,7 +54,7 @@ export function Sidebar() {
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
-            <Link key={href} href={href} className="btn-ripple" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform: active?'translateX(2px)':'none' }}>
+            <Link key={href} href={href} className="btn-ripple" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform: active?'translateX(2px)':'none' }}>
               <Icon size={15}/>{label}
             </Link>
           )
@@ -63,7 +63,7 @@ export function Sidebar() {
 
       <div style={{ padding:'12px 10px', borderTop:'1px solid var(--border)' }}>
         <button onClick={toggle}
-          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, marginBottom:'4px' }}
+          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, marginBottom:'4px' }}
           onMouseEnter={e=>{ e.currentTarget.style.color='var(--text)'; e.currentTarget.style.background='var(--bg3)' }}
           onMouseLeave={e=>{ e.currentTarget.style.color='var(--text3)'; e.currentTarget.style.background='transparent' }}
         >
@@ -71,16 +71,16 @@ export function Sidebar() {
           {theme==='dark' ? 'Світла тема' : 'Темна тема'}
         </button>
 
-        <div style={{ padding:'8px 12px', marginBottom:'4px', borderRadius:'8px' }}>
+        <div style={{ padding:'13px 18px', marginBottom:'4px', borderRadius:'8px' }}>
           <div style={{ width:'28px', height:'28px', borderRadius:'50%', background:'rgba(230,0,0,0.15)', border:'1px solid rgba(230,0,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginBottom:'6px' }}>
             <span style={{ fontSize:'11px', fontWeight:700, color:'#e60000' }}>{session?.user?.name?.[0]?.toUpperCase()}</span>
           </div>
-          <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.name}</p>
+          <p style={{ fontSize:'15px', fontWeight:600, color:'var(--text)', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.name}</p>
           <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', marginTop:'1px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.email}</p>
         </div>
 
         <button onClick={()=>signOut({callbackUrl:'/auth/login'})}
-          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px', borderRadius:'8px', fontSize:'13px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500 }}
+          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500 }}
           onMouseEnter={e=>{ e.currentTarget.style.color='#ff4444'; e.currentTarget.style.background='rgba(230,0,0,0.08)' }}
           onMouseLeave={e=>{ e.currentTarget.style.color='var(--text3)'; e.currentTarget.style.background='transparent' }}
         >
