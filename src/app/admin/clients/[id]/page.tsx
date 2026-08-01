@@ -168,23 +168,16 @@ export default function ClientDetailPage() {
               <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'14px' }}>// ЦІЛІ КЛІЄНТА</p>
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:'12px' }}>
                 {goals.map(goal => {
-                  const pct = goal.target ? Math.min(Math.round(((goal.current ?? 0) / goal.target) * 100), 100) : 0
-                  const done = pct >= 100
                   return (
                     <div key={goal.id} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px' }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px' }}>
-                        <span style={{ fontSize:'16px' }}>{done ? '🟢' : '🎯'}</span>
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'10px' }}>
+                        <span style={{ fontSize:'16px' }}>🎯</span>
                         <span style={{ fontSize:'13px', fontWeight:700, color:'var(--text)', textTransform:'uppercase' }}>{goal.metric}</span>
                         <span style={{ fontSize:'11px', color:'var(--text3)', marginLeft:'auto', background:'var(--bg3)', padding:'2px 8px', borderRadius:'20px' }}>{goal.period}</span>
                       </div>
-                      <div style={{ height:'6px', background:'var(--bg3)', borderRadius:'3px', marginBottom:'10px', overflow:'hidden' }}>
-                        <div style={{ height:'100%', width:`${pct}%`, background: done ? '#00c864' : '#e60000', borderRadius:'3px', transition:'width 0.5s' }}/>
-                      </div>
-                      <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px' }}>
-                        <span style={{ color: done ? '#00c864' : '#e60000', fontWeight:700 }}>{(goal.current ?? 0).toLocaleString()} USD</span>
-                        <span style={{ color:'var(--text3)' }}>з {(goal.target ?? 0).toLocaleString()} USD · {pct}%</span>
-                      </div>
-                      {done && <div style={{ marginTop:'8px', textAlign:'center', fontSize:'11px', color:'#00c864', fontWeight:600 }}>✓Ціль досягнута!</div>}
+                      {goal.label && <div style={{ fontSize:'12px', color:'var(--text3)', marginBottom:'8px' }}>{goal.label}</div>}
+                      <div style={{ fontSize:'15px', fontWeight:700, color:'#e60000' }}>Ціль: {(goal.target ?? 0).toLocaleString()}</div>
+                    </div>
                     </div>
                   )
                 })}
