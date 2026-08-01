@@ -187,8 +187,8 @@ export default function ConnectPage() {
                 {(Object.entries(PLATFORMS) as [Platform, typeof PLATFORMS.FACEBOOK][]).map(([pl, p])=>(
                   <button key={pl} onClick={()=>{ setSelectedPlatform(pl); setStep('guide') }}
                     style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'14px', padding:'28px 20px', cursor:'pointer', textAlign:'left' as const, transition:'all 0.2s' }}
-                    onMouseEnter={e=>{e.currentTarget.style.borderColor=p.color+'60';e.currentTarget.style.background='#161616'}}
-                    onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.06)';e.currentTarget.style.background='#111'}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor=p.color+'60';e.currentTarget.style.background='var(--bg3)'}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.background='var(--bg2)'}}
                   >
                     <div style={{ width:'48px', height:'48px', borderRadius:'12px', background:p.bg, border:`1px solid ${p.color}40`, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'16px' }}>
                       <span style={{ fontSize:'11px', fontWeight:800, color:p.color, fontFamily:'monospace' }}>{p.short}</span>
@@ -321,7 +321,7 @@ export default function ConnectPage() {
                   const p = PLATFORMS[acc.platform]
                   const ts = TOKEN_STATUS[acc.tokenStatus??'no_token']
                   return (
-                    <div key={acc.id} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 22px' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.06)'}}>
+                    <div key={acc.id} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 22px' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)'}}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
                           <div style={{ width:'44px', height:'44px', borderRadius:'10px', background:p.bg, border:`1px solid ${p.color}30`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
@@ -346,10 +346,10 @@ export default function ConnectPage() {
                               {syncing===acc.id?'Синк...':'Оновити'}
                             </button>
                           )}
-                          <button onClick={()=>{ setShowTokenModal(acc); setTokenInput('') }} style={{ padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'7px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'}} onMouseLeave={e=>{e.currentTarget.style.color='rgba(255,255,255,0.5)';e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'}}>
+                          <button onClick={()=>{ setShowTokenModal(acc); setTokenInput('') }} style={{ padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'7px', color:'var(--text2)', fontSize:'12px', fontWeight:600, cursor:'pointer' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'}} onMouseLeave={e=>{e.currentTarget.style.color='var(--text2)';e.currentTarget.style.borderColor='var(--border)'}}>
                             {acc.tokenStatus==='valid'?'Оновити токен':'+ Додати токен'}
                           </button>
-                          <button onClick={()=>handleDelete(acc.id)} disabled={deleting===acc.id} style={{ width:'36px', height:'36px', background:'transparent', border:'1px solid var(--border)', borderRadius:'7px', color:'var(--text4)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.background='rgba(230,0,0,0.08)'}} onMouseLeave={e=>{e.currentTarget.style.color='rgba(255,255,255,0.25)';e.currentTarget.style.background='transparent'}}>
+                          <button onClick={()=>handleDelete(acc.id)} disabled={deleting===acc.id} style={{ width:'36px', height:'36px', background:'transparent', border:'1px solid var(--border)', borderRadius:'7px', color:'var(--text4)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }} onMouseEnter={e=>{e.currentTarget.style.color='#ff4444';e.currentTarget.style.background='rgba(230,0,0,0.08)'}} onMouseLeave={e=>{e.currentTarget.style.color='var(--text4)';e.currentTarget.style.background='transparent'}}>
                             {deleting===acc.id?<div style={{width:'13px',height:'13px',border:'2px solid rgba(230,0,0,0.2)',borderTopColor:'#e60000',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>:<Trash2 size={14}/>}
                           </button>
                         </div>
