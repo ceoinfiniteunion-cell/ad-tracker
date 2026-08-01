@@ -7,10 +7,12 @@ import { ArrowLeft, Plus, Trash2, Power, AlertCircle, CheckCircle, Building2, Ma
 import { CommentsSection } from '@/components/ui/CommentsSection'
 
 interface AdAccount { id:string; name:string; accountId:string; platform:string; isActive:boolean; createdAt:string }
+interface Goal { id:string; metric:string; target:number; period:string; current:number }
 interface ClientDetail {
   id:string; name:string; company:string
   user:{ email:string; name:string; createdAt:string }
   adAccounts: AdAccount[]
+  goals?: Goal[]
 }
 
 const PINFO: Record<string,{label:string;color:string;bg:string;dot:string}> = {
@@ -32,6 +34,7 @@ export default function ClientDetailPage() {
   const [deleting, setDeleting] = useState<string|null>(null)
   const [toggling, setToggling] = useState<string|null>(null)
   const [form, setForm] = useState({ name:'', accountId:'', platform:'FACEBOOK' as 'FACEBOOK'|'GOOGLE'|'TIKTOK' })
+  const [goals, setGoals] = useState<Goal[]>([])
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
 
@@ -41,7 +44,10 @@ export default function ClientDetailPage() {
   }
 
   useEffect(() => {
-    fetch(`/api/clients/${id}`).then(r=>r.json()).then(d=>{ setClient(d); setLoading(false) })
+    Promise.all([
+      fetch(`/api/clients/${id}`).then(r=>r.json()),
+      fetch(`/api/goals?clientId=${id}`).then(r=>r.json()).catch(()=>[])
+    ]).then(([d, g]) => { setClient(d); setGoals(Array.isArray(g) ? g : []); setLoading(false) })
   }, [id])
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -154,6 +160,37 @@ export default function ClientDetailPage() {
 
           {/* Коментарі */}
           <CommentsSection clientId={id} isAdmin={true} />
+
+
+          {/* Цілі клієнта */}
+          {goals.length > 0 && (
+            <div style={{ marginBottom:'28px' }}>
+              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'14px' }}>// ЦІЛІ КЛІЄНТА</p>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:'12px' }}>
+                {goals.map(goal => {
+                  const pct = Math.min(Math.round((goal.current / goal.target) * 100), 100)
+                  const done = pct >= 100
+                  return (
+                    <div key={goal.id} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px' }}>
+                        <span style={{ fontSize:'16px' }}>{done ? '🟢' : '🎯'}</span>
+                        <span style={{ fontSize:'13px', fontWeight:700, color:'var(--text)', textTransform:'uppercase' }}>{goal.metric}</span>
+                        <span style={{ fontSize:'11px', color:'var(--text3)', marginLeft:'auto', background:'var(--bg3)', padding:'2px 8px', borderRadius:'20px' }}>{goal.period}</span>
+                      </div>
+                      <div style={{ height:'6px', background:'var(--bg3)', borderRadius:'3px', marginBottom:'10px', overflow:'hidden' }}>
+                        <div style={{ height:'100%', width:`${pct}%`, background: done ? '#00c864' : '#e60000', borderRadius:'3px', transition:'width 0.5s' }}/>
+                      </div>
+                      <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px' }}>
+                        <span style={{ color: done ? '#00c864' : '#e60000', fontWeight:700 }}>{goal.current.toLocaleString()} USD</span>
+                        <span style={{ color:'var(--text3)' }}>з {goal.target.toLocaleString()} USD · {pct}%</span>
+                      </div>
+                      {done && <div style={{ marginTop:'8px', textAlign:'center', fontSize:'11px', color:'#00c864', fontWeight:600 }}>✓Ціль досягнута!</div>}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Секція кабінетів */}
           <div>
