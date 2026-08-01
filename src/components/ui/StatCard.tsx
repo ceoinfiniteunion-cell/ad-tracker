@@ -93,7 +93,7 @@ export function StatCard({ label, value, icon: Icon, trend, color='white', delay
         }}
       />
       <p style={{
-        fontSize:'11px', color:'var(--text3)', marginTop:'6px',
+        fontSize:'11px', marginTop:'6px',
         textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600,
         transition: 'color 0.3s ease',
         color: hovered ? 'var(--text2)' : 'var(--text3)',
