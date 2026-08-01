@@ -41,6 +41,8 @@ export default function StatsPage() {
   const [period, setPeriod] = useState(30)
   const [activePlatform, setActivePlatform] = useState<'all'|Platform>('all')
   const [activeAccount, setActiveAccount] = useState<string>('all')
+  const [compareMode, setCompareMode] = useState(false)
+  const [compareAccount, setCompareAccount] = useState<string>('')
   const [dropdown, setDropdown] = useState<Platform|null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -133,12 +135,16 @@ export default function StatsPage() {
                 {selectedAccountName && <span style={{ color:'var(--text2)', fontWeight:600 }}> · {selectedAccountName}</span>}
               </p>
             </div>
-            <div style={{ display:'flex', gap:'6px' }}>
+            <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
               {PERIODS.map(p=>(
                 <button key={p.days} onClick={()=>setPeriod(p.days)} style={tabStyle(period===p.days)}>
                   {p.label}
                 </button>
               ))}
+              <button onClick={()=>{ setCompareMode(!compareMode); setCompareAccount('') }}
+                style={{ ...tabStyle(compareMode), display:'flex', alignItems:'center', gap:'6px' }}>
+                ⇄ Порівняти
+              </button>
             </div>
           </div>
 
@@ -230,6 +236,96 @@ export default function StatsPage() {
               )
             })}
           </div>
+
+          {/* Режим порівняння */}
+          {compareMode && data && (
+            <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'16px 20px', marginBottom:'16px' }}>
+              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text4)', marginBottom:'12px' }}>// ПОРІВНЯННЯ КАБІНЕТІВ</p>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'16px' }}>
+                {/* Кабінет 1 */}
+                <div>
+                  <label style={{ display:'block', fontSize:'10px', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'6px' }}>Кабінет A</label>
+                  <select value={activeAccount} onChange={e=>setActiveAccount(e.target.value)}
+                    style={{ width:'100%', padding:'10px 12px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none' }}>
+                    <option value="all">Всі кабінети</option>
+                    {data.platforms.map(p=>(
+                      <option key={p.accountId} value={p.accountId}>{p.accountName} ({p.platform})</option>
+                    ))}
+                  </select>
+                </div>
+                {/* Кабінет 2 */}
+                <div>
+                  <label style={{ display:'block', fontSize:'10px', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'6px' }}>Кабінет B</label>
+                  <select value={compareAccount} onChange={e=>setCompareAccount(e.target.value)}
+                    style={{ width:'100%', padding:'10px 12px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none' }}>
+                    <option value="">Оберіть кабінет</option>
+                    {data.platforms.filter(p=>p.accountId!==activeAccount).map(p=>(
+                      <option key={p.accountId} value={p.accountId}>{p.accountName} ({p.platform})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Таблиця порівняння */}
+              {compareAccount && (() => {
+                const accA = activeAccount === 'all' ? null : data.platforms.find(p=>p.accountId===activeAccount)
+                const accB = data.platforms.find(p=>p.accountId===compareAccount)
+                const sA = accA?.summary ?? data.totals
+                const sB = accB?.summary
+                if (!sB) return null
+
+                const rows = [
+                  { label:'Витрати', keyA:'totalSpend', keyB:'totalSpend', fmt:(v:number)=>formatCurrency(v), better:'lower' },
+                  { label:'Дохід', keyA:'totalRevenue', keyB:'totalRevenue', fmt:(v:number)=>formatCurrency(v), better:'higher' },
+                  { label:'Покази', keyA:'totalImpressions', keyB:'totalImpressions', fmt:(v:number)=>formatNumber(v), better:'higher' },
+                  { label:'Кліки', keyA:'totalClicks', keyB:'totalClicks', fmt:(v:number)=>formatNumber(v), better:'higher' },
+                  { label:'CTR', keyA:'ctr', keyB:'ctr', fmt:(v:number)=>formatPercent(v), better:'higher' },
+                  { label:'CPC', keyA:'cpc', keyB:'cpc', fmt:(v:number)=>formatCurrency(v), better:'lower' },
+                  { label:'ROAS', keyA:'roas', keyB:'roas', fmt:(v:number)=>`${v.toFixed(2)}×`, better:'higher' },
+                  { label:'Конверсії', keyA:'totalConversions', keyB:'totalConversions', fmt:(v:number)=>formatNumber(v), better:'higher' },
+                ]
+
+                return (
+                  <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom:'1px solid var(--border)' }}>
+                        <th style={{ padding:'10px 14px', textAlign:'left', fontSize:'10px', fontWeight:700, color:'var(--text4)', textTransform:'uppercase', letterSpacing:'0.08em' }}>Метрика</th>
+                        <th style={{ padding:'10px 14px', textAlign:'center', fontSize:'10px', fontWeight:700, color:'#1877f2', textTransform:'uppercase', letterSpacing:'0.08em' }}>{accA?.accountName ?? 'Всі'}</th>
+                        <th style={{ padding:'10px 14px', textAlign:'center', fontSize:'10px', fontWeight:700, color:'#e60000', textTransform:'uppercase', letterSpacing:'0.08em' }}>{accB?.accountName}</th>
+                        <th style={{ padding:'10px 14px', textAlign:'center', fontSize:'10px', fontWeight:700, color:'var(--text4)', textTransform:'uppercase', letterSpacing:'0.08em' }}>Різниця</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map(row => {
+                        const vA = (sA as any)[row.keyA] ?? 0
+                        const vB = (sB as any)[row.keyB] ?? 0
+                        const diff = vA > 0 ? ((vB - vA) / vA * 100) : 0
+                        const aWins = row.better === 'higher' ? vA > vB : vA < vB
+                        const bWins = row.better === 'higher' ? vB > vA : vB < vA
+                        return (
+                          <tr key={row.label} style={{ borderBottom:'1px solid var(--border)' }}
+                            onMouseEnter={e=>{ e.currentTarget.style.background='var(--bg3)' }}
+                            onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
+                          >
+                            <td style={{ padding:'12px 14px', fontSize:'13px', color:'var(--text)', fontWeight:600 }}>{row.label}</td>
+                            <td style={{ padding:'12px 14px', textAlign:'center', fontFamily:'monospace', fontSize:'13px', fontWeight:700, color: aWins?'#00c864':'var(--text)' }}>
+                              {aWins && <span style={{ marginRight:'4px' }}>✓</span>}{row.fmt(vA)}
+                            </td>
+                            <td style={{ padding:'12px 14px', textAlign:'center', fontFamily:'monospace', fontSize:'13px', fontWeight:700, color: bWins?'#00c864':'var(--text)' }}>
+                              {bWins && <span style={{ marginRight:'4px' }}>✓</span>}{row.fmt(vB)}
+                            </td>
+                            <td style={{ padding:'12px 14px', textAlign:'center', fontFamily:'monospace', fontSize:'12px', color: diff>0?'#00c864':diff<0?'#ff4444':'var(--text3)' }}>
+                              {diff > 0 ? '+' : ''}{diff.toFixed(1)}%
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                )
+              })()}
+            </div>
+          )}
 
           {loading ? (
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'80px 0', flexDirection:'column', gap:'16px' }}>
