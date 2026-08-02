@@ -13,18 +13,29 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   }, [pathname])
 
   return (
-    <div style={{
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0)' : 'translateY(12px)',
-      transition: 'opacity 0.25s ease, transform 0.25s ease',
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: 0,
-      position: 'relative',
-      zIndex: 1,
-    }}>
-      {children}
+    <div style={{ flex:1, display:'flex', flexDirection:'column', minHeight:0, position:'relative' }}>
+      <div style={{
+        position:'fixed', inset:0,
+        backgroundImage:"url('/bg-painting.jpeg')",
+        backgroundSize:'cover',
+        backgroundPosition:'center',
+        opacity:0.04,
+        filter:'blur(3px)',
+        pointerEvents:'none',
+        zIndex:0,
+      }}/>
+      <div style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(10px)',
+        transition: 'opacity 0.25s ease, transform 0.25s ease',
+        flex:1,
+        display:'flex',
+        flexDirection:'column',
+        position:'relative',
+        zIndex:1,
+      }}>
+        {children}
+      </div>
     </div>
   )
 }
