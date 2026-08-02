@@ -21,6 +21,8 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
       display: 'flex',
       flexDirection: 'column',
       minHeight: 0,
+      position: 'relative',
+      zIndex: 1,
     }}>
       {children}
     </div>
