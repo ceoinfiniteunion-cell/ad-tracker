@@ -7,6 +7,7 @@ import { useTheme } from '@/lib/theme'
 
 export function Sidebar() {
   const pathname = usePathname()
+  const [tooltip, setTooltip] = useState<string|null>(null)
   const { data: session } = useSession()
   const { theme, toggle } = useTheme()
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
@@ -54,9 +55,20 @@ export function Sidebar() {
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href
           return (
-            <Link key={href} href={href} className="btn-ripple" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform: active?'translateX(2px)':'none' }}>
-              <Icon size={15}/>{label}
-            </Link>
+            <div key={href} style={{ position:'relative' }}
+              onMouseEnter={()=>setTooltip(label)}
+              onMouseLeave={()=>setTooltip(null)}
+            >
+              {tooltip===label && (
+                <div style={{ position:'absolute', left:'calc(100% + 8px)', top:'50%', transform:'translateY(-50%)', background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'6px', padding:'5px 10px', fontSize:'12px', fontWeight:600, color:'var(--text)', whiteSpace:'nowrap', zIndex:200, pointerEvents:'none', boxShadow:'0 4px 16px rgba(0,0,0,0.25)' }}>
+                  {label}
+                  <div style={{ position:'absolute', right:'100%', top:'50%', transform:'translateY(-50%)', width:0, height:0, borderTop:'5px solid transparent', borderBottom:'5px solid transparent', borderRight:'5px solid var(--border2)' }}/>
+                </div>
+              )}
+              <Link href={href} className="btn-ripple" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform: active?'translateX(2px)':'none' }}>
+                <Icon size={15}/>{label}
+              </Link>
+            </div>
           )
         })}
       </nav>
