@@ -92,8 +92,23 @@ export default function ClientDetailPage() {
   if (loading) return (
     <div style={{ display:'flex', height:'100vh', background:'var(--bg)' }}>
       <Sidebar />
-      <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>
-        <div style={{ width:'32px', height:'32px', border:'2px solid rgba(230,0,0,0.2)', borderTopColor:'#e60000', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
+      <div style={{ flex:1, padding:'36px 40px' }}>
+        <div style={{ marginBottom:'32px' }}>
+          <div style={{ width:'120px', height:'11px', borderRadius:'4px', background:'var(--bg3)', backgroundImage:'linear-gradient(90deg,var(--bg3) 0%,var(--bg2) 50%,var(--bg3) 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite', marginBottom:'12px' }}/>
+          <div style={{ width:'260px', height:'28px', borderRadius:'8px', background:'var(--bg3)', backgroundImage:'linear-gradient(90deg,var(--bg3) 0%,var(--bg2) 50%,var(--bg3) 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite' }}/>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px', marginBottom:'28px' }}>
+          {[0,1,2,3].map(i=>(
+            <div key={i} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'26px' }}>
+              <div style={{ width:'60px', height:'11px', borderRadius:'4px', background:'var(--bg3)', backgroundImage:'linear-gradient(90deg,var(--bg3) 0%,var(--bg2) 50%,var(--bg3) 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite', marginBottom:'14px' }}/>
+              <div style={{ width:'120px', height:'26px', borderRadius:'6px', background:'var(--bg3)', backgroundImage:'linear-gradient(90deg,var(--bg3) 0%,var(--bg2) 50%,var(--bg3) 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite' }}/>
+            </div>
+          ))}
+        </div>
+        <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'26px' }}>
+          <div style={{ width:'160px', height:'14px', borderRadius:'4px', background:'var(--bg3)', backgroundImage:'linear-gradient(90deg,var(--bg3) 0%,var(--bg2) 50%,var(--bg3) 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite', marginBottom:'20px' }}/>
+          <div style={{ width:'100%', height:'160px', borderRadius:'8px', background:'var(--bg3)', backgroundImage:'linear-gradient(90deg,var(--bg3) 0%,var(--bg2) 50%,var(--bg3) 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite' }}/>
+        </div>
       </div>
     </div>
   )
