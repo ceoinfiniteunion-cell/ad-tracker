@@ -57,6 +57,7 @@
     background-size: cover;
     background-position: center;
     opacity: 0.04;
+    filter: blur(3px);
     pointer-events: none;
     z-index: 0;
   }
