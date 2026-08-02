@@ -69,7 +69,12 @@ export function Sidebar() {
       </nav>
 
       {tooltip && (
-        <div style={{ position:'fixed', left:'166px', top:tooltip.y, transform:'translateY(-50%)', zIndex:9999, pointerEvents:'none', width:0, height:0, borderTop:'6px solid transparent', borderBottom:'6px solid transparent', borderLeft:'6px solid var(--border2)' }}/>
+        <div style={{ position:'fixed', left:'160px', top:tooltip.y, transform:'translateY(-50%)', zIndex:9999, pointerEvents:'none' }}>
+          <svg width="12" height="24" viewBox="0 0 12 24">
+            <path d="M0,12 Q6,6 12,0 L12,24 Q6,18 0,12 Z" fill="rgba(230,0,0,0.15)" />
+            <path d="M0,12 Q6,7 10,12 Q6,17 0,12 Z" fill="rgba(230,0,0,0.4)" />
+          </svg>
+        </div>
       )}
       <div style={{ padding:'12px 10px', borderTop:'1px solid var(--border)' }}>
         <button onClick={toggle}
