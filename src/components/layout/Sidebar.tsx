@@ -1,5 +1,4 @@
 'use client'
-import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
@@ -62,7 +61,6 @@ export function Sidebar() {
         })}
       </nav>
 
-      
       <div style={{ padding:'12px 10px', borderTop:'1px solid var(--border)' }}>
         <button onClick={toggle}
           style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, marginBottom:'4px' }}
