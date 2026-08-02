@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { PageTransition } from '@/components/layout/PageTransition'
 import { Providers } from '@/components/layout/Providers'
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
@@ -14,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="uk">
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <Providers><PageTransition>{children}</PageTransition></Providers>
       </body>
     </html>
   )
