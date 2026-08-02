@@ -10,7 +10,7 @@ export function BgImage() {
         width: '100%',
         height: '100%',
         objectFit: 'cover',
-        opacity: 0.07,
+        opacity: 0.15,
         pointerEvents: 'none',
         zIndex: 0,
       }}
