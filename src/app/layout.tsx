@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { RippleEffect } from '@/components/layout/RippleEffect'
 import { BgImage } from '@/components/layout/BgImage'
 import { Providers } from '@/components/layout/Providers'
 
@@ -15,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="uk">
       <body className={inter.className}>
-        <Providers><BgImage />{children}</Providers>
+        <Providers><BgImage /><RippleEffect />{children}</Providers>
       </body>
     </html>
   )
