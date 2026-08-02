@@ -8,6 +8,7 @@ import { useTheme } from '@/lib/theme'
 
 export function Sidebar() {
   const pathname = usePathname()
+  const [collapsed, setCollapsed] = useState(false)
   const { data: session } = useSession()
   const { theme, toggle } = useTheme()
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
@@ -56,7 +57,7 @@ export function Sidebar() {
           const active = pathname === href
           return (
             <Link key={href} href={href} className="btn-ripple" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform: active?'translateX(2px)':'none' }}>
-              <Icon size={15}/>{label}
+              <Icon size={15}/>{!collapsed && <span>{label}</span>}
             </Link>
           )
         })}
@@ -64,6 +65,15 @@ export function Sidebar() {
 
       
       <div style={{ padding:'12px 10px', borderTop:'1px solid var(--border)' }}>
+        <button onClick={()=>setCollapsed(c=>!c)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 16px', background:'none', border:'none', cursor:'pointer', color:'var(--text3)', fontSize:'13px', width:'100%', marginBottom:'4px', borderRadius:'8px', transition:'all 0.15s' }}
+          onMouseEnter={e=>e.currentTarget.style.color='var(--text)'}
+          onMouseLeave={e=>e.currentTarget.style.color='var(--text3)'}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            {collapsed ? <path d="M13 17l5-5-5-5M6 17l5-5-5-5"/> : <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/>}
+          </svg>
+          {!collapsed && <span>Згорнути</span>}
+        </button>
         <button onClick={toggle}
           style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, marginBottom:'4px' }}
           onMouseEnter={e=>{ e.currentTarget.style.color='var(--text)'; e.currentTarget.style.background='var(--bg3)' }}
