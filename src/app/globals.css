@@ -1,24 +1,25 @@
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url('/bg-painting.jpeg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.05;
+  filter: blur(3px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+[data-theme="light"] html::before {
+  opacity: 0.04;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  html::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url('/bg-painting.jpeg');
-    background-size: cover;
-    background-position: center;
-    opacity: 0.04;
-    filter: blur(3px);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  [data-theme="light"] html::before {
-    opacity: 0.03;
-  }
 
   * { box-sizing: border-box; }
   html { position: relative; }
