@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { BgImage } from '@/components/layout/BgImage'
-import { PageTransition } from '@/components/layout/PageTransition'
 import { Providers } from '@/components/layout/Providers'
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
@@ -19,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers><div style={{position:'fixed',inset:0,zIndex:-1,pointerEvents:'none'}}>
           <img src="/bg-painting.jpeg" alt="" style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.2,filter:'blur(0px)'}}/>
         </div>
-        <PageTransition>{children}</PageTransition></Providers>
+        {children}</Providers>
       </body>
     </html>
   )
