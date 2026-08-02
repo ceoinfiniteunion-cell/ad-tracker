@@ -8,7 +8,6 @@ import { useTheme } from '@/lib/theme'
 
 export function Sidebar() {
   const pathname = usePathname()
-  const [tooltip, setTooltip] = useState<{label:string,y:number}|null>(null)
   const { data: session } = useSession()
   const { theme, toggle } = useTheme()
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
@@ -56,26 +55,14 @@ export function Sidebar() {
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href
           return (
-            <div key={href} style={{ position:'relative' }}
-              onMouseEnter={e=>{ const r=e.currentTarget.getBoundingClientRect(); setTooltip({label, y:r.top+r.height/2}) }}
-              onMouseLeave={()=>setTooltip(null)}
-            >
-              <Link href={href} className="btn-ripple" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform: active?'translateX(2px)':'none' }}>
-                <Icon size={15}/>{label}
-              </Link>
-            </div>
+            <Link key={href} href={href} className="btn-ripple" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform: active?'translateX(2px)':'none' }}>
+              <Icon size={15}/>{label}
+            </Link>
           )
         })}
       </nav>
 
-      {tooltip && (
-        <div style={{ position:'fixed', left:'160px', top:tooltip.y, transform:'translateY(-50%)', zIndex:9999, pointerEvents:'none' }}>
-          <svg width="12" height="24" viewBox="0 0 12 24">
-            <path d="M0,12 Q6,6 12,0 L12,24 Q6,18 0,12 Z" fill="rgba(230,0,0,0.15)" />
-            <path d="M0,12 Q6,7 10,12 Q6,17 0,12 Z" fill="rgba(230,0,0,0.4)" />
-          </svg>
-        </div>
-      )}
+      
       <div style={{ padding:'12px 10px', borderTop:'1px solid var(--border)' }}>
         <button onClick={toggle}
           style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, marginBottom:'4px' }}
