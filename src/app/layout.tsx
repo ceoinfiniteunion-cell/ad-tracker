@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { BgImage } from '@/components/layout/BgImage'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { Providers } from '@/components/layout/Providers'
 
