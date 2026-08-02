@@ -23,7 +23,12 @@ html::before {
 
   * { box-sizing: border-box; }
   html { position: relative; }
-  body { position: relative; background: transparent; }
+  body {
+    background-image: url('/bg-painting.jpeg') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-attachment: fixed !important;
+    background-color: var(--bg) !important; position: relative; background: transparent; }
 
   :root {
     --org-stroke: rgba(255,255,255,1);
@@ -65,7 +70,12 @@ html::before {
     --option-bg: #f0f0f0;
   }
 
-  body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s; }
+  body {
+    background-image: url('/bg-painting.jpeg') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-attachment: fixed !important;
+    background-color: var(--bg) !important; margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s; }
 
 
   /* Монограмний фон з ∞ */
