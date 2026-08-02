@@ -15,7 +15,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="uk">
       <body className={inter.className}>
-        <Providers><PageTransition>{children}</PageTransition></Providers>
+        <Providers><div style={{position:'fixed',inset:0,zIndex:-1,pointerEvents:'none'}}>
+          <img src="/bg-painting.jpeg" alt="" style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.05,filter:'blur(3px)'}}/>
+        </div>
+        <PageTransition>{children}</PageTransition></Providers>
       </body>
     </html>
   )
