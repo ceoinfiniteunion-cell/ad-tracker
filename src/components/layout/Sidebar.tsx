@@ -69,10 +69,7 @@ export function Sidebar() {
       </nav>
 
       {tooltip && (
-        <div style={{ position:'fixed', left:'172px', top:tooltip.y, transform:'translateY(-50%)', background:'#1a1a1a', border:'1px solid rgba(230,0,0,0.3)', borderRadius:'8px', padding:'6px 12px', fontSize:'13px', fontWeight:600, color:'#fff', whiteSpace:'nowrap', zIndex:9999, pointerEvents:'none', boxShadow:'0 4px 16px rgba(0,0,0,0.4)', animation:'fadeIn 0.15s ease' }}>
-          <div style={{ position:'absolute', right:'100%', top:'50%', transform:'translateY(-50%)', width:0, height:0, borderTop:'5px solid transparent', borderBottom:'5px solid transparent', borderRight:'5px solid rgba(230,0,0,0.3)' }}/>
-          {tooltip.label}
-        </div>
+        <div style={{ position:'fixed', left:'168px', top:tooltip.y, transform:'translateY(-50%)', width:'6px', height:'6px', borderRadius:'50%', background:'#e60000', zIndex:9999, pointerEvents:'none', boxShadow:'0 0 6px rgba(230,0,0,0.8)' }}/>
       )}
       <div style={{ padding:'12px 10px', borderTop:'1px solid var(--border)' }}>
         <button onClick={toggle}
