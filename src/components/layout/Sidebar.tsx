@@ -8,6 +8,7 @@ import { useTheme } from '@/lib/theme'
 
 export function Sidebar() {
   const pathname = usePathname()
+  const [tooltip, setTooltip] = useState<{label:string,y:number}|null>(null)
   const { data: session } = useSession()
   const { theme, toggle } = useTheme()
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
@@ -55,13 +56,24 @@ export function Sidebar() {
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href
           return (
-            <Link key={href} href={href} className="btn-ripple" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform: active?'translateX(2px)':'none' }}>
-              <Icon size={15}/>{label}
-            </Link>
+            <div key={href} style={{ position:'relative' }}
+              onMouseEnter={e=>{ const r=e.currentTarget.getBoundingClientRect(); setTooltip({label, y:r.top+r.height/2}) }}
+              onMouseLeave={()=>setTooltip(null)}
+            >
+              <Link href={href} className="btn-ripple" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform: active?'translateX(2px)':'none' }}>
+                <Icon size={15}/>{label}
+              </Link>
+            </div>
           )
         })}
       </nav>
 
+      {tooltip && (
+        <div style={{ position:'fixed', left:'172px', top:tooltip.y, transform:'translateY(-50%)', background:'#1a1a1a', border:'1px solid rgba(230,0,0,0.3)', borderRadius:'8px', padding:'6px 12px', fontSize:'13px', fontWeight:600, color:'#fff', whiteSpace:'nowrap', zIndex:9999, pointerEvents:'none', boxShadow:'0 4px 16px rgba(0,0,0,0.4)', animation:'fadeIn 0.15s ease' }}>
+          <div style={{ position:'absolute', right:'100%', top:'50%', transform:'translateY(-50%)', width:0, height:0, borderTop:'5px solid transparent', borderBottom:'5px solid transparent', borderRight:'5px solid rgba(230,0,0,0.3)' }}/>
+          {tooltip.label}
+        </div>
+      )}
       <div style={{ padding:'12px 10px', borderTop:'1px solid var(--border)' }}>
         <button onClick={toggle}
           style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, marginBottom:'4px' }}
