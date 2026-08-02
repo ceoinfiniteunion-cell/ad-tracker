@@ -15,10 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="uk">
       <body className={inter.className}>
-        <Providers><div style={{position:'fixed',inset:0,zIndex:-1,pointerEvents:'none'}}>
-          <img src="/bg-painting.jpeg" alt="" style={{width:'100%',height:'100%',objectFit:'cover',opacity:0.2,filter:'blur(0px)'}}/>
-        </div>
-        {children}</Providers>
+        <Providers><BgImage />{children}</Providers>
       </body>
     </html>
   )
