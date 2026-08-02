@@ -7,6 +7,10 @@ export function RippleEffect() {
       const target = e.target as HTMLElement
       const btn = target.closest('.btn-ripple') as HTMLElement
       if (!btn) return
+
+      // Видаляємо старі ripple
+      btn.querySelectorAll('.ripple-circle').forEach(el => el.remove())
+
       const circle = document.createElement('span')
       const rect = btn.getBoundingClientRect()
       const size = Math.max(rect.width, rect.height)
