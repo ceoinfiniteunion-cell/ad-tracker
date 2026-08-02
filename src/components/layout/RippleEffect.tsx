@@ -8,17 +8,29 @@ export function RippleEffect() {
       const btn = target.closest('.btn-ripple') as HTMLElement
       if (!btn) return
 
-      // Видаляємо старі ripple
-      btn.querySelectorAll('.ripple-circle').forEach(el => el.remove())
-
       const circle = document.createElement('span')
       const rect = btn.getBoundingClientRect()
       const size = Math.max(rect.width, rect.height)
-      circle.className = 'ripple-circle'
-      circle.style.width = circle.style.height = size + 'px'
-      circle.style.left = (e.clientX - rect.left - size / 2) + 'px'
-      circle.style.top = (e.clientY - rect.top - size / 2) + 'px'
+      circle.style.cssText = `
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(230,0,0,0.25);
+        width: ${size}px;
+        height: ${size}px;
+        left: ${e.clientX - rect.left - size / 2}px;
+        top: ${e.clientY - rect.top - size / 2}px;
+        transform: scale(0);
+        opacity: 1;
+        pointer-events: none;
+        transition: transform 0.6s ease-out, opacity 0.6s ease-out;
+      `
       btn.appendChild(circle)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          circle.style.transform = 'scale(4)'
+          circle.style.opacity = '0'
+        })
+      })
       setTimeout(() => circle.remove(), 700)
     }
     document.addEventListener('click', handler)
