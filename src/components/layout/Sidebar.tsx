@@ -1,8 +1,9 @@
 'use client'
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings, FileText, Zap, Link2, Sun, Moon } from 'lucide-react'
+import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings, FileText, Zap, Link2, Sun, Moon, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { useTheme } from '@/lib/theme'
 
 export function Sidebar() {
@@ -10,6 +11,7 @@ export function Sidebar() {
   const { data: session } = useSession()
   const { theme, toggle } = useTheme()
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
+  const [collapsed, setCollapsed] = useState(false)
 
   const links = isAdmin ? [
     { href:'/admin', label:'Дашборд', icon:BarChart2 },
@@ -27,64 +29,87 @@ export function Sidebar() {
     { href:'/profile', label:'Профіль', icon:Settings },
   ]
 
+  const w = collapsed ? '64px' : '220px'
+
   return (
-    <aside style={{ width:'220px', minWidth:'220px', background:'var(--bg2)', borderRight:'1px solid var(--border2)', boxShadow:'2px 0 12px rgba(0,0,0,0.15)', display:'flex', flexDirection:'column', height:'100vh', position:'sticky', top:0, transition:'background 0.3s' }}>
-      <div style={{ padding:'20px', borderBottom:'1px solid var(--border)' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-          <div style={{ width:'36px', height:'36px', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.25)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <svg width="22" height="11" viewBox="0 0 44 22">
-              <ellipse cx="11" cy="11" rx="9" ry="8" fill="none" stroke="#e60000" strokeWidth="2.5"/>
-              <ellipse cx="33" cy="11" rx="9" ry="8" fill="none" stroke="#e60000" strokeWidth="2.5"/>
-            </svg>
-          </div>
-          <div>
-            <p style={{ fontWeight:800, color:'var(--text)', fontSize:'15px', lineHeight:1, margin:0 }}>Ad Tracker</p>
-            <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', marginTop:'3px' }}>by Infinite Union</p>
-          </div>
+    <aside style={{ width:w, minWidth:w, background:'var(--bg2)', borderRight:'1px solid var(--border2)', boxShadow:'2px 0 12px rgba(0,0,0,0.15)', display:'flex', flexDirection:'column', height:'100vh', position:'sticky', top:0, transition:'width 0.25s ease, min-width 0.25s ease', overflow:'hidden' }}>
+
+      <div style={{ padding:'20px 16px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:'12px', overflow:'hidden' }}>
+        <div style={{ width:'36px', height:'36px', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.25)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+          <svg width="22" height="11" viewBox="0 0 44 22">
+            <ellipse cx="11" cy="11" rx="9" ry="8" fill="none" stroke="#e60000" strokeWidth="2.5"/>
+            <ellipse cx="33" cy="11" rx="9" ry="8" fill="none" stroke="#e60000" strokeWidth="2.5"/>
+          </svg>
         </div>
+        {!collapsed && (
+          <div style={{ overflow:'hidden' }}>
+            <p style={{ fontWeight:800, color:'var(--text)', fontSize:'15px', lineHeight:1, margin:0, whiteSpace:'nowrap' }}>Ad Tracker</p>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', marginTop:'3px', whiteSpace:'nowrap' }}>by Infinite Union</p>
+          </div>
+        )}
       </div>
 
-      <div style={{ padding:'12px 16px 0', overflow:'hidden' }}>
-        <svg width="100%" height="20" viewBox="0 0 188 20" preserveAspectRatio="none">
-          <path d="M0,10 C20,2 40,18 60,10 C80,2 100,18 120,10 C140,2 160,18 188,10" fill="none" stroke="rgba(230,0,0,0.2)" strokeWidth="1.5" strokeDasharray="4 4"/>
-        </svg>
-      </div>
+      {!collapsed && (
+        <div style={{ padding:'12px 16px 0', overflow:'hidden' }}>
+          <svg width="100%" height="20" viewBox="0 0 188 20" preserveAspectRatio="none">
+            <path d="M0,10 C20,2 40,18 60,10 C80,2 100,18 120,10 C140,2 160,18 188,10" fill="none" stroke="rgba(230,0,0,0.2)" strokeWidth="1.5" strokeDasharray="4 4"/>
+          </svg>
+        </div>
+      )}
 
-      <nav style={{ flex:1, padding:'12px 10px', display:'flex', flexDirection:'column', gap:'3px', overflowY:'auto' }}>
+      <nav style={{ flex:1, padding:'12px 8px', display:'flex', flexDirection:'column', gap:'3px', overflowY:'auto', overflowX:'hidden' }}>
         {links.map(({ href, label, icon: Icon }) => {
           const active = pathname === href
           return (
-            <Link key={href} href={href} className="btn-ripple" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform: active?'translateX(2px)':'none' }}>
-              <Icon size={15}/>{label}
+            <Link key={href} href={href} className="btn-ripple" title={collapsed ? label : undefined} style={{ display:'flex', alignItems:'center', gap:'10px', padding:collapsed?'14px':'14px 18px', borderRadius:'8px', fontSize:'15px', fontWeight:500, textDecoration:'none', transition:'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', background:active?'rgba(230,0,0,0.1)':'transparent', color:active?'#ff4444':'var(--text3)', borderLeft:active?'2px solid #e60000':'2px solid transparent', transform:active?'translateX(2px)':'none', justifyContent:collapsed?'center':'flex-start', whiteSpace:'nowrap', overflow:'hidden' }}>
+              <Icon size={15} style={{ flexShrink:0 }}/>
+              {!collapsed && <span>{label}</span>}
             </Link>
           )
         })}
       </nav>
 
-      <div style={{ padding:'12px 10px', borderTop:'1px solid var(--border)' }}>
+      <div style={{ padding:'12px 8px', borderTop:'1px solid var(--border)' }}>
+        <button onClick={()=>setCollapsed(c=>!c)}
+          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:collapsed?'14px':'14px 18px', borderRadius:'8px', fontSize:'14px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, marginBottom:'4px', justifyContent:collapsed?'center':'flex-start' }}
+          onMouseEnter={e=>{ e.currentTarget.style.color='var(--text)'; e.currentTarget.style.background='var(--bg3)' }}
+          onMouseLeave={e=>{ e.currentTarget.style.color='var(--text3)'; e.currentTarget.style.background='transparent' }}
+        >
+          {collapsed ? <ChevronsRight size={14}/> : <><ChevronsLeft size={14}/><span style={{marginLeft:'10px'}}>Згорнути</span></>}
+        </button>
+
         <button onClick={toggle}
-          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, marginBottom:'4px' }}
+          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:collapsed?'14px':'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, marginBottom:'4px', justifyContent:collapsed?'center':'flex-start' }}
           onMouseEnter={e=>{ e.currentTarget.style.color='var(--text)'; e.currentTarget.style.background='var(--bg3)' }}
           onMouseLeave={e=>{ e.currentTarget.style.color='var(--text3)'; e.currentTarget.style.background='transparent' }}
         >
           {theme==='dark' ? <Sun size={14}/> : <Moon size={14}/>}
-          {theme==='dark' ? 'Світла тема' : 'Темна тема'}
+          {!collapsed && <span>{theme==='dark' ? 'Світла тема' : 'Темна тема'}</span>}
         </button>
 
-        <div style={{ padding:'13px 18px', marginBottom:'4px', borderRadius:'8px' }}>
-          <div style={{ width:'28px', height:'28px', borderRadius:'50%', background:'rgba(230,0,0,0.15)', border:'1px solid rgba(230,0,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginBottom:'6px' }}>
-            <span style={{ fontSize:'11px', fontWeight:700, color:'#e60000' }}>{session?.user?.name?.[0]?.toUpperCase()}</span>
+        {!collapsed ? (
+          <div style={{ padding:'13px 18px', marginBottom:'4px', borderRadius:'8px' }}>
+            <div style={{ width:'28px', height:'28px', borderRadius:'50%', background:'rgba(230,0,0,0.15)', border:'1px solid rgba(230,0,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginBottom:'6px' }}>
+              <span style={{ fontSize:'11px', fontWeight:700, color:'#e60000' }}>{session?.user?.name?.[0]?.toUpperCase()}</span>
+            </div>
+            <p style={{ fontSize:'15px', fontWeight:600, color:'var(--text)', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{session?.user?.name}</p>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', marginTop:'1px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.email}</p>
           </div>
-          <p style={{ fontSize:'15px', fontWeight:600, color:'var(--text)', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.name}</p>
-          <p style={{ fontFamily:'monospace', fontSize:'10px', color:'var(--text3)', marginTop:'1px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session?.user?.email}</p>
-        </div>
+        ) : (
+          <div style={{ display:'flex', justifyContent:'center', padding:'8px 0', marginBottom:'4px' }}>
+            <div style={{ width:'28px', height:'28px', borderRadius:'50%', background:'rgba(230,0,0,0.15)', border:'1px solid rgba(230,0,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <span style={{ fontSize:'11px', fontWeight:700, color:'#e60000' }}>{session?.user?.name?.[0]?.toUpperCase()}</span>
+            </div>
+          </div>
+        )}
 
         <button onClick={()=>signOut({callbackUrl:'/auth/login'})}
-          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500 }}
+          style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:collapsed?'14px':'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, justifyContent:collapsed?'center':'flex-start' }}
           onMouseEnter={e=>{ e.currentTarget.style.color='#ff4444'; e.currentTarget.style.background='rgba(230,0,0,0.08)' }}
           onMouseLeave={e=>{ e.currentTarget.style.color='var(--text3)'; e.currentTarget.style.background='transparent' }}
         >
-          <LogOut size={14}/>Вийти
+          <LogOut size={14}/>
+          {!collapsed && <span style={{marginLeft:'10px'}}>Вийти</span>}
         </button>
       </div>
     </aside>
