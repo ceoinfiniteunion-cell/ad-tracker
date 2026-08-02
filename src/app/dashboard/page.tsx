@@ -111,13 +111,48 @@ export default function DashboardPage() {
     localStorage.setItem('dashboard_metrics', JSON.stringify(next))
   }
 
+  const SkeletonBlock = ({ w='100%', h='20px', r='8px' }: { w?:string, h?:string, r?:string }) => (
+    <div style={{ width:w, height:h, borderRadius:r, background:'var(--bg3)', backgroundImage:'linear-gradient(90deg, var(--bg3) 0%, var(--bg2) 50%, var(--bg3) 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite' }} />
+  )
+
   if (loading) return (
     <div style={{ display:'flex', height:'100vh', background:'var(--bg)' }}>
       <Sidebar />
-      <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:'16px' }}>
-        <div style={{ width:'36px', height:'36px', border:'2px solid rgba(230,0,0,0.2)', borderTopColor:'#e60000', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
-        <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)' }}>Завантаження даних...</p>
-      </div>
+      <main style={{ flex:1, overflowY:'auto', padding:'36px 40px' }}>
+        {/* Header skeleton */}
+        <div style={{ marginBottom:'32px' }}>
+          <SkeletonBlock w='120px' h='11px' r='4px' />
+          <div style={{ marginTop:'12px' }}><SkeletonBlock w='280px' h='32px' r='8px' /></div>
+          <div style={{ marginTop:'8px' }}><SkeletonBlock w='200px' h='14px' r='4px' /></div>
+        </div>
+        {/* Metrics skeleton */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px', marginBottom:'28px' }}>
+          {[...Array(4)].map((_,i) => (
+            <div key={i} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'26px' }}>
+              <SkeletonBlock w='60px' h='11px' r='4px' />
+              <div style={{ marginTop:'14px' }}><SkeletonBlock w='140px' h='28px' r='6px' /></div>
+            </div>
+          ))}
+        </div>
+        {/* Platform tabs skeleton */}
+        <div style={{ display:'flex', gap:'8px', marginBottom:'24px' }}>
+          {[...Array(4)].map((_,i) => <SkeletonBlock key={i} w='120px' h='36px' r='8px' />)}
+        </div>
+        {/* Chart skeleton */}
+        <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'26px', marginBottom:'28px' }}>
+          <SkeletonBlock w='160px' h='14px' r='4px' />
+          <div style={{ marginTop:'20px' }}><SkeletonBlock w='100%' h='180px' r='8px' /></div>
+        </div>
+        {/* Bottom cards skeleton */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'14px' }}>
+          {[...Array(8)].map((_,i) => (
+            <div key={i} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'26px' }}>
+              <SkeletonBlock w='60px' h='11px' r='4px' />
+              <div style={{ marginTop:'12px' }}><SkeletonBlock w='100px' h='24px' r='6px' /></div>
+            </div>
+          ))}
+        </div>
+      </main>
     </div>
   )
 
