@@ -242,9 +242,9 @@ export default function DashboardPage() {
 
           {/* Tabs */}
           <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'28px', flexWrap:'wrap' }}>
-            <button onClick={()=>setActiveTab('all')} style={tabStyle(activeTab==='all')}>Всі платформи</button>
+            <button onClick={()=>setActiveTab('all')} className="btn-ripple" style={tabStyle(activeTab==='all')}>Всі платформи</button>
             {uniquePlatforms.map(p=>(
-              <button key={p.platform} onClick={()=>setActiveTab(p.platform)} style={{ ...tabStyle(activeTab===p.platform), display:'flex', alignItems:'center', gap:'7px' }}>
+              <button key={p.platform} onClick={()=>setActiveTab(p.platform)} className="btn-ripple" style={{ ...tabStyle(activeTab===p.platform), display:'flex', alignItems:'center', gap:'7px' }}>
                 <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:PCOLOR[p.platform], display:'inline-block' }} />
                 {PLABEL[p.platform]}
               </button>
