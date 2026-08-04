@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     const results = await getGoogleAdsCampaignMetrics(token, customerId, dateFrom, dateTo)
 
-    const byDate: Record<string, any> = {}
+    const byDate: Record<string, { spend: number; impressions: number; clicks: number; conversions: number; revenue: number; videoViews: number; campaigns: string[] }> = {}
     for (const row of results) {
       const date = row.segments?.date
       if (!date) continue
