@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         cpm: d.impressions > 0 ? (d.spend / d.impressions) * 1000 : 0,
         roas: d.spend > 0 ? d.revenue / d.spend : 0,
         costPerConversion: d.conversions > 0 ? d.spend / d.conversions : 0,
-        campaigns: [...new Set(d.campaigns)],
+        campaigns: Array.from(new Set(d.campaigns)),
       }
 
       const existing = await prisma.campaignMetric.findFirst({
