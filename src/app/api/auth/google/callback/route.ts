@@ -4,15 +4,16 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
+  const baseUrl = process.env.NEXTAUTH_URL!
   const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.redirect('/auth/login')
+  if (!session) return NextResponse.redirect(`${baseUrl}/auth/login`)
 
   const code = request.nextUrl.searchParams.get('code')
-  if (!code) return NextResponse.redirect('/connect?error=no_code')
+  if (!code) return NextResponse.redirect(`${baseUrl}/connect?error=no_code`)
 
   const clientId = process.env.GOOGLE_CLIENT_ID!
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET!
-  const redirectUri = process.env.NEXTAUTH_URL + '/api/auth/google/callback'
+  const redirectUri = baseUrl + '/api/auth/google/callback'
 
   try {
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -26,28 +27,44 @@ export async function GET(request: NextRequest) {
         grant_type: 'authorization_code',
       }),
     })
-
     const tokens = await tokenRes.json()
-    if (!tokens.access_token) return NextResponse.redirect('/connect?error=no_token')
+    if (!tokens.access_token) return NextResponse.redirect(`${baseUrl}/connect?error=no_token`)
 
-    // Зберігаємо токен в БД
-    const userId = (session.user as any).id
     const clientId2 = (session.user as any).clientId
 
-    await prisma.adAccount.create({
-      data: {
-        clientId: clientId2,
-        platform: 'GOOGLE',
-        accountId: 'google_oauth',
-        name: 'Google Ads',
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
-        isActive: true,
-      }
+    // upsert — оновлює якщо вже є, створює якщо немає
+    const existing = await prisma.adAccount.findFirst({
+      where: { clientId: clientId2, platform: 'GOOGLE' }
     })
 
-    return NextResponse.redirect('/connect?success=google')
-  } catch (e) {
-    return NextResponse.redirect('/connect?error=failed')
+    if (existing) {
+      await prisma.adAccount.update({
+        where: { id: existing.id },
+        data: {
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token ?? existing.refreshToken,
+          tokenStatus: 'active',
+          isActive: true,
+        }
+      })
+    } else {
+      await prisma.adAccount.create({
+        data: {
+          clientId: clientId2,
+          platform: 'GOOGLE',
+          accountId: 'google_oauth',
+          name: 'Google Ads (OAuth)',
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          tokenStatus: 'active',
+          isActive: true,
+        }
+      })
+    }
+
+    return NextResponse.redirect(`${baseUrl}/connect?success=google`)
+  } catch (e: any) {
+    console.error('Google callback error:', e)
+    return NextResponse.redirect(`${baseUrl}/connect?error=failed`)
   }
 }
