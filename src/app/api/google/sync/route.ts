@@ -4,6 +4,16 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { refreshAccessToken, getGoogleAdsCampaignMetrics } from '@/lib/google'
 
+interface DayData {
+  spend: number
+  impressions: number
+  clicks: number
+  conversions: number
+  revenue: number
+  videoViews: number
+  campaigns: string[]
+}
+
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session || (session.user as any).role !== 'ADMIN') {
@@ -37,19 +47,21 @@ export async function POST(request: NextRequest) {
 
     const results = await getGoogleAdsCampaignMetrics(token, customerId, dateFrom, dateTo)
 
-    const byDate: Record<string, { spend: number; impressions: number; clicks: number; conversions: number; revenue: number; videoViews: number; campaigns: string[] }> = {}
+    const byDate: Record<string, DayData> = {}
     for (const row of results) {
-      const date = row.segments?.date
+      const date = row.segments?.date as string | undefined
       if (!date) continue
-      if (!byDate[date]) byDate[date] = { spend: 0, impressions: 0, clicks: 0, conversions: 0, revenue: 0, videoViews: 0, campaigns: [] }
+      if (!byDate[date]) {
+        byDate[date] = { spend: 0, impressions: 0, clicks: 0, conversions: 0, revenue: 0, videoViews: 0, campaigns: [] }
+      }
       const d = byDate[date]
-      d.spend += (row.metrics?.costMicros ?? 0) / 1_000_000
-      d.impressions += row.metrics?.impressions ?? 0
-      d.clicks += row.metrics?.clicks ?? 0
-      d.conversions += row.metrics?.conversions ?? 0
-      d.revenue += row.metrics?.conversionsValue ?? 0
-      d.videoViews += row.metrics?.videoViews ?? 0
-      if (row.campaign?.name) d.campaigns.push(row.campaign.name)
+      d.spend += (Number(row.metrics?.costMicros) || 0) / 1_000_000
+      d.impressions += Number(row.metrics?.impressions) || 0
+      d.clicks += Number(row.metrics?.clicks) || 0
+      d.conversions += Number(row.metrics?.conversions) || 0
+      d.revenue += Number(row.metrics?.conversionsValue) || 0
+      d.videoViews += Number(row.metrics?.videoViews) || 0
+      if (row.campaign?.name) d.campaigns.push(String(row.campaign.name))
     }
 
     let synced = 0
@@ -62,7 +74,7 @@ export async function POST(request: NextRequest) {
         cpm: d.impressions > 0 ? (d.spend / d.impressions) * 1000 : 0,
         roas: d.spend > 0 ? d.revenue / d.spend : 0,
         costPerConversion: d.conversions > 0 ? d.spend / d.conversions : 0,
-        campaigns: Array.from(new Set(d.campaigns)),
+        campaigns: Array.from(new Set(d.campaigns)) as string[],
       }
 
       const existing = await prisma.campaignMetric.findFirst({
