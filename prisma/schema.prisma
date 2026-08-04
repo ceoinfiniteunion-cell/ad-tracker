@@ -37,7 +37,8 @@ model AdAccount {
   clientId    String
   client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   isActive    Boolean   @default(true)
-  accessToken String?
+  accessToken  String?
+  refreshToken String?
   tokenStatus String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
