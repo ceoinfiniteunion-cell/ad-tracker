@@ -17,7 +17,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<string> 
 
 export async function getGoogleAdsAccounts(accessToken: string): Promise<any[]> {
   const res = await fetch(
-    'https://googleads.googleapis.com/v17/customers:listAccessibleCustomers',
+    'https://googleads.googleapis.com/v18/customers:listAccessibleCustomers',
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -57,7 +57,7 @@ export async function getGoogleAdsCampaignMetrics(
     ORDER BY segments.date ASC
   `
   const res = await fetch(
-    `https://googleads.googleapis.com/v17/customers/${cleanId}/googleAds:search`,
+    `https://googleads.googleapis.com/v18/customers/${cleanId}/googleAds:search`,
     {
       method: 'POST',
       headers: {
