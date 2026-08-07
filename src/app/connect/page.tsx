@@ -326,7 +326,7 @@ export default function ConnectPage() {
             <div style={{ marginBottom:'32px' }}>
               <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                 {accounts.map((acc, i) => {
-                  const p = PLATFORMS[acc.platform]
+                  const p = PLATFORMS[acc.platform as Platform] ?? { label: acc.platform, color: "#888", bg: "rgba(255,255,255,0.06)", short: acc.platform.slice(0,3), autoSync: false }
                   const ts = TOKEN_STATUS[acc.tokenStatus??'no_token']
                   return (
                     <div key={acc.id} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 22px' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)'}}>
