@@ -71,7 +71,10 @@ export async function getGoogleAdsCampaignMetrics(
       body: JSON.stringify({ query }),
     }
   )
-  const data = await res.json()
+  const text = await res.text()
+  console.log('Google Ads raw response:', text.slice(0, 300))
+  let data: any
+  try { data = JSON.parse(text) } catch(e) { throw new Error('Google API non-JSON: ' + text.slice(0, 200)) }
   if (data.error) throw new Error(JSON.stringify(data.error))
   return data.results ?? []
 }
