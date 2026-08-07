@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Plus, Trash2, CheckCircle, AlertCircle, X, Eye, EyeOff, RefreshCw, Clock, ChevronRight, ExternalLink } from 'lucide-react'
 
@@ -79,10 +78,10 @@ export default function ConnectPage() {
   const [showToken, setShowToken] = useState(false)
   const [focusedField, setFocusedField] = useState<string|null>(null)
 
-  const searchParams = useSearchParams()
   useEffect(() => {
-    const success = searchParams.get('success')
-    const error = searchParams.get('error')
+    const params = new URLSearchParams(window.location.search)
+    const success = params.get('success')
+    const error = params.get('error')
     if (success === 'google') showToast('✓ Google Ads підключено успішно!', 'ok')
     if (error === 'no_token') showToast('Помилка: не вдалось отримати токен', 'err')
     if (error === 'failed') showToast('Помилка підключення Google', 'err')
