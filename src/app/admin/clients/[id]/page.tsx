@@ -34,6 +34,7 @@ export default function ClientDetailPage() {
   const [form, setForm] = useState({ name:'', accountId:'', platform:'FACEBOOK' as 'FACEBOOK'|'GOOGLE'|'TIKTOK' })
   const [saving, setSaving] = useState(false)
   const [syncing, setSyncing] = useState<string|null>(null)
+  const [tiktokSyncing, setTiktokSyncing] = useState<string|null>(null)
   const [formError, setFormError] = useState('')
 
   const handleSync = async (acc: AdAccount) => {
@@ -51,6 +52,23 @@ export default function ClientDetailPage() {
       showToast('Помилка з\'єднання', 'err')
     } finally {
       setSyncing(null)
+    }
+  }
+  const handleTikTokSync = async (acc: AdAccount) => {
+    setTiktokSyncing(acc.id)
+    try {
+      const res = await fetch('/api/tiktok/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adAccountId: acc.id, advertiserId: acc.accountId })
+      })
+      const data = await res.json()
+      if (data.ok) showToast('✓ TikTok Sync: ' + data.synced + ' днів синхронізовано', 'ok')
+      else showToast(data.error ?? 'Помилка TikTok sync', 'err')
+    } catch {
+      showToast('Помилка з\'єднання', 'err')
+    } finally {
+      setTiktokSyncing(null)
     }
   }
   const showToast = (msg:string, type:'ok'|'err') => {
@@ -249,6 +267,14 @@ export default function ClientDetailPage() {
                           <Power size={13}/>{acc.isActive ? 'Активний' : 'Неактивний'}
                         </button>
 
+                        {acc.platform === 'TIKTOK' && (
+                          <button onClick={()=>handleTikTokSync(acc)} disabled={tiktokSyncing===acc.id}
+                            title="Sync TikTok Ads"
+                            style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.15)', borderRadius:'7px', color:'rgba(255,255,255,0.8)', fontSize:'12px', fontWeight:600, cursor:'pointer', opacity: tiktokSyncing===acc.id ? 0.5 : 1 }}
+                          >
+                            {tiktokSyncing===acc.id ? '...' : '↻ Sync'}
+                          </button>
+                        )}
                         {acc.platform === 'GOOGLE' && (
                           <button onClick={()=>handleSync(acc)} disabled={syncing===acc.id}
                             title="Sync Google Ads"
