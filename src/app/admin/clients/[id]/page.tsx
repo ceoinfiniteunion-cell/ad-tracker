@@ -35,6 +35,7 @@ export default function ClientDetailPage() {
   const [saving, setSaving] = useState(false)
   const [syncing, setSyncing] = useState<string|null>(null)
   const [tiktokSyncing, setTiktokSyncing] = useState<string|null>(null)
+  const [metaSyncing, setMetaSyncing] = useState<string|null>(null)
   const [formError, setFormError] = useState('')
 
   const handleSync = async (acc: AdAccount) => {
@@ -69,6 +70,23 @@ export default function ClientDetailPage() {
       showToast('Помилка з\'єднання', 'err')
     } finally {
       setTiktokSyncing(null)
+    }
+  }
+  const handleMetaSync = async (acc: AdAccount) => {
+    setMetaSyncing(acc.id)
+    try {
+      const res = await fetch(`/api/meta/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId: acc.id, adAccountId: acc.accountId })
+      })
+      const data = await res.json()
+      if (data.ok) showToast('✓ Meta Sync: ' + data.synced + ' днів синхронізовано', 'ok')
+      else showToast(data.error ?? 'Помилка Meta sync', 'err')
+    } catch {
+      showToast('Помилка з\'єднання', 'err')
+    } finally {
+      setMetaSyncing(null)
     }
   }
   const showToast = (msg:string, type:'ok'|'err') => {
@@ -283,6 +301,7 @@ export default function ClientDetailPage() {
                             {syncing===acc.id ? '...' : '↻ Sync'}
                           </button>
                         )}
+                        {acc.platform === 'FACEBOOK' && (<button onClick={()=>handleMetaSync(acc)} disabled={metaSyncing===acc.id} title="Sync Meta Ads" style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', background:'rgba(24,119,242,0.08)', border:'1px solid rgba(24,119,242,0.3)', borderRadius:'7px', color:'#1877f2', fontSize:'12px', fontWeight:600, cursor:'pointer', opacity: metaSyncing===acc.id ? 0.5 : 1 }}>{metaSyncing===acc.id ? '...' : '↻ Sync'}</button>)}
                         {/* Delete */}
                         <button onClick={()=>handleDelete(acc.id)} disabled={deleting===acc.id}
                           title="Видалити кабінет"
