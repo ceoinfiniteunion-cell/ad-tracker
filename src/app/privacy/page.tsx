@@ -1,5 +1,6 @@
 export default function PrivacyPage() {
   return (
+    <div style={{ position:'fixed', inset:0, background:'#fff', overflowY:'auto', zIndex:9999 }}>
     <div style={{ maxWidth:'800px', margin:'0 auto', padding:'60px 40px', fontFamily:'system-ui, sans-serif', color:'#333', lineHeight:1.7 }}>
       <h1 style={{ fontSize:'32px', fontWeight:800, marginBottom:'8px' }}>Privacy Policy</h1>
       <p style={{ color:'#666', marginBottom:'40px' }}>Last updated: August 9, 2026</p>
@@ -43,6 +44,7 @@ export default function PrivacyPage() {
       <p>For any privacy-related questions, contact us at: <a href="mailto:ceo@infiniteunion.com.ua" style={{ color:'#e60000' }}>ceo@infiniteunion.com.ua</a></p>
 
       <p style={{ marginTop:'40px', color:'#999', fontSize:'14px' }}>© 2026 Infinite Union. All rights reserved.</p>
+    </div>
     </div>
   )
 }
