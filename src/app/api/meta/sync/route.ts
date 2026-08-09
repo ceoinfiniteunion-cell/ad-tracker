@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
     const dbAccount = await prisma.adAccount.findUnique({ where: { id: accountId } })
     const accessToken = dbAccount?.accessToken ?? process.env.META_ACCESS_TOKEN
     if (!accessToken) return NextResponse.json({ error: 'No META_ACCESS_TOKEN' }, { status: 400 })
-    const insights = await getAccountInsights(adAccountId, dateFrom, dateTo, accessToken)
+    const normalizedId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
+    const insights = await getAccountInsights(normalizedId, dateFrom, dateTo, accessToken)
     let synced = 0
 
     for (const day of insights) {
