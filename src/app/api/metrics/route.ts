@@ -144,6 +144,6 @@ export async function GET(request: NextRequest) {
 
 function getDefaultFrom(): string {
   const d = new Date()
-  d.setDate(d.getDate() - 30)
+  d.setDate(d.getDate() - 90)
   return d.toISOString().split('T')[0]
 }

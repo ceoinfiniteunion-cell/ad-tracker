@@ -207,7 +207,7 @@ export default function DashboardPage() {
             <div>
               <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// ПАНЕЛЬ АНАЛІТИКИ</p>
               <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Вітаємо, {session?.user?.name}</h1>
-              <p style={{ fontSize:'15px', color:'var(--text3)', marginTop:'6px' }}>{data.client.company} · Дані за останні 30 днів</p>
+              <p style={{ fontSize:'15px', color:'var(--text3)', marginTop:'6px' }}>{data.client.company} · Дані за останні 90 днів</p>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
               {/* Кнопка Customize */}
