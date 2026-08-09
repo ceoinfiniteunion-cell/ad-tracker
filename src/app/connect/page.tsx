@@ -83,6 +83,8 @@ export default function ConnectPage() {
     const success = params.get('success')
     const error = params.get('error')
     if (success === 'google') showToast('✓ Google Ads підключено успішно!', 'ok')
+    if (success === 'meta') showToast('✓ Meta / Facebook підключено успішно!', 'ok')
+    if (error === 'failed') showToast('Помилка підключення Meta', 'err')
     if (error === 'no_token') showToast('Помилка: не вдалось отримати токен', 'err')
     if (error === 'failed') showToast('Помилка підключення Google', 'err')
   }, [])
@@ -255,8 +257,8 @@ export default function ConnectPage() {
                     ))}
                   </div>
 
-                  <button onClick={()=>setStep('form')} style={{ width:'100%', padding:'14px', background:pInfo.color === 'rgba(255,255,255,0.8)' ? '#333' : pInfo.color, color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
-                    Я готовий — ввести дані →
+                  <button onClick={()=>{ if(selectedPlatform==='FACEBOOK'){ window.location.href='/api/auth/meta' } else { setStep('form') } }} style={{ width:'100%', padding:'14px', background:pInfo.color === 'rgba(255,255,255,0.8)' ? '#333' : pInfo.color, color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
+                    {selectedPlatform==='FACEBOOK' ? '🔗 Підключити через Meta OAuth' : 'Я готовий — ввести дані →'}
                   </button>
                 </div>
               </div>
