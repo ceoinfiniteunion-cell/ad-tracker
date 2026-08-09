@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -13,61 +15,67 @@ model User {
   role      Role     @default(CLIENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  client Client?
+  client    Client?
+
   @@map("users")
 }
+
 model Client {
-  id        String   @id @default(cuid())
-  name      String
-  company   String
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String      @id @default(cuid())
+  name       String
+  company    String
+  userId     String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   adAccounts AdAccount[]
-  goals       Goal[]
-  comments    Comment[]
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments   Comment[]
+  goals      Goal[]
+
   @@map("clients")
 }
+
 model AdAccount {
-  id          String    @id @default(cuid())
-  name        String
-  accountId   String
-  platform    Platform
-  clientId    String
-  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  isActive    Boolean   @default(true)
+  id           String           @id @default(cuid())
+  name         String
+  accountId    String
+  platform     Platform
+  clientId     String
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
   accessToken  String?
+  tokenStatus  String?
   refreshToken String?
-  tokenStatus String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  metrics     CampaignMetric[]
+  client       Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  metrics      CampaignMetric[]
+
   @@unique([accountId, platform])
   @@map("ad_accounts")
 }
+
 model Comment {
   id        String   @id @default(cuid())
   clientId  String
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   authorId  String
   text      String
   period    String?
   createdAt DateTime @default(now())
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }
 
 model Goal {
-  id          String   @id @default(cuid())
-  clientId    String
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  metric      String   // spend, conversions, clicks, leads, roas
-  target      Float
-  period      String   // monthly, weekly, custom
-  label       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  clientId  String
+  metric    String
+  target    Float
+  period    String
+  label     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@map("goals")
 }
@@ -75,7 +83,6 @@ model Goal {
 model CampaignMetric {
   id           String    @id @default(cuid())
   adAccountId  String
-  adAccount    AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
   date         DateTime
   spend        Float     @default(0)
   impressions  Int       @default(0)
@@ -83,14 +90,18 @@ model CampaignMetric {
   conversions  Int       @default(0)
   revenue      Float     @default(0)
   campaignName String?
-  platformData Json?
   createdAt    DateTime  @default(now())
+  platformData Json?
+  adAccount    AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+
   @@map("campaign_metrics")
 }
+
 enum Role {
   ADMIN
   CLIENT
 }
+
 enum Platform {
   FACEBOOK
   GOOGLE
