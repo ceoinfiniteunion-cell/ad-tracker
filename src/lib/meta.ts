@@ -1,11 +1,11 @@
 const META_API_VERSION = 'v19.0'
 const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
 
-async function metaFetch(path: string, params: Record<string, string> = {}) {
-  const token = process.env.META_ACCESS_TOKEN
-  if (!token) throw new Error('META_ACCESS_TOKEN not set')
+async function metaFetch(path: string, params: Record<string, string> = {}, token?: string) {
+  const accessToken = token ?? process.env.META_ACCESS_TOKEN
+  if (!accessToken) throw new Error('META_ACCESS_TOKEN not set')
   const url = new URL(`${BASE_URL}${path}`)
-  url.searchParams.set('access_token', token)
+  url.searchParams.set('access_token', accessToken)
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
   const res = await fetch(url.toString(), { cache: 'no-store' })
   const data = await res.json()
@@ -20,13 +20,13 @@ export async function getAdAccounts() {
   return data.data ?? []
 }
 
-export async function getAccountInsights(accountId: string, from: string, to: string) {
+export async function getAccountInsights(accountId: string, from: string, to: string, token?: string) {
   const data = await metaFetch(`/${accountId}/insights`, {
     fields: 'spend,impressions,clicks,reach,frequency,ctr,cpc,cpp,cpm,actions,action_values,cost_per_action_type,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p100_watched_actions',
     time_range: JSON.stringify({ since: from, until: to }),
     time_increment: '1',
     level: 'account',
-  })
+  }, token)
   return data.data ?? []
 }
 
