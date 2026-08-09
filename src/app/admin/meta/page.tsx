@@ -97,8 +97,32 @@ export default function MetaPage() {
   const [activeTab, setActiveTab] = useState<'campaigns'|'adsets'>('campaigns')
   const [metaError, setMetaError] = useState<string|null>(null)
   const [period, setPeriod] = useState(30)
+  const [addingAccount, setAddingAccount] = useState(false)
+  const [newAccountClient, setNewAccountClient] = useState('')
+  const [newAccountName, setNewAccountName] = useState('')
+  const [showAddForm, setShowAddForm] = useState(false)
 
   const showToast = (msg:string, type:'ok'|'err') => { setToast({msg,type}); setTimeout(()=>setToast(null),4000) }
+  const handleAddAccount = async () => {
+    if (!selectedMeta || !newAccountClient) { showToast('Виберіть Meta кабінет і клієнта', 'err'); return }
+    setAddingAccount(true)
+    try {
+      const res = await fetch('/api/ad-accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: newAccountClient, platform: 'FACEBOOK', accountId: selectedMeta.id, name: newAccountName || selectedMeta.name })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        showToast('✓ Кабінет додано в систему', 'ok')
+        setShowAddForm(false)
+        setSelectedDbAccount(data.id)
+        const clientsRes = await fetch('/api/clients')
+        setDbClients(await clientsRes.json())
+      } else showToast(data.error ?? 'Помилка', 'err')
+    } catch { showToast('Помилка', 'err') }
+    setAddingAccount(false)
+  }
 
   const loadDetails = async (account: MetaAccount, days: number) => {
     setLoadingDetails(true)
@@ -254,6 +278,23 @@ export default function MetaPage() {
                         <option key={a.id} value={a.id}>{c.name} · {a.name}</option>
                       )))}
                     </select>
+                    <button onClick={()=>setShowAddForm(!showAddForm)} style={{ marginTop:'6px', fontSize:'12px', color:'#1877f2', background:'none', border:'none', cursor:'pointer', padding:0 }}>+ Додати новий кабінет в систему</button>
+                    {showAddForm && (
+                      <div style={{ marginTop:'10px', padding:'14px', background:'var(--bg3)', borderRadius:'8px', border:'1px solid var(--border)', display:'grid', gridTemplateColumns:'1fr 1fr auto', gap:'10px', alignItems:'end' }}>
+                        <div>
+                          <label style={{ display:'block', fontSize:'10px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'6px' }}>Клієнт</label>
+                          <select value={newAccountClient} onChange={e=>setNewAccountClient(e.target.value)} style={{ width:'100%', padding:'8px 12px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'7px', color:'var(--text)', fontSize:'13px', outline:'none' }}>
+                            <option value="">— Виберіть —</option>
+                            {dbClients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ display:'block', fontSize:'10px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'6px' }}>Назва</label>
+                          <input value={newAccountName} onChange={e=>setNewAccountName(e.target.value)} placeholder={selectedMeta?.name ?? 'Meta Ads'} style={{ width:'100%', padding:'8px 12px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'7px', color:'var(--text)', fontSize:'13px', outline:'none' }}/>
+                        </div>
+                        <button onClick={handleAddAccount} disabled={addingAccount} style={{ padding:'8px 16px', background:'#1877f2', color:'#fff', border:'none', borderRadius:'7px', fontSize:'13px', fontWeight:700, cursor:'pointer' }}>{addingAccount ? '...' : '+ Додати'}</button>
+                      </div>
+                    )}
                   </div>
                   <button onClick={handleSync} disabled={syncing||!selectedMeta||!selectedDbAccount}
                     style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 20px', background:syncing?'#333':'#e60000', color:'var(--text)', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor:(syncing||!selectedDbAccount)?'not-allowed':'pointer', opacity:(syncing||!selectedDbAccount)?0.6:1, transition:'all 0.15s', whiteSpace:'nowrap' as const }}
