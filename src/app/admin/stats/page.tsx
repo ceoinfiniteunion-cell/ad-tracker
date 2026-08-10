@@ -9,18 +9,11 @@ import { ChevronDown, Users } from 'lucide-react'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#555' }
-
-const PERIODS = [
-  { label:'7 днів', days:7 },
-  { label:'14 днів', days:14 },
-  { label:'30 днів', days:30 },
-  { label:'90 днів', days:90 },
-]
+const PERIODS = [{ label:'7 днів', days:7 },{ label:'14 днів', days:14 },{ label:'30 днів', days:30 },{ label:'90 днів', days:90 }]
 
 function getFrom(days: number) {
   const d = new Date(); d.setDate(d.getDate() - days); return d.toISOString().split('T')[0]
 }
-
 function merge(metrics: any[]) {
   const map: Record<string,any> = {}
   for (const m of metrics) {
@@ -29,8 +22,6 @@ function merge(metrics: any[]) {
   }
   return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date))
 }
-
-const gridBg = { position:'fixed' as const, inset:0,  pointerEvents:'none' as const, zIndex:0 }
 
 export default function AdminStatsPage() {
   const [clients, setClients] = useState<{id:string;name:string;company:string}[]>([])
@@ -70,10 +61,8 @@ export default function AdminStatsPage() {
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
-        <div style={gridBg}/>
         <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
 
-          {/* Header */}
           <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'28px', flexWrap:'wrap', gap:'16px' }}>
             <div>
               <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// АДМІН · СТАТИСТИКА</p>
@@ -82,7 +71,6 @@ export default function AdminStatsPage() {
             </div>
 
             <div style={{ display:'flex', gap:'8px', alignItems:'center', flexWrap:'wrap' }}>
-              {/* Period */}
               <div style={{ display:'flex', gap:'6px' }}>
                 {PERIODS.map(p=>(
                   <button key={p.days} onClick={()=>setPeriod(p.days)} style={tabStyle(period===p.days)}>{p.label}</button>
@@ -90,9 +78,9 @@ export default function AdminStatsPage() {
               </div>
 
               {/* Client selector */}
-              <div style={{ position:'relative' }}>
-                <button onClick={()=>setShowDropdown(!showDropdown)}
-                  style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth:'180px', justifyContent:'space-between' }}>
+              <div style={{ position:'relative', zIndex:200 }}>
+                <button onClick={()=>setShowDropdown(v=>!v)}
+                  style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth:'180px', justifyContent:'space-between' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:'7px' }}>
                     <Users size={13} style={{color:'var(--text3)'}}/>
                     <span>{currentClient?.name ?? 'Виберіть клієнта'}</span>
@@ -101,30 +89,30 @@ export default function AdminStatsPage() {
                 </button>
 
                 {showDropdown && (
-                  <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, minWidth:'220px', background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.5)', zIndex:50, overflow:'hidden' }}>
-                    {clients.map((c,i)=>(
-                      <button key={c.id} onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
-                        style={{ width:'100%', display:'flex', flexDirection:'column' as const, alignItems:'flex-start', padding:'12px 16px', background: selectedClient===c.id ? 'rgba(230,0,0,0.1)' : 'transparent', border:'none', borderBottom: i<clients.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none', cursor:'pointer', transition:'background 0.15s', textAlign:'left' as const }}
-                        onMouseEnter={e=>{ if(selectedClient!==c.id) e.currentTarget.style.background='rgba(255,255,255,0.04)' }}
-                        onMouseLeave={e=>{ if(selectedClient!==c.id) e.currentTarget.style.background='transparent' }}
-                      >
-                        <span style={{ fontSize:'13px', fontWeight:600, color: selectedClient===c.id ? '#ff4444' : '#fff' }}>{c.name}</span>
-                        <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
-                      </button>
-                    ))}
-                    {clients.length === 0 && (
-                      <div style={{ padding:'16px', textAlign:'center', fontSize:'13px', color:'var(--text3)' }}>Немає клієнтів</div>
-                    )}
-                  </div>
+                  <>
+                    <div style={{ position:'fixed', inset:0, zIndex:150 }} onClick={()=>setShowDropdown(false)}/>
+                    <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, minWidth:'220px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:200, overflow:'hidden' }}>
+                      {clients.map((c,i)=>(
+                        <button key={c.id}
+                          onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
+                          style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background: selectedClient===c.id ? 'rgba(230,0,0,0.1)' : 'transparent', border:'none', borderBottom: i<clients.length-1 ? '1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', transition:'background 0.15s', textAlign:'left' }}
+                          onMouseEnter={e=>{ if(selectedClient!==c.id) e.currentTarget.style.background='rgba(255,255,255,0.06)' }}
+                          onMouseLeave={e=>{ if(selectedClient!==c.id) e.currentTarget.style.background='transparent' }}
+                        >
+                          <span style={{ fontSize:'13px', fontWeight:600, color: selectedClient===c.id ? '#ff4444' : 'var(--text)' }}>{c.name}</span>
+                          <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
+                        </button>
+                      ))}
+                      {clients.length === 0 && (
+                        <div style={{ padding:'16px', textAlign:'center', fontSize:'13px', color:'var(--text3)' }}>Немає клієнтів</div>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Клік поза dropdown */}
-          {showDropdown && <div style={{ position:'fixed', inset:0, zIndex:40 }} onClick={()=>setShowDropdown(false)}/>}
-
-          {/* Змія */}
           <div style={{ marginBottom:'24px' }}>
             <svg width="100%" height="16" viewBox="0 0 1000 16" preserveAspectRatio="none">
               <path d="M0,8 C50,2 100,14 150,8 C200,2 250,14 300,8 C350,2 400,14 450,8 C500,2 550,14 600,8 C650,2 700,14 750,8 C800,2 850,14 900,8 C950,2 1000,14 1050,8" fill="none" stroke="rgba(230,0,0,0.2)" strokeWidth="1.5" strokeDasharray="6 6"/>
@@ -133,13 +121,12 @@ export default function AdminStatsPage() {
 
           {clients.length === 0 ? (
             <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'60px', textAlign:'center' }}>
-              <Users size={36} style={{ color:'var(--border2)', margin:'0 auto 16px' }}/>
+              <Users size={36} style={{ color:'var(--border)', margin:'0 auto 16px' }}/>
               <p style={{ fontSize:'15px', fontWeight:600, color:'var(--text)', margin:'0 0 8px' }}>Немає клієнтів</p>
               <p style={{ fontSize:'13px', color:'var(--text3)', margin:0 }}>Спочатку створіть клієнта в розділі "Клієнти"</p>
             </div>
           ) : (
             <>
-              {/* Platform tabs */}
               <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'24px', flexWrap:'wrap' }}>
                 <button onClick={()=>setActivePlatform('all')} style={tabStyle(activePlatform==='all')}>Всі платформи</button>
                 {Array.from(new Map(data?.platforms.map(p=>[p.platform,p])).values()).map(p=>(
@@ -157,7 +144,6 @@ export default function AdminStatsPage() {
                 </div>
               ) : summary && (
                 <>
-                  {/* Зведена таблиця */}
                   <div className="anim-up-2" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
                     <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                       <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Метрики · {period} днів · {currentClient?.name}</p>
@@ -167,7 +153,7 @@ export default function AdminStatsPage() {
                       <thead>
                         <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                           {['Метрика','Значення','Деталі'].map(h=>(
-                            <th key={h} style={{ padding:'12px 20px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                            <th key={h} style={{ padding:'12px 20px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
@@ -193,7 +179,6 @@ export default function AdminStatsPage() {
                     </table>
                   </div>
 
-                  {/* По платформах */}
                   {activePlatform==='all' && data && data.platforms.length>1 && (
                     <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
                       <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)' }}>
@@ -203,7 +188,7 @@ export default function AdminStatsPage() {
                         <thead>
                           <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                             {['Платформа','Витрати','Покази','Кліки','CTR','CPC','ROAS'].map(h=>(
-                              <th key={h} style={{ padding:'12px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                              <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                             ))}
                           </tr>
                         </thead>
@@ -237,7 +222,6 @@ export default function AdminStatsPage() {
                     </div>
                   )}
 
-                  {/* Графіки */}
                   <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
                     <SpendChart data={daily} title="Витрати та дохід"/>
                     <ClicksChart data={daily} title="Кліки та конверсії"/>
