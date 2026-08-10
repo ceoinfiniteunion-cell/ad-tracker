@@ -58,7 +58,7 @@ export default function AdminStatsPage() {
   const currentClient = clients.find(c=>c.id===selectedClient)
 
   return (
-    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
+    <div style={{ display:'flex', height:'100vh', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto', position:'relative', zIndex:1 }}>
         <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
