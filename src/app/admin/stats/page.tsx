@@ -1,11 +1,12 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { SpendChart } from '@/components/charts/SpendChart'
 import { ClicksChart } from '@/components/charts/ClicksChart'
 import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
 import { ChevronDown, Users } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#555' }
@@ -31,6 +32,8 @@ export default function AdminStatsPage() {
   const [period, setPeriod] = useState(30)
   const [activePlatform, setActivePlatform] = useState<'all'|Platform>('all')
   const [showDropdown, setShowDropdown] = useState(false)
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 })
+  const btnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     fetch('/api/clients/list').then(r=>r.json()).then(d=>{ setClients(d); if(d.length>0) setSelectedClient(d[0].id) })
@@ -45,6 +48,14 @@ export default function AdminStatsPage() {
       .then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
   }, [selectedClient, period])
 
+  const openDropdown = () => {
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect()
+      setDropdownPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
+    }
+    setShowDropdown(v => !v)
+  }
+
   const tabStyle = (active: boolean, color?: string) => ({
     padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
     background: active ? (color ? `${color}18` : 'rgba(230,0,0,0.12)') : 'transparent',
@@ -58,9 +69,9 @@ export default function AdminStatsPage() {
   const currentClient = clients.find(c=>c.id===selectedClient)
 
   return (
-    <div style={{ display:'flex', height:'100vh', background:'var(--bg)' }}>
+    <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
-      <main style={{ flex:1, overflowY:'auto', position:'relative', zIndex:1 }}>
+      <main style={{ flex:1, overflowY:'auto' }}>
         <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
 
           <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'28px', flexWrap:'wrap', gap:'16px' }}>
@@ -77,41 +88,36 @@ export default function AdminStatsPage() {
                 ))}
               </div>
 
-              {/* Client selector */}
-              <div style={{ position:'relative', zIndex:200 }}>
-                <button onClick={()=>setShowDropdown(v=>!v)}
-                  style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth:'180px', justifyContent:'space-between' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:'7px' }}>
-                    <Users size={13} style={{color:'var(--text3)'}}/>
-                    <span>{currentClient?.name ?? 'Виберіть клієнта'}</span>
-                  </div>
-                  <ChevronDown size={13} style={{ color:'var(--text3)', transform: showDropdown?'rotate(180deg)':'none', transition:'transform 0.2s' }}/>
-                </button>
-
-                {showDropdown && (
-                  <>
-                    <div style={{ position:'fixed', inset:0, zIndex:150 }} onClick={()=>setShowDropdown(false)}/>
-                    <div style={{ position:'fixed', top:'60px', right:'20px', minWidth:'260px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:99999, maxHeight:'400px', overflowY:'auto' }}>
-                      {clients.map((c,i)=>(
-                        <button key={c.id}
-                          onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
-                          style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background: selectedClient===c.id ? 'rgba(230,0,0,0.1)' : 'transparent', border:'none', borderBottom: i<clients.length-1 ? '1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', transition:'background 0.15s', textAlign:'left' }}
-                          onMouseEnter={e=>{ if(selectedClient!==c.id) e.currentTarget.style.background='rgba(255,255,255,0.06)' }}
-                          onMouseLeave={e=>{ if(selectedClient!==c.id) e.currentTarget.style.background='transparent' }}
-                        >
-                          <span style={{ fontSize:'13px', fontWeight:600, color: selectedClient===c.id ? '#ff4444' : 'var(--text)' }}>{c.name}</span>
-                          <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
-                        </button>
-                      ))}
-                      {clients.length === 0 && (
-                        <div style={{ padding:'16px', textAlign:'center', fontSize:'13px', color:'var(--text3)' }}>Немає клієнтів</div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
+              <button ref={btnRef} onClick={openDropdown}
+                style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth:'180px', justifyContent:'space-between' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'7px' }}>
+                  <Users size={13} style={{color:'var(--text3)'}}/>
+                  <span>{currentClient?.name ?? 'Виберіть клієнта'}</span>
+                </div>
+                <ChevronDown size={13} style={{ color:'var(--text3)', transform: showDropdown?'rotate(180deg)':'none', transition:'transform 0.2s' }}/>
+              </button>
             </div>
           </div>
+
+          {showDropdown && typeof window !== 'undefined' && createPortal(
+            <>
+              <div style={{ position:'fixed', inset:0, zIndex:9998 }} onClick={()=>setShowDropdown(false)}/>
+              <div style={{ position:'fixed', top: dropdownPos.top, right: dropdownPos.right, minWidth:'220px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:9999, overflow:'hidden' }}>
+                {clients.map((c,i)=>(
+                  <button key={c.id}
+                    onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
+                    style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background: selectedClient===c.id ? 'rgba(230,0,0,0.1)' : 'transparent', border:'none', borderBottom: i<clients.length-1 ? '1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', transition:'background 0.15s', textAlign:'left' }}
+                    onMouseEnter={e=>{ if(selectedClient!==c.id) e.currentTarget.style.background='rgba(255,255,255,0.06)' }}
+                    onMouseLeave={e=>{ if(selectedClient!==c.id) e.currentTarget.style.background='transparent' }}
+                  >
+                    <span style={{ fontSize:'13px', fontWeight:600, color: selectedClient===c.id ? '#ff4444' : 'var(--text)' }}>{c.name}</span>
+                    <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
+                  </button>
+                ))}
+              </div>
+            </>,
+            document.body
+          )}
 
           <div style={{ marginBottom:'24px' }}>
             <svg width="100%" height="16" viewBox="0 0 1000 16" preserveAspectRatio="none">
@@ -144,7 +150,7 @@ export default function AdminStatsPage() {
                 </div>
               ) : summary && (
                 <>
-                  <div className="anim-up-2" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'visible', marginBottom:'16px' }}>
+                  <div className="anim-up-2" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
                     <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                       <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Метрики · {period} днів · {currentClient?.name}</p>
                       <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)', margin:0 }}>{getFrom(period)} → {new Date().toISOString().split('T')[0]}</p>
@@ -180,7 +186,7 @@ export default function AdminStatsPage() {
                   </div>
 
                   {activePlatform==='all' && data && data.platforms.length>1 && (
-                    <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'visible', marginBottom:'16px' }}>
+                    <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
                       <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)' }}>
                         <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Розбивка по платформах</p>
                       </div>
