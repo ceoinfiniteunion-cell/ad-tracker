@@ -60,7 +60,7 @@ export default function AdminStatsPage() {
   return (
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
-      <main style={{ flex:1, overflowY:'auto' }}>
+      <main style={{ flex:1, overflowY:'auto', position:'relative', zIndex:1 }}>
         <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
 
           <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'28px', flexWrap:'wrap', gap:'16px' }}>
@@ -91,7 +91,7 @@ export default function AdminStatsPage() {
                 {showDropdown && (
                   <>
                     <div style={{ position:'fixed', inset:0, zIndex:150 }} onClick={()=>setShowDropdown(false)}/>
-                    <div style={{ position:'fixed', top:'60px', right:'40px', minWidth:'220px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:9999, maxHeight:'400px', overflowY:'auto' }}>
+                    <div style={{ position:'fixed', top:'60px', right:'40px', minWidth:'220px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:99999, maxHeight:'400px', overflowY:'auto' }}>
                       {clients.map((c,i)=>(
                         <button key={c.id}
                           onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
