@@ -14,33 +14,30 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError('')
     const result = await signIn('credentials', { email, password, redirect: false })
-    if (result?.error) { setError('Невірний email або пароль'); setLoading(false) }
-    else { router.push('/'); router.refresh() }
+    if (result?.error) {
+      if (result.error.includes('PENDING')) {
+        setError('Ваша заявка ще на розгляді. Очікуйте підтвердження від адміністратора.')
+      } else if (result.error.includes('REJECTED')) {
+        setError('Ваш акаунт відхилено. Зверніться до підтримки.')
+      } else {
+        setError('Невірний email або пароль')
+      }
+      setLoading(false)
+    } else { router.push('/'); router.refresh() }
   }
 
   return (
     <div style={{ minHeight:'100vh', background:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', position:'relative', overflow:'hidden' }}>
-
-      {/* Сітка фон */}
       <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' }} />
-
-      {/* Червоне світіння */}
       <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'500px', height:'500px', borderRadius:'50%', background:'radial-gradient(circle, rgba(230,0,0,0.12) 0%, transparent 70%)', pointerEvents:'none' }} />
-
-      {/* Змія SVG фон */}
       <svg style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', pointerEvents:'none', opacity:0.07 }} viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
         <path d="M-100,450 C100,200 300,700 500,450 C700,200 900,700 1100,450 C1300,200 1500,700 1700,450" fill="none" stroke="#e60000" strokeWidth="2" strokeDasharray="12 8" style={{ animation:'snake 8s linear infinite' }} />
         <path d="M-100,350 C150,100 350,600 550,350 C750,100 950,600 1150,350 C1350,100 1550,600 1750,350" fill="none" stroke="#e60000" strokeWidth="1" strokeDasharray="8 12" style={{ animation:'snake 12s linear infinite reverse' }} />
       </svg>
-
       <div className="anim-up" style={{ width:'100%', maxWidth:'380px', position:'relative', zIndex:10 }}>
-
-        {/* Логотип */}
         <div style={{ textAlign:'center', marginBottom:'40px' }}>
-          {/* Знак нескінченності */}
           <div className="anim-float" style={{ display:'inline-block', marginBottom:'20px' }}>
             <svg width="64" height="32" viewBox="0 0 64 32">
-              <path d="M20,16 C20,9 25,4 32,4 C39,4 44,9 44,16 C44,23 39,28 32,28 C25,28 20,23 20,16 Z M32,16 C32,9 37,4 44,4 C51,4 56,9 56,16 C56,23 51,28 44,28" fill="none" stroke="#e60000" strokeWidth="3" strokeLinecap="round"/>
               <ellipse cx="20" cy="16" rx="12" ry="10" fill="none" stroke="#e60000" strokeWidth="2.5" opacity="0.9"/>
               <ellipse cx="44" cy="16" rx="12" ry="10" fill="none" stroke="#e60000" strokeWidth="2.5" opacity="0.9"/>
             </svg>
@@ -49,8 +46,6 @@ export default function LoginPage() {
           <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Ad Tracker</h1>
           <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>Аналітика рекламних кампаній</p>
         </div>
-
-        {/* Картка форми */}
         <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'32px', boxShadow:'0 0 60px rgba(230,0,0,0.08)' }}>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom:'20px' }}>
@@ -75,15 +70,17 @@ export default function LoginPage() {
               </div>
             )}
             <button type="submit" disabled={loading}
-              style={{ width:'100%', padding:'13px', background: loading ? '#555' : '#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading ? 'not-allowed' : 'pointer', transition:'all 0.2s', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', letterSpacing:'0.02em' }}
-              onMouseEnter={e=>{ if (!loading) { (e.target as HTMLElement).style.background='#cc0000'; (e.target as HTMLElement).style.boxShadow='0 4px 24px rgba(230,0,0,0.4)'; (e.target as HTMLElement).style.transform='translateY(-1px)' }}}
-              onMouseLeave={e=>{ (e.target as HTMLElement).style.background='#e60000'; (e.target as HTMLElement).style.boxShadow='none'; (e.target as HTMLElement).style.transform='none' }}
+              style={{ width:'100%', padding:'13px', background: loading ? '#555' : '#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading ? 'not-allowed' : 'pointer', transition:'all 0.2s', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}
+              onMouseEnter={e=>{ if (!loading) { (e.target as HTMLElement).style.background='#cc0000'; (e.target as HTMLElement).style.boxShadow='0 4px 24px rgba(230,0,0,0.4)' }}}
+              onMouseLeave={e=>{ (e.target as HTMLElement).style.background='#e60000'; (e.target as HTMLElement).style.boxShadow='none' }}
             >
               {loading ? <><Loader2 size={16} style={{ animation:'spin 1s linear infinite' }} />Входимо...</> : 'Увійти →'}
             </button>
           </form>
+          <p style={{ textAlign:'center', fontSize:'13px', color:'var(--text3)', marginTop:'20px', marginBottom:0 }}>
+            Ще немає акаунту?{' '}<a href="/auth/register" style={{ color:'#e60000', textDecoration:'none', fontWeight:600 }}>Подати заявку</a>
+          </p>
         </div>
-
         <p style={{ textAlign:'center', fontSize:'11px', fontFamily:'monospace', color:'rgba(255,255,255,0.18)', marginTop:'24px' }}>© 2026 · Infinite Union · All rights reserved</p>
       </div>
     </div>

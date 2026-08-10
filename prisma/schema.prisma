@@ -8,13 +8,16 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String     @id @default(cuid())
+  email     String     @unique
   password  String
   name      String
-  role      Role     @default(CLIENT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      Role       @default(CLIENT)
+  status    UserStatus @default(PENDING)
+  company   String?
+  phone     String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   client    Client?
 
   @@map("users")
@@ -100,6 +103,12 @@ model CampaignMetric {
 enum Role {
   ADMIN
   CLIENT
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  REJECTED
 }
 
 enum Platform {
