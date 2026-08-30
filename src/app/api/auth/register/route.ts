@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown'
+    const { success } = rateLimit(ip, 5, 15 * 60 * 1000)
+    if (!success) {
+      return NextResponse.json({ error: 'Забагато спроб. Спробуйте через 15 хвилин.' }, { status: 429 })
+    }
+
     const { name, email, password, company, phone } = await request.json()
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Заповніть всі обовязкові поля' }, { status: 400 })
