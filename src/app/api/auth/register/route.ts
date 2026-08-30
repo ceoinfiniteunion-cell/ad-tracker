@@ -1,34 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { rateLimit } from '@/lib/rate-limit'
+import { rateLimit, getIp, isValidEmail, isValidPassword, sanitizeString } from '@/lib/api-security'
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown'
-    const { success } = rateLimit(ip, 5, 15 * 60 * 1000)
-    if (!success) {
-      return NextResponse.json({ error: 'Забагато спроб. Спробуйте через 15 хвилин.' }, { status: 429 })
+    // Rate limit: 3 реєстрації з одного IP за годину
+    const ip = getIp(request)
+    const { ok } = rateLimit(`register:${ip}`, 3, 60 * 60 * 1000)
+    if (!ok) {
+      return NextResponse.json({ error: 'Забагато спроб реєстрації. Спробуйте через годину.' }, { status: 429 })
     }
 
-    const { name, email, password, company, phone } = await request.json()
+    const body = await request.json()
+    const { name, email, password, company, phone } = body
+
+    // Валідація
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Заповніть всі обовязкові поля' }, { status: 400 })
     }
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'Пароль має бути мінімум 6 символів' }, { status: 400 })
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ error: 'Невірний формат email' }, { status: 400 })
     }
-    const existing = await prisma.user.findUnique({ where: { email } })
+    if (!isValidPassword(password)) {
+      return NextResponse.json({ error: 'Пароль має бути від 6 до 128 символів' }, { status: 400 })
+    }
+
+    const cleanName = sanitizeString(name, 100)
+    const cleanCompany = sanitizeString(company, 200)
+    const cleanPhone = sanitizeString(phone, 20)
+    const cleanEmail = email.toLowerCase().trim()
+
+    if (cleanName.length < 2) {
+      return NextResponse.json({ error: "Ім'я має бути мінімум 2 символи" }, { status: 400 })
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email: cleanEmail } })
     if (existing) {
-      return NextResponse.json({ error: 'Цей email вже зареєстрований' }, { status: 400 })
+      // Не розкриваємо чи email існує — повертаємо той самий відповідь
+      return NextResponse.json({ success: true })
     }
+
     const hashedPassword = await bcrypt.hash(password, 12)
     await prisma.user.create({
-      data: { name, email, password: hashedPassword, company: company || null, phone: phone || null, role: 'CLIENT', status: 'PENDING' },
+      data: {
+        name: cleanName,
+        email: cleanEmail,
+        password: hashedPassword,
+        company: cleanCompany || null,
+        phone: cleanPhone || null,
+        role: 'CLIENT',
+        status: 'PENDING',
+      },
     })
+
     return NextResponse.json({ success: true })
   } catch (e) {
-    console.error(e)
+    console.error('[REGISTER ERROR]', e)
     return NextResponse.json({ error: 'Помилка сервера' }, { status: 500 })
   }
 }
