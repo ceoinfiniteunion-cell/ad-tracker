@@ -14,28 +14,17 @@ export default function LoginPage() {
 
   useEffect(() => {
     const savedEmail = localStorage.getItem('remembered_email')
-    if (savedEmail) {
-      setEmail(savedEmail)
-      setRememberMe(true)
-    }
+    if (savedEmail) { setEmail(savedEmail); setRememberMe(true) }
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError('')
-    if (rememberMe) {
-      localStorage.setItem('remembered_email', email)
-    } else {
-      localStorage.removeItem('remembered_email')
-    }
+    if (rememberMe) { localStorage.setItem('remembered_email', email) } else { localStorage.removeItem('remembered_email') }
     const result = await signIn('credentials', { email, password, redirect: false })
     if (result?.error) {
-      if (result.error.includes('PENDING')) {
-        setError('Ваша заявка ще на розгляді. Очікуйте підтвердження від адміністратора.')
-      } else if (result.error.includes('REJECTED')) {
-        setError('Ваш акаунт відхилено. Зверніться до підтримки.')
-      } else {
-        setError('Невірний email або пароль')
-      }
+      if (result.error.includes('PENDING')) { setError('Ваша заявка ще на розгляді. Очікуйте підтвердження від адміністратора.') }
+      else if (result.error.includes('REJECTED')) { setError('Ваш акаунт відхилено. Зверніться до підтримки.') }
+      else { setError('Невірний email або пароль') }
       setLoading(false)
     } else { router.push('/'); router.refresh() }
   }
@@ -79,13 +68,7 @@ export default function LoginPage() {
               />
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'20px', cursor:'pointer' }} onClick={()=>setRememberMe(!rememberMe)}>
-              <div style={{
-                width:'18px', height:'18px', borderRadius:'4px', flexShrink:0,
-                border: rememberMe ? '2px solid #e60000' : '2px solid rgba(255,255,255,0.2)',
-                background: rememberMe ? '#e60000' : 'transparent',
-                display:'flex', alignItems:'center', justifyContent:'center',
-                transition:'all 0.15s'
-              }}>
+              <div style={{ width:'18px', height:'18px', borderRadius:'4px', flexShrink:0, border: rememberMe ? '2px solid #e60000' : '2px solid rgba(255,255,255,0.2)', background: rememberMe ? '#e60000' : 'transparent', display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s' }}>
                 {rememberMe && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
               <span style={{ fontSize:'13px', color:'var(--text3)', userSelect:'none' }}>Запам'ятати мене</span>
@@ -96,7 +79,7 @@ export default function LoginPage() {
               </div>
             )}
             <button type="submit" disabled={loading}
-              style={{ width:'100%', padding:'13px', background: loading ? '#555' : '#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading ? 'not-allowed' : 'pointer', transition:'all 0.2s', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', letterSpacing:'0.02em' }}
+              style={{ width:'100%', padding:'13px', background: loading ? '#555' : '#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading ? 'not-allowed' : 'pointer', transition:'all 0.2s', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}
               onMouseEnter={e=>{ if (!loading) { (e.target as HTMLElement).style.background='#cc0000'; (e.target as HTMLElement).style.boxShadow='0 4px 24px rgba(230,0,0,0.4)'; (e.target as HTMLElement).style.transform='translateY(-1px)' }}}
               onMouseLeave={e=>{ (e.target as HTMLElement).style.background='#e60000'; (e.target as HTMLElement).style.boxShadow='none'; (e.target as HTMLElement).style.transform='none' }}
             >
