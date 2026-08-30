@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Loader2, AlertCircle } from 'lucide-react'
@@ -10,9 +10,23 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('remembered_email')
+    if (savedEmail) {
+      setEmail(savedEmail)
+      setRememberMe(true)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError('')
+    if (rememberMe) {
+      localStorage.setItem('remembered_email', email)
+    } else {
+      localStorage.removeItem('remembered_email')
+    }
     const result = await signIn('credentials', { email, password, redirect: false })
     if (result?.error) {
       if (result.error.includes('PENDING')) {
@@ -56,7 +70,7 @@ export default function LoginPage() {
                 onBlur={e=>{ e.target.style.borderColor='rgba(255,255,255,0.07)'; e.target.style.boxShadow='none' }}
               />
             </div>
-            <div style={{ marginBottom:'24px' }}>
+            <div style={{ marginBottom:'16px' }}>
               <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'8px' }}>Пароль</label>
               <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" required
                 style={{ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', transition:'border-color 0.2s, box-shadow 0.2s', boxSizing:'border-box' }}
@@ -64,15 +78,27 @@ export default function LoginPage() {
                 onBlur={e=>{ e.target.style.borderColor='rgba(255,255,255,0.07)'; e.target.style.boxShadow='none' }}
               />
             </div>
+            <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'20px', cursor:'pointer' }} onClick={()=>setRememberMe(!rememberMe)}>
+              <div style={{
+                width:'18px', height:'18px', borderRadius:'4px', flexShrink:0,
+                border: rememberMe ? '2px solid #e60000' : '2px solid rgba(255,255,255,0.2)',
+                background: rememberMe ? '#e60000' : 'transparent',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                transition:'all 0.15s'
+              }}>
+                {rememberMe && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              <span style={{ fontSize:'13px', color:'var(--text3)', userSelect:'none' }}>Запам'ятати мене</span>
+            </div>
             {error && (
               <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'12px 16px', background:'rgba(230,0,0,0.1)', border:'1px solid rgba(230,0,0,0.25)', borderRadius:'8px', color:'#ff6b6b', fontSize:'13px', marginBottom:'16px' }}>
                 <AlertCircle size={15} style={{ flexShrink:0 }} />{error}
               </div>
             )}
             <button type="submit" disabled={loading}
-              style={{ width:'100%', padding:'13px', background: loading ? '#555' : '#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading ? 'not-allowed' : 'pointer', transition:'all 0.2s', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}
-              onMouseEnter={e=>{ if (!loading) { (e.target as HTMLElement).style.background='#cc0000'; (e.target as HTMLElement).style.boxShadow='0 4px 24px rgba(230,0,0,0.4)' }}}
-              onMouseLeave={e=>{ (e.target as HTMLElement).style.background='#e60000'; (e.target as HTMLElement).style.boxShadow='none' }}
+              style={{ width:'100%', padding:'13px', background: loading ? '#555' : '#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading ? 'not-allowed' : 'pointer', transition:'all 0.2s', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', letterSpacing:'0.02em' }}
+              onMouseEnter={e=>{ if (!loading) { (e.target as HTMLElement).style.background='#cc0000'; (e.target as HTMLElement).style.boxShadow='0 4px 24px rgba(230,0,0,0.4)'; (e.target as HTMLElement).style.transform='translateY(-1px)' }}}
+              onMouseLeave={e=>{ (e.target as HTMLElement).style.background='#e60000'; (e.target as HTMLElement).style.boxShadow='none'; (e.target as HTMLElement).style.transform='none' }}
             >
               {loading ? <><Loader2 size={16} style={{ animation:'spin 1s linear infinite' }} />Входимо...</> : 'Увійти →'}
             </button>
