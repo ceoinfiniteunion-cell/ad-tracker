@@ -62,6 +62,7 @@ const INSTRUCTIONS: Record<Platform, {title:string; steps:{icon:string;title:str
 
 export default function ConnectPage() {
   const [accounts, setAccounts] = useState<AdAccount[]>([])
+  const [isMobile, setIsMobile] = useState(false)
   const [loading, setLoading] = useState(true)
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null)
   const [showTokenModal, setShowTokenModal] = useState<AdAccount|null>(null)
@@ -77,6 +78,12 @@ export default function ConnectPage() {
   const [tokenInput, setTokenInput] = useState('')
   const [showToken, setShowToken] = useState(false)
   const [focusedField, setFocusedField] = useState<string|null>(null)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check(); window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -178,7 +185,7 @@ export default function ConnectPage() {
           </div>
         )}
 
-        <div style={{ maxWidth:'900px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
+        <div style={{ maxWidth:'900px', margin:'0 auto', padding: isMobile ? '16px' : '36px 40px', position:'relative', zIndex:1 }}>
 
           {/* Header */}
           <div className="anim-fade" style={{ marginBottom:'32px' }}>
@@ -193,7 +200,7 @@ export default function ConnectPage() {
               <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'16px' }}>
                 {accounts.length > 0 ? '+ Додати ще кабінет' : 'Виберіть платформу'}
               </p>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px' }}>
+              <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)', gap:'12px' }}>
                 {(Object.entries(PLATFORMS) as [Platform, typeof PLATFORMS.FACEBOOK][]).map(([pl, p])=>(
                   <button key={pl} onClick={()=>{ setSelectedPlatform(pl); setStep('guide') }}
                     style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'14px', padding:'28px 20px', cursor:'pointer', textAlign:'left' as const, transition:'all 0.2s' }}

@@ -57,6 +57,7 @@ export default function ReportsPage() {
   const [activePlatform, setActivePlatform] = useState<'all'|Platform>('all')
   const [data, setData] = useState<ClientDashboardData|null>(null)
   const [prevData, setPrevData] = useState<ClientDashboardData|null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const [loading, setLoading] = useState(false)
   const [compare, setCompare] = useState(true)
   const [emailModal, setEmailModal] = useState(false)
@@ -80,6 +81,12 @@ export default function ReportsPage() {
     }
     setLoading(false)
   }
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check(); window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => { fetchData(from, to) }, [from, to, compare])
 
@@ -125,7 +132,7 @@ export default function ReportsPage() {
         <div style={gridBg}/>
         <div style={{ position:'fixed', top:'-60px', right:'10%', width:'500px', height:'500px', borderRadius:'50%', background:'radial-gradient(circle,rgba(230,0,0,0.05) 0%,transparent 70%)', pointerEvents:'none', zIndex:0 }}/>
 
-        <div style={{ maxWidth:'1200px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
+        <div style={{ maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px' : '36px 40px', position:'relative', zIndex:1 }}>
 
           {/* Header */}
           <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'24px', flexWrap:'wrap', gap:'16px' }}>
@@ -226,7 +233,7 @@ export default function ReportsPage() {
           ) : summary && (
             <>
               {/* KPI картки з трендом */}
-              <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'12px', marginBottom:'12px' }}>
+              <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap:'12px', marginBottom:'12px' }}>
                 {[
                   { label:'Витрати', value:formatCurrency(summary.totalSpend), prev:prevSummary?.totalSpend, color:'#e60000' },
                   { label:'Покази', value:formatNumber(summary.totalImpressions), prev:prevSummary?.totalImpressions, color:'var(--text)' },
@@ -244,7 +251,7 @@ export default function ReportsPage() {
                 ))}
               </div>
 
-              <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'16px' }}>
+              <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(3,1fr)' : 'repeat(3,1fr)', gap:'10px', marginBottom:'16px' }}>
                 {[
                   { label:'CTR', value:formatPercent(summary.ctr), prev:prevSummary?.ctr, color:'var(--text)', curr:summary.ctr },
                   { label:'CPC', value:formatCurrency(summary.cpc), prev:prevSummary?.cpc, color:'var(--text)', curr:summary.cpc },
@@ -354,7 +361,7 @@ export default function ReportsPage() {
               </div>
 
               {/* Графіки */}
-              <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
+              <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'16px' }}>
                 <SpendChart data={daily} title="Витрати та дохід"/>
                 <ClicksChart data={daily} title="Кліки та конверсії"/>
               </div>
