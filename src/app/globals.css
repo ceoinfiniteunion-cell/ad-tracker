@@ -334,3 +334,56 @@ html::before {
     width: 100% !important;
   }
 }
+
+/* ══════════════════════════════════════════
+   MOBILE SIDEBAR OVERRIDE — 100% reliable
+   ══════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Ховаємо десктопний сайдбар */
+  aside {
+    display: none !important;
+  }
+  
+  /* Показуємо мобільний топбар і bottom nav */
+  [data-mobile-topbar] {
+    display: flex !important;
+  }
+  
+  [data-mobile-overlay] {
+    display: block !important;
+  }
+  
+  [data-mobile-bottom] {
+    display: flex !important;
+  }
+  
+  /* Spacer для топбара */
+  [data-mobile-spacer] {
+    display: block !important;
+    height: 56px;
+    flex-shrink: 0;
+  }
+  
+  /* Основний контент — повна ширина */
+  main {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Padding контенту на мобільному */
+  main > div {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-top: 16px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  /* На десктопі ховаємо мобільні елементи */
+  [data-mobile-topbar],
+  [data-mobile-overlay],
+  [data-mobile-bottom],
+  [data-mobile-spacer] {
+    display: none !important;
+  }
+}
