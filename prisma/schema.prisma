@@ -116,3 +116,15 @@ enum Platform {
   GOOGLE
   TIKTOK
 }
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  userId    String
+  meta      Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
