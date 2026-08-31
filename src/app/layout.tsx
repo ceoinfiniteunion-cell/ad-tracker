@@ -7,6 +7,8 @@ import { Providers } from '@/components/layout/Providers'
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
 
+export const viewport = { width: 'device-width', initialScale: 1, maximumScale: 1, userScalable: false }
+
 export const metadata: Metadata = {
   title: 'Ad Tracker — Аналітика реклами',
   description: 'Платформа для відстеження рекламних кампаній',
