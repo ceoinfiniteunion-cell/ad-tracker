@@ -121,7 +121,7 @@ export default function AdminReportsPage() {
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
-        {showDropdown && <div style={{ position:'fixed', inset:0, zIndex:40 }} onClick={()=>setShowDropdown(false)}/>}
+
 
         <div style={{ maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px' : '36px 40px', position:'relative', zIndex:1 }}>
 
@@ -149,18 +149,7 @@ export default function AdminReportsPage() {
                     </div>
                     <span style={{ fontSize:'10px', color:'var(--text3)' }}>▼</span>
                   </button>
-                  {showDropdown && (
-                    <div style={{ position:'fixed', top:'auto', left:'16px', right:'16px', minWidth:'auto', background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.5)', overflow:'hidden', zIndex:100 }}>
-                      {clients.map((c,i)=>(
-                        <button key={c.id} onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
-                          style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background:selectedClient===c.id?'rgba(230,0,0,0.1)':'transparent', border:'none', borderBottom:i<clients.length-1?'1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', textAlign:'left' }}
-                        >
-                          <span style={{ fontSize:'13px', fontWeight:600, color:selectedClient===c.id?'#ff4444':'var(--text)' }}>{c.name}</span>
-                          <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+
                 </div>
               </div>
             </div>
@@ -281,6 +270,31 @@ export default function AdminReportsPage() {
           )}
         </div>
       </main>
+      {showDropdown && dropdownRect && typeof document !== 'undefined' && createPortal(
+        <>
+          <div style={{ position:'fixed', inset:0, zIndex:99998 }} onClick={()=>setShowDropdown(false)}/>
+          <div style={{
+            position:'fixed',
+            top: dropdownRect.bottom + 6,
+            left: isMobile ? 16 : dropdownRect.left,
+            right: isMobile ? 16 : 'auto',
+            width: isMobile ? 'auto' : dropdownRect.width,
+            minWidth:'180px',
+            background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'10px',
+            boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:99999, overflow:'hidden'
+          }}>
+            {clients.map((c,i)=>(
+              <button key={c.id} onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
+                style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background:selectedClient===c.id?'rgba(230,0,0,0.1)':'transparent', border:'none', borderBottom:i<clients.length-1?'1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', textAlign:'left' as const }}
+              >
+                <span style={{ fontSize:'13px', fontWeight:600, color:selectedClient===c.id?'#ff4444':'var(--text)' }}>{c.name}</span>
+                <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
+              </button>
+            ))}
+          </div>
+        </>,
+        document.body
+      )}
     </div>
   )
 }
