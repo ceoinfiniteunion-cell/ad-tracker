@@ -13,11 +13,13 @@ export function Sidebar() {
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState<boolean | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
+    setMounted(true)
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
@@ -58,8 +60,8 @@ export function Sidebar() {
 
   const isActive = (href: string) => pathname === href || (href !== '/admin' && href !== '/dashboard' && pathname.startsWith(href))
 
-  // Поки не знаємо розмір екрану — нічого не рендеримо щоб уникнути hydration mismatch
-  if (isMobile === null) return <div style={{ width:'220px', minWidth:'220px', background:'var(--bg2)', borderRight:'1px solid var(--border2)' }}/>
+  // До монтування — невидима заглушка нульової ширини
+  if (!mounted) return <div style={{ width:0, minWidth:0, overflow:'hidden' }}/>
 
   // МОБІЛЬНА ВЕРСІЯ
   if (isMobile) {
@@ -105,14 +107,14 @@ export function Sidebar() {
                   const active = isActive(l.href)
                   return (
                     <Link key={l.href} href={l.href} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'13px 16px', borderRadius:'10px', background: active ? 'rgba(230,0,0,0.1)' : 'transparent', border: active ? '1px solid rgba(230,0,0,0.2)' : '1px solid transparent', color: active ? '#e60000' : 'var(--text2)', textDecoration:'none', fontSize:'15px', fontWeight: active ? 700 : 500 }}>
-                      <Icon size={20} />{l.label}
+                      <Icon size={20}/>{l.label}
                     </Link>
                   )
                 })}
               </div>
               <button onClick={async () => { await fetch('/api/auth/logout', {method:'POST'}); signOut({callbackUrl:'/auth/login'}) }}
                 style={{ display:'flex', alignItems:'center', gap:'12px', width:'100%', padding:'13px 16px', borderRadius:'10px', background:'transparent', border:'1px solid transparent', color:'var(--text3)', fontSize:'15px', fontWeight:500, cursor:'pointer', marginTop:'8px' }}>
-                <LogOut size={20} />Вийти
+                <LogOut size={20}/>Вийти
               </button>
             </div>
           </div>
@@ -136,7 +138,7 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* Spacer top and bottom */}
+        {/* Spacer top */}
         <div style={{ height:'56px', flexShrink:0 }}/>
       </>
     )
