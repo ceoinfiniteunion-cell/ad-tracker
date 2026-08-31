@@ -1,10 +1,13 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings, FileText, Zap, Link2, Sun, Moon, ChevronsLeft, ChevronsRight, Menu, X, Shield } from 'lucide-react'
 import { useTheme } from '@/lib/theme'
+
+// useLayoutEffect на клієнті, useEffect на сервері
+const useIsomorphicEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -13,13 +16,11 @@ export function Sidebar() {
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
-  useEffect(() => {
+  useIsomorphicEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
-    setMounted(true)
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
@@ -60,14 +61,9 @@ export function Sidebar() {
 
   const isActive = (href: string) => pathname === href || (href !== '/admin' && href !== '/dashboard' && pathname.startsWith(href))
 
-  // До монтування — невидима заглушка нульової ширини
-  if (!mounted) return <div style={{ width:0, minWidth:0, overflow:'hidden' }}/>
-
-  // МОБІЛЬНА ВЕРСІЯ
   if (isMobile) {
     return (
       <>
-        {/* Top bar */}
         <div style={{ position:'fixed', top:0, left:0, right:0, height:'56px', background:'var(--bg2)', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px', zIndex:1000 }}>
           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
             <div style={{ width:'32px', height:'32px', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.25)', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -88,7 +84,6 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Full menu overlay */}
         {mobileOpen && (
           <div style={{ position:'fixed', inset:0, zIndex:999, background:'var(--bg)', paddingTop:'56px', overflowY:'auto' }}>
             <div style={{ padding:'16px' }}>
@@ -120,7 +115,6 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Bottom nav */}
         <div style={{ position:'fixed', bottom:0, left:0, right:0, height:'60px', background:'var(--bg2)', borderTop:'1px solid var(--border)', display:'flex', alignItems:'center', zIndex:998, paddingBottom:'env(safe-area-inset-bottom)' }}>
           {mobileLinks.map(l => {
             const Icon = l.icon
@@ -138,13 +132,11 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* Spacer top */}
         <div style={{ height:'56px', flexShrink:0 }}/>
       </>
     )
   }
 
-  // ДЕСКТОП ВЕРСІЯ
   const w = collapsed ? '64px' : '220px'
   return (
     <aside style={{ width:w, minWidth:w, background:'var(--bg2)', borderRight:'1px solid var(--border2)', boxShadow:'2px 0 12px rgba(0,0,0,0.15)', display:'flex', flexDirection:'column', height:'100vh', position:'sticky', top:0, transition:'width 0.25s ease, min-width 0.25s ease', overflow:'hidden' }}>
