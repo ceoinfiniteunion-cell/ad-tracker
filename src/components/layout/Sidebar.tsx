@@ -74,7 +74,8 @@ export function Sidebar() {
       </div>
 
       {/* ── МОБІЛЬНЕ МЕНЮ OVERLAY ── */}
-      <div data-mobile-overlay="" style={{ display: mobileOpen ? 'block' : 'none', position:'fixed', inset:0, zIndex:999, background:'var(--bg)', paddingTop:'56px', overflowY:'auto' }}>
+      {mobileOpen && (
+      <div data-mobile-overlay="" style={{ position:'fixed', inset:0, zIndex:999, background:'var(--bg)', paddingTop:'56px', overflowY:'auto' }}>
         <div style={{ padding:'16px' }}>
           <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'16px', marginBottom:'16px', display:'flex', alignItems:'center', gap:'12px' }}>
             <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', fontWeight:700, color:'#e60000', flexShrink:0 }}>
@@ -102,6 +103,7 @@ export function Sidebar() {
           </button>
         </div>
       </div>
+      )}
 
       {/* ── BOTTOM NAV (CSS ховає на десктопі) ── */}
       <div data-mobile-bottom="" style={{ position:'fixed', bottom:0, left:0, right:0, height:'60px', background:'var(--bg2)', borderTop:'1px solid var(--border)', alignItems:'center', zIndex:998, paddingBottom:'env(safe-area-inset-bottom)' }}>
