@@ -18,6 +18,7 @@ export function Sidebar() {
     { href:'/admin/stats', label:'Статистика', icon:BarChart2 },
     { href:'/admin/clients', label:'Клієнти', icon:Users },
     { href:'/admin/registrations', label:'Реєстрації', icon:Users },
+    { href:'/admin/audit', label:'Audit Log', icon:Users },
     { href:'/admin/new-client', label:'Новий клієнт', icon:Plus },
     { href:'/admin/reports', label:'Звіти', icon:FileText },
     { href:'/admin/meta', label:'Meta API', icon:Zap },

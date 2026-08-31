@@ -15,12 +15,34 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
-        const user = await prisma.user.findUnique({ where: { email: credentials.email }, include: { client: true } })
-        if (!user) return null
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email.toLowerCase().trim() },
+          include: { client: true },
+        })
+
+        if (!user) {
+          await prisma.auditLog.create({ data: { action: 'LOGIN_FAILED', userId: 'unknown', meta: { email: credentials.email, reason: 'user_not_found' } } }).catch(() => {})
+          return null
+        }
+
         const isValid = await bcrypt.compare(credentials.password, user.password)
-        if (!isValid) return null
-        if (user.status === 'PENDING') throw new Error('PENDING')
-        if (user.status === 'REJECTED') throw new Error('REJECTED')
+        if (!isValid) {
+          await prisma.auditLog.create({ data: { action: 'LOGIN_FAILED', userId: user.id, meta: { email: user.email, reason: 'wrong_password' } } }).catch(() => {})
+          return null
+        }
+
+        if (user.status === 'PENDING') {
+          await prisma.auditLog.create({ data: { action: 'LOGIN_FAILED', userId: user.id, meta: { reason: 'pending' } } }).catch(() => {})
+          throw new Error('PENDING')
+        }
+        if (user.status === 'REJECTED') {
+          await prisma.auditLog.create({ data: { action: 'LOGIN_FAILED', userId: user.id, meta: { reason: 'rejected' } } }).catch(() => {})
+          throw new Error('REJECTED')
+        }
+
+        await prisma.auditLog.create({ data: { action: 'LOGIN_SUCCESS', userId: user.id, meta: { email: user.email, role: user.role } } }).catch(() => {})
+
         return { id: user.id, email: user.email, name: user.name, role: user.role, clientId: user.client?.id ?? null }
       },
     }),
