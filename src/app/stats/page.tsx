@@ -41,6 +41,7 @@ export default function StatsPage() {
   const [period, setPeriod] = useState(30)
   const [activePlatform, setActivePlatform] = useState<'all'|Platform>('all')
   const [activeAccount, setActiveAccount] = useState<string>('all')
+  const [isMobile, setIsMobile] = useState(false)
   const [compareMode, setCompareMode] = useState(false)
   const [compareAccount, setCompareAccount] = useState<string>('')
   const [dropdown, setDropdown] = useState<Platform|null>(null)
@@ -423,6 +424,7 @@ export default function StatsPage() {
                       })}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               )}
 
