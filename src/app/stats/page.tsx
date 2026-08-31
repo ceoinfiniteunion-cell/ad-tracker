@@ -47,6 +47,12 @@ export default function StatsPage() {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check(); window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  useEffect(() => {
     setLoading(true)
     const from = getFrom(period)
     const to = new Date().toISOString().split('T')[0]
@@ -123,7 +129,7 @@ export default function StatsPage() {
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={gridBg}/>
 
-        <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
+        <div style={{ maxWidth:'1100px', margin:'0 auto', padding: isMobile ? '16px' : '36px 40px', position:'relative', zIndex:1 }}>
 
           {/* Header */}
           <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'28px' }}>
@@ -346,7 +352,7 @@ export default function StatsPage() {
                 <table style={{ width:'100%', borderCollapse:'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                      {['Метрика','Значення','Деталі'].map(h=>(
+                      {(isMobile ? ['Метрика','Значення'] : ['Метрика','Значення','Деталі']).map(h=>(
                         <th key={h} style={{ padding:'12px 20px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                       ))}
                     </tr>
@@ -376,10 +382,11 @@ export default function StatsPage() {
               {/* Розбивка по платформах */}
               {activePlatform === 'all' && data && data.platforms.length > 1 && (
                 <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
-                  <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)' }}>
+                  <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border)' }}>
                     <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Розбивка по платформах</p>
                   </div>
-                  <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                  <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth:'600px' }}>
                     <thead>
                       <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                         {['Платформа / Кабінет','Витрати','Покази','Охоплення','Кліки','CTR','CPC','CPM','ROAS','Конверсії','Ліди'].map(h=>(
@@ -420,7 +427,7 @@ export default function StatsPage() {
               )}
 
               {/* Графіки */}
-              <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
+              <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'16px' }}>
                 <SpendChart data={daily} />
                 <ClicksChart data={daily} />
               </div>
