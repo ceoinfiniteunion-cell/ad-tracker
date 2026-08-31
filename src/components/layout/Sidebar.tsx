@@ -105,7 +105,7 @@ export function Sidebar() {
           </div>
         )}
 
-        <button onClick={()=>signOut({callbackUrl:'/auth/login'})}
+        <button onClick={async()=>{ await fetch('/api/auth/logout',{method:'POST'}); signOut({callbackUrl:'/auth/login'}) }}
           style={{ width:'100%', display:'flex', alignItems:'center', gap:'10px', padding:collapsed?'14px':'14px 18px', borderRadius:'8px', fontSize:'15px', color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', transition:'all 0.15s', fontWeight:500, justifyContent:collapsed?'center':'flex-start' }}
           onMouseEnter={e=>{ e.currentTarget.style.color='#ff4444'; e.currentTarget.style.background='rgba(230,0,0,0.08)' }}
           onMouseLeave={e=>{ e.currentTarget.style.color='var(--text3)'; e.currentTarget.style.background='transparent' }}

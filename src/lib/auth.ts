@@ -1,7 +1,9 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import { prisma } from './prisma'
+import { isTokenBlacklisted } from './jwt-blacklist'
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt', maxAge: 24 * 60 * 60 },
@@ -49,10 +51,20 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) { token.role = (user as any).role; token.clientId = (user as any).clientId }
+      if (user) {
+        token.role = (user as any).role
+        token.clientId = (user as any).clientId
+        token.jti = crypto.randomUUID()
+      }
       return token
     },
     async session({ session, token }) {
+      // Перевіряємо blacklist
+      if (token.jti) {
+        const blacklisted = await isTokenBlacklisted(token.jti as string)
+        if (blacklisted) throw new Error('Token revoked')
+      }
+
       if (session.user) {
         (session.user as any).id = token.sub
         ;(session.user as any).role = token.role
