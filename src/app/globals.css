@@ -406,3 +406,11 @@ html::before {
     padding-bottom: 80px !important;
   }
 }
+
+/* ── Mobile content padding ── */
+@media (max-width: 767px) {
+  .page-content {
+    padding: 16px !important;
+    padding-bottom: 80px !important;
+  }
+}
