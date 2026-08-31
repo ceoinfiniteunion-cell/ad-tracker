@@ -281,14 +281,13 @@ export default function AdminReportsPage() {
             width: isMobile ? 'auto' : dropdownRect.width,
             minWidth:'180px',
             background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'10px',
-            boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:99999, overflow:'hidden'
+            boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:99999, overflow:'auto', maxHeight:'280px'
           }}>
             {clients.map((c,i)=>(
               <button key={c.id} onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
-                style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background:selectedClient===c.id?'rgba(230,0,0,0.1)':'transparent', border:'none', borderBottom:i<clients.length-1?'1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', textAlign:'left' as const }}
+                style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'10px 14px', background:selectedClient===c.id?'rgba(230,0,0,0.1)':'transparent', border:'none', borderBottom:i<clients.length-1?'1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', textAlign:'left' as const }}
               >
                 <span style={{ fontSize:'13px', fontWeight:600, color:selectedClient===c.id?'#ff4444':'var(--text)' }}>{c.name}</span>
-                <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
               </button>
             ))}
           </div>
