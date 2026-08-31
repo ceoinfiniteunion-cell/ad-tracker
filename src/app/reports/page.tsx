@@ -326,7 +326,7 @@ export default function ReportsPage() {
                   <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)', margin:0 }}>{daily.length} днів</p>
                 </div>
                 <div style={{ maxHeight:'320px', overflowY:'auto' }}>
-                  <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                  <table className="daily-table" style={{ width:'100%', borderCollapse:'collapse' }}>
                     <thead style={{ position:'sticky', top:0, background:'var(--bg2)', zIndex:1 }}>
                       <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
                         {['Дата','Витрати','Дохід','Покази','Кліки','Конверсії','CTR','CPC'].map(h=>(

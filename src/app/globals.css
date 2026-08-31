@@ -430,3 +430,23 @@ html::before {
     white-space: nowrap;
   }
 }
+
+/* Daily table full width on mobile */
+@media (max-width: 767px) {
+  .daily-table {
+    width: 100% !important;
+    table-layout: fixed !important;
+  }
+  .daily-table td, .daily-table th {
+    padding: 11px 8px !important;
+  }
+  .daily-table td:first-child, .daily-table th:first-child {
+    width: 30% !important;
+  }
+  .daily-table td:nth-child(2), .daily-table th:nth-child(2) {
+    width: 35% !important;
+  }
+  .daily-table td:nth-child(3), .daily-table th:nth-child(3) {
+    width: 35% !important;
+  }
+}
