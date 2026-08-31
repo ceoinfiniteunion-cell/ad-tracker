@@ -5,20 +5,18 @@ import { RippleEffect } from '@/components/layout/RippleEffect'
 import { BgImage } from '@/components/layout/BgImage'
 import { Providers } from '@/components/layout/Providers'
 
-const inter = Inter({ subsets: ['latin', 'cyrillic'] })
-
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, maximumScale: 1, userScalable: false }
-
-export const metadata: Metadata = {
-  title: 'Ad Tracker — Аналітика реклами',
-  description: 'Платформа для відстеження рекламних кампаній',
-}
+const inter = Inter({ subsets: ["latin", "cyrillic"] })
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+}
+
+export const metadata: Metadata = {
+  title: "Ad Tracker — Аналітика реклами",
+  description: "Платформа для відстеження рекламних кампаній",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
