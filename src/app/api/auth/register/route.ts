@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limit: 3 реєстрації з одного IP за годину
     const ip = getIp(request)
-    const { ok } = rateLimit(`register:${ip}`, 3, 60 * 60 * 1000)
+    const { ok } = await rateLimit(`register:${ip}`, 3, 60 * 60 * 1000)
     if (!ok) {
       return NextResponse.json({ error: 'Забагато спроб реєстрації. Спробуйте через годину.' }, { status: 429 })
     }
