@@ -234,11 +234,11 @@ export default function AdminReportsPage() {
                   <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)', margin:0 }}>{daily.length} днів</p>
                 </div>
                 <div style={{ maxHeight:'280px', overflowY:'auto', overflowX:'auto', WebkitOverflowScrolling:'touch' } as any}>
-                  <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', tableLayout:'fixed' }}>
                     <thead style={{ position:'sticky', top:0, background:'var(--bg2)', zIndex:1 }}>
                       <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        {(isMobile ? ['Дата','Витрати','Кліки'] : ['Дата','Витрати','Дохід','Покази','Кліки','Конверсії','CTR','CPC']).map(h=>(
-                          <th key={h} style={{ padding:'10px 14px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase', letterSpacing:'0.08em', fontFamily:'monospace', whiteSpace:'nowrap' }}>{h}</th>
+                        {(isMobile ? ['Дата','Витрати','Кліки'] : ['Дата','Витрати','Дохід','Покази','Кліки','Конверсії','CTR','CPC']).map((h,hi)=>(
+                          <th key={h} style={{ padding:'10px 14px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase', letterSpacing:'0.08em', fontFamily:'monospace', whiteSpace:'nowrap', width: isMobile ? (hi===0?'33%':hi===1?'37%':'30%') : 'auto' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
