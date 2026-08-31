@@ -420,3 +420,13 @@ html::before {
     padding: 16px 16px 80px 16px !important;
   }
 }
+
+/* Reports daily table - full width columns */
+@media (max-width: 767px) {
+  table {
+    width: 100% !important;
+  }
+  table td, table th {
+    white-space: nowrap;
+  }
+}
