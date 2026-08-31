@@ -92,7 +92,7 @@ export default function AdminStatsPage() {
                 {showDropdown && (
                   <>
                     <div style={{ position:'fixed', inset:0, zIndex:9998 }} onClick={()=>setShowDropdown(false)}/>
-                    <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, minWidth:'180px', maxWidth:'calc(100vw - 32px)', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:9999, overflow:'hidden' }}>
+                    <div style={{ position:'absolute', top:'calc(100% + 6px)', left:0, right:'auto', minWidth:'200px', maxWidth:'calc(100vw - 32px)', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:9999, overflow:'hidden' }}>
                       {clients.map((c,i)=>(
                         <button key={c.id}
                           onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}

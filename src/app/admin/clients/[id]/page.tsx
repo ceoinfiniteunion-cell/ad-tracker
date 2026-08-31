@@ -183,7 +183,7 @@ export default function ClientDetailPage() {
           </div>
         )}
 
-        <div className="page-content" style={{ maxWidth:'860px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
+        <div className="page-content" style={{ maxWidth:'860px', margin:'0 auto', position:'relative', zIndex:1 }}>
 
           {/* Header */}
           <div className="anim-fade" style={{ marginBottom:'32px' }}>

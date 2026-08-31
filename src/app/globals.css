@@ -414,3 +414,9 @@ html::before {
     padding-bottom: 80px !important;
   }
 }
+
+@media (max-width: 767px) {
+  .page-content {
+    padding: 16px 16px 80px 16px !important;
+  }
+}
