@@ -137,7 +137,7 @@ export default function AdminReportsPage() {
                   <Download size={14}/>{!isMobile && 'Експорт CSV'}
                 </button>
                 {/* Client dropdown */}
-                <div style={{ position:'relative', zIndex:50 }}>
+                <div style={{ position:'relative', zIndex:200 }}>
                   <button onClick={()=>setShowDropdown(!showDropdown)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 12px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth: isMobile ? '120px' : '180px', justifyContent:'space-between' }}>
                     <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
                       <Users size={13} style={{color:'var(--text3)'}}/>

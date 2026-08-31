@@ -202,7 +202,7 @@ export default function ClientDetailPage() {
                   <div style={{ display:'flex', gap:'16px', marginTop:'6px' }}>
                     <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', color:'var(--text3)' }}><Building2 size={11}/>{client.company}</span>
                     <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', color:'var(--text3)' }}><Mail size={11}/>{client.user.email}</span>
-                    <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', color:'var(--text3)' }}><Calendar size={11}/>з {new Date(client.user.createdAt).toLocaleDateString('uk')}</span>
+                    <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'12px', color:'var(--text3)' }}><Calendar size={11}/>з {new Date(client.user.createdAt).toLocaleDateString('uk',{day:'2-digit',month:'2-digit',year:'2-digit'})}</span>
                   </div>
                 </div>
               </div>
