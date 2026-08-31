@@ -236,13 +236,13 @@ export default function AdminReportsPage() {
                 <div style={{ maxHeight:'300px', overflowY:'auto' }}>
                   {isMobile ? (
                     <div>
-                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'8px 16px', position:'sticky', top:0, background:'var(--bg2)', zIndex:1 }}>
+                      <div style={{ display:'grid', gridTemplateColumns:'2fr 2fr 1fr', borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'8px 16px', position:'sticky', top:0, background:'var(--bg2)', zIndex:1, width:'100%' }}>
                         {['ДАТА','ВИТРАТИ','КЛІКИ'].map(h=>(
                           <span key={h} style={{ fontSize:'10px', fontWeight:600, color:'var(--text4)', letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</span>
                         ))}
                       </div>
                       {[...daily].reverse().map(d=>(
-                        <div key={d.date} style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', padding:'10px 16px', borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
+                        <div key={d.date} style={{ display:'grid', gridTemplateColumns:'2fr 2fr 1fr', padding:'10px 16px', borderBottom:'1px solid rgba(255,255,255,0.03)', width:'100%' }}>
                           <span style={{ fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', fontWeight:600 }}>{new Date(d.date).toLocaleDateString('uk',{day:'2-digit',month:'short'})}</span>
                           <span style={{ fontFamily:'monospace', fontSize:'12px', color:'#e60000', fontWeight:700 }}>{formatCurrency(d.spend)}</span>
                           <span style={{ fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.clicks)}</span>

@@ -155,11 +155,11 @@ export default function AdminStatsPage() {
                       <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Метрики · {period} днів · {currentClient?.name}</p>
                       <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)', margin:0 }}>{getFrom(period)} → {new Date().toISOString().split('T')[0]}</p>
                     </div>
-                    <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                    <table style={{ width:'100%', borderCollapse:'collapse', tableLayout:'fixed' }}>
                       <thead>
                         <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                          {(isMobile ? ['Метрика','Значення'] : ['Метрика','Значення','Деталі']).map(h=>(
-                            <th key={h} style={{ padding: isMobile ? '10px 14px' : '12px 20px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                          {(isMobile ? ['Метрика','Значення'] : ['Метрика','Значення','Деталі']).map((h,hi)=>(
+                            <th key={h} style={{ padding: isMobile ? '10px 14px' : '12px 20px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.08em', fontFamily:'monospace', width: isMobile ? (hi===0 ? '55%' : '45%') : 'auto' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
