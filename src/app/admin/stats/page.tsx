@@ -6,7 +6,6 @@ import { ClicksChart } from '@/components/charts/ClicksChart'
 import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
 import { ChevronDown, Users } from 'lucide-react'
-import { createPortal } from 'react-dom'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#555' }
@@ -32,9 +31,7 @@ export default function AdminStatsPage() {
   const [period, setPeriod] = useState(30)
   const [activePlatform, setActivePlatform] = useState<'all'|Platform>('all')
   const [showDropdown, setShowDropdown] = useState(false)
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 })
   const [isMobile, setIsMobile] = useState(false)
-  const btnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -54,14 +51,6 @@ export default function AdminStatsPage() {
     fetch(`/api/metrics?clientId=${selectedClient}&from=${from}&to=${to}`)
       .then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
   }, [selectedClient, period])
-
-  const openDropdown = () => {
-    if (btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect()
-      setDropdownPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
-    }
-    setShowDropdown(v => !v)
-  }
 
   const tabStyle = (active: boolean, color?: string) => ({
     padding: isMobile ? '6px 10px' : '7px 14px',
@@ -91,14 +80,32 @@ export default function AdminStatsPage() {
                 {currentClient && <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>{currentClient.company}</p>}
               </div>
               {/* Клієнт dropdown */}
-              <button ref={btnRef} onClick={openDropdown}
-                style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth: isMobile ? '140px' : '180px', justifyContent:'space-between' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'7px' }}>
-                  <Users size={13} style={{color:'var(--text3)'}}/>
-                  <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth: isMobile ? '90px' : '140px' }}>{currentClient?.name ?? 'Виберіть'}</span>
-                </div>
-                <ChevronDown size={13} style={{ color:'var(--text3)', transform: showDropdown?'rotate(180deg)':'none', transition:'transform 0.2s', flexShrink:0 }}/>
-              </button>
+              <div style={{ position:'relative' }}>
+                <button onClick={()=>setShowDropdown(v=>!v)}
+                  style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth: isMobile ? '140px' : '180px', justifyContent:'space-between' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:'7px' }}>
+                    <Users size={13} style={{color:'var(--text3)'}}/>
+                    <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth: isMobile ? '90px' : '140px' }}>{currentClient?.name ?? 'Виберіть'}</span>
+                  </div>
+                  <ChevronDown size={13} style={{ color:'var(--text3)', transform: showDropdown?'rotate(180deg)':'none', transition:'transform 0.2s', flexShrink:0 }}/>
+                </button>
+                {showDropdown && (
+                  <>
+                    <div style={{ position:'fixed', inset:0, zIndex:9998 }} onClick={()=>setShowDropdown(false)}/>
+                    <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, minWidth:'200px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:9999, overflow:'hidden' }}>
+                      {clients.map((c,i)=>(
+                        <button key={c.id}
+                          onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
+                          style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background: selectedClient===c.id ? 'rgba(230,0,0,0.1)' : 'transparent', border:'none', borderBottom: i<clients.length-1 ? '1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', textAlign:'left' as const }}
+                        >
+                          <span style={{ fontSize:'13px', fontWeight:600, color: selectedClient===c.id ? '#ff4444' : 'var(--text)' }}>{c.name}</span>
+                          <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Periods */}
@@ -108,24 +115,6 @@ export default function AdminStatsPage() {
               ))}
             </div>
           </div>
-
-          {showDropdown && typeof window !== 'undefined' && createPortal(
-            <>
-              <div style={{ position:'fixed', inset:0, zIndex:9998 }} onClick={()=>setShowDropdown(false)}/>
-              <div style={{ position:'fixed', top: dropdownPos.top, right: dropdownPos.right, minWidth:'220px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:9999, overflow:'hidden' }}>
-                {clients.map((c,i)=>(
-                  <button key={c.id}
-                    onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
-                    style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background: selectedClient===c.id ? 'rgba(230,0,0,0.1)' : 'transparent', border:'none', borderBottom: i<clients.length-1 ? '1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', transition:'background 0.15s', textAlign:'left' }}
-                  >
-                    <span style={{ fontSize:'13px', fontWeight:600, color: selectedClient===c.id ? '#ff4444' : 'var(--text)' }}>{c.name}</span>
-                    <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
-                  </button>
-                ))}
-              </div>
-            </>,
-            document.body
-          )}
 
           {clients.length === 0 ? (
             <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'60px', textAlign:'center' }}>
@@ -140,7 +129,7 @@ export default function AdminStatsPage() {
                 {Array.from(new Map(data?.platforms.map(p=>[p.platform,p])).values()).map(p=>(
                   <button key={p.platform} onClick={()=>setActivePlatform(p.platform)} style={{ ...tabStyle(activePlatform===p.platform, PCOLOR[p.platform]), display:'flex', alignItems:'center', gap:'7px' }}>
                     <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:PCOLOR[p.platform], display:'inline-block' }}/>
-                    {isMobile ? p.platform === 'FACEBOOK' ? 'Meta' : p.platform === 'GOOGLE' ? 'Google' : 'TikTok' : PLABEL[p.platform]}
+                    {isMobile ? (p.platform==='FACEBOOK'?'Meta':p.platform==='GOOGLE'?'Google':'TikTok') : PLABEL[p.platform]}
                   </button>
                 ))}
               </div>
@@ -160,7 +149,7 @@ export default function AdminStatsPage() {
                     <table style={{ width:'100%', borderCollapse:'collapse' }}>
                       <thead>
                         <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                          {['Метрика','Значення', ...(isMobile ? [] : ['Деталі'])].map(h=>(
+                          {(isMobile ? ['Метрика','Значення'] : ['Метрика','Значення','Деталі']).map(h=>(
                             <th key={h} style={{ padding: isMobile ? '10px 14px' : '12px 20px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
                           ))}
                         </tr>
@@ -170,9 +159,9 @@ export default function AdminStatsPage() {
                           { metric:'Витрати на рекламу', value:formatCurrency(summary.totalSpend), detail:`Дохід: ${formatCurrency(summary.totalRevenue)}`, color:'#e60000' },
                           { metric:'Покази', value:formatNumber(summary.totalImpressions), detail:'Унікальні покази оголошень', color:'var(--text2)' },
                           { metric:'Кліки', value:formatNumber(summary.totalClicks), detail:`CTR: ${formatPercent(summary.ctr)}`, color:'var(--text2)' },
-                          { metric:'Конверсії', value:formatNumber(summary.totalConversions), detail:`Вартість: ${formatCurrency(summary.totalConversions>0 ? summary.totalSpend/summary.totalConversions : 0)}`, color:'#00c864' },
+                          { metric:'Конверсії', value:formatNumber(summary.totalConversions), detail:`Вартість: ${formatCurrency(summary.totalConversions>0?summary.totalSpend/summary.totalConversions:0)}`, color:'#00c864' },
                           { metric:'CPC', value:formatCurrency(summary.cpc), detail:'Середня вартість кліку', color:'var(--text2)' },
-                          { metric:'ROAS', value:`${summary.roas.toFixed(2)}×`, detail:`$1 витрат → $${summary.roas.toFixed(2)} доходу`, color: summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444' },
+                          { metric:'ROAS', value:`${summary.roas.toFixed(2)}×`, detail:`$1 витрат → $${summary.roas.toFixed(2)} доходу`, color:summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444' },
                         ].map(row=>(
                           <tr key={row.metric} style={{ borderBottom:'1px solid var(--border)' }}>
                             <td style={{ padding: isMobile ? '12px 14px' : '14px 20px', fontSize:'13px', color:'var(--text)', fontWeight:600 }}>{row.metric}</td>
@@ -215,7 +204,7 @@ export default function AdminStatsPage() {
                                   <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)', whiteSpace:'nowrap' }}>{formatNumber(p.summary.totalClicks)}</td>
                                   <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)', whiteSpace:'nowrap' }}>{formatPercent(p.summary.ctr)}</td>
                                   <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)', whiteSpace:'nowrap' }}>{formatCurrency(p.summary.cpc)}</td>
-                                  <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', fontWeight:700, whiteSpace:'nowrap', color: p.summary.roas>=2?'#00c864':p.summary.roas>=1?'#fbbf24':'#ff4444' }}>{p.summary.roas.toFixed(2)}×</td>
+                                  <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', fontWeight:700, whiteSpace:'nowrap', color:p.summary.roas>=2?'#00c864':p.summary.roas>=1?'#fbbf24':'#ff4444' }}>{p.summary.roas.toFixed(2)}×</td>
                                 </tr>
                               )
                             })}
@@ -225,7 +214,7 @@ export default function AdminStatsPage() {
                     </div>
                   )}
 
-                  {/* Графіки — 1 колонка на мобільному */}
+                  {/* Графіки */}
                   <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'16px' }}>
                     <SpendChart data={daily} title="Витрати та дохід"/>
                     <ClicksChart data={daily} title="Кліки та конверсії"/>
