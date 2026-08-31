@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { SpendChart } from '@/components/charts/SpendChart'
 import { ClicksChart } from '@/components/charts/ClicksChart'
@@ -31,7 +32,9 @@ export default function AdminStatsPage() {
   const [period, setPeriod] = useState(30)
   const [activePlatform, setActivePlatform] = useState<'all'|Platform>('all')
   const [showDropdown, setShowDropdown] = useState(false)
+  const [dropdownRect, setDropdownRect] = useState<DOMRect|null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const btnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -46,11 +49,14 @@ export default function AdminStatsPage() {
   useEffect(() => {
     if (!selectedClient) return
     setLoading(true); setData(null); setActivePlatform('all')
-    const from = getFrom(period)
-    const to = new Date().toISOString().split('T')[0]
-    fetch(`/api/metrics?clientId=${selectedClient}&from=${from}&to=${to}`)
+    fetch(`/api/metrics?clientId=${selectedClient}&from=${getFrom(period)}&to=${new Date().toISOString().split('T')[0]}`)
       .then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
   }, [selectedClient, period])
+
+  const openDropdown = () => {
+    if (btnRef.current) setDropdownRect(btnRef.current.getBoundingClientRect())
+    setShowDropdown(v=>!v)
+  }
 
   const tabStyle = (active: boolean, color?: string) => ({
     padding: isMobile ? '6px 10px' : '7px 14px',
@@ -71,7 +77,6 @@ export default function AdminStatsPage() {
       <main style={{ flex:1, overflowY:'auto' }}>
         <div style={{ maxWidth:'1100px', margin:'0 auto', padding: isMobile ? '16px' : '36px 40px', position:'relative', zIndex:1 }}>
 
-          {/* Header */}
           <div className="anim-fade" style={{ marginBottom:'24px' }}>
             <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// АДМІН · СТАТИСТИКА</p>
             <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', flexWrap:'wrap', gap:'12px' }}>
@@ -79,42 +84,49 @@ export default function AdminStatsPage() {
                 <h1 style={{ fontSize: isMobile ? '22px' : '26px', fontWeight:800, color:'var(--text)', margin:0 }}>Статистика клієнта</h1>
                 {currentClient && <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>{currentClient.company}</p>}
               </div>
-              {/* Клієнт dropdown */}
-              <div style={{ position:'relative', zIndex:100 }}>
-                <button onClick={()=>setShowDropdown(v=>!v)}
-                  style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth: isMobile ? '140px' : '180px', justifyContent:'space-between' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:'7px' }}>
-                    <Users size={13} style={{color:'var(--text3)'}}/>
-                    <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth: isMobile ? '90px' : '140px' }}>{currentClient?.name ?? 'Виберіть'}</span>
-                  </div>
-                  <ChevronDown size={13} style={{ color:'var(--text3)', transform: showDropdown?'rotate(180deg)':'none', transition:'transform 0.2s', flexShrink:0 }}/>
-                </button>
-                {showDropdown && (
-                  <>
-                    <div style={{ position:'fixed', inset:0, zIndex:9998 }} onClick={()=>setShowDropdown(false)}/>
-                    <div style={{ position:'fixed', top:'auto', left:'16px', right:'16px', minWidth:'auto', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:9999, overflow:'hidden' }}>
-                      {clients.map((c,i)=>(
-                        <button key={c.id}
-                          onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
-                          style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background: selectedClient===c.id ? 'rgba(230,0,0,0.1)' : 'transparent', border:'none', borderBottom: i<clients.length-1 ? '1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', textAlign:'left' as const }}
-                        >
-                          <span style={{ fontSize:'13px', fontWeight:600, color: selectedClient===c.id ? '#ff4444' : 'var(--text)' }}>{c.name}</span>
-                          <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
+              <button ref={btnRef} onClick={openDropdown}
+                style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth: isMobile ? '140px' : '180px', justifyContent:'space-between' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'7px' }}>
+                  <Users size={13} style={{color:'var(--text3)'}}/>
+                  <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth: isMobile ? '90px' : '140px' }}>{currentClient?.name ?? 'Виберіть'}</span>
+                </div>
+                <ChevronDown size={13} style={{ color:'var(--text3)', transform: showDropdown?'rotate(180deg)':'none', transition:'transform 0.2s', flexShrink:0 }}/>
+              </button>
             </div>
-
-            {/* Periods */}
             <div style={{ display:'flex', gap:'6px', marginTop:'16px', flexWrap:'wrap' }}>
               {PERIODS.map(p=>(
                 <button key={p.days} onClick={()=>setPeriod(p.days)} style={tabStyle(period===p.days)}>{p.label}</button>
               ))}
             </div>
           </div>
+
+          {/* Portal dropdown */}
+          {showDropdown && dropdownRect && typeof document !== 'undefined' && createPortal(
+            <>
+              <div style={{ position:'fixed', inset:0, zIndex:99998 }} onClick={()=>setShowDropdown(false)}/>
+              <div style={{
+                position:'fixed',
+                top: dropdownRect.bottom + 6,
+                left: isMobile ? 16 : dropdownRect.left,
+                right: isMobile ? 16 : 'auto',
+                width: isMobile ? 'auto' : dropdownRect.width,
+                minWidth: isMobile ? 'auto' : '180px',
+                background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px',
+                boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:99999, overflow:'hidden'
+              }}>
+                {clients.map((c,i)=>(
+                  <button key={c.id}
+                    onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
+                    style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background: selectedClient===c.id ? 'rgba(230,0,0,0.1)' : 'transparent', border:'none', borderBottom: i<clients.length-1 ? '1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', textAlign:'left' as const }}
+                  >
+                    <span style={{ fontSize:'13px', fontWeight:600, color: selectedClient===c.id ? '#ff4444' : 'var(--text)' }}>{c.name}</span>
+                    <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
+                  </button>
+                ))}
+              </div>
+            </>,
+            document.body
+          )}
 
           {clients.length === 0 ? (
             <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'60px', textAlign:'center' }}>
@@ -123,7 +135,6 @@ export default function AdminStatsPage() {
             </div>
           ) : (
             <>
-              {/* Платформи */}
               <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'20px', flexWrap:'wrap' }}>
                 <button onClick={()=>setActivePlatform('all')} style={tabStyle(activePlatform==='all')}>Всі платформи</button>
                 {Array.from(new Map(data?.platforms.map(p=>[p.platform,p])).values()).map(p=>(
@@ -140,7 +151,6 @@ export default function AdminStatsPage() {
                 </div>
               ) : summary && (
                 <>
-                  {/* Таблиця метрик */}
                   <div className="anim-up-2" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
                     <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'8px' }}>
                       <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Метрики · {period} днів · {currentClient?.name}</p>
@@ -173,7 +183,6 @@ export default function AdminStatsPage() {
                     </table>
                   </div>
 
-                  {/* Розбивка по платформах */}
                   {activePlatform==='all' && data && data.platforms.length>1 && (
                     <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
                       <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border)' }}>
@@ -214,7 +223,6 @@ export default function AdminStatsPage() {
                     </div>
                   )}
 
-                  {/* Графіки */}
                   <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'16px' }}>
                     <SpendChart data={daily} title="Витрати та дохід"/>
                     <ClicksChart data={daily} title="Кліки та конверсії"/>

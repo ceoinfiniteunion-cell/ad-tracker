@@ -6,6 +6,8 @@ import { ClicksChart } from '@/components/charts/ClicksChart'
 import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
 import { Calendar, Download, TrendingUp, TrendingDown, Users } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { useRef } from 'react'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#555' }
@@ -56,6 +58,8 @@ export default function AdminReportsPage() {
   const [loading, setLoading] = useState(false)
   const [compare, setCompare] = useState(true)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [dropdownRect, setDropdownRect] = useState<DOMRect|null>(null)
+  const dropdownBtnRef = useRef<HTMLButtonElement>(null)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -138,7 +142,7 @@ export default function AdminReportsPage() {
                 </button>
                 {/* Client dropdown */}
                 <div style={{ position:'relative', zIndex:200 }}>
-                  <button onClick={()=>setShowDropdown(!showDropdown)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 12px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth: isMobile ? '120px' : '180px', justifyContent:'space-between' }}>
+                  <button ref={dropdownBtnRef} onClick={()=>{ if(dropdownBtnRef.current) setDropdownRect(dropdownBtnRef.current.getBoundingClientRect()); setShowDropdown(!showDropdown) }} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 12px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth: isMobile ? '120px' : '180px', justifyContent:'space-between' }}>
                     <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
                       <Users size={13} style={{color:'var(--text3)'}}/>
                       <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth: isMobile ? '70px' : '130px' }}>{currentClient?.name ?? 'Клієнт'}</span>
