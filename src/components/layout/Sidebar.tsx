@@ -13,7 +13,7 @@ export function Sidebar() {
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState<boolean | null>(null)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -42,7 +42,6 @@ export function Sidebar() {
     { href:'/profile', label:'Профіль', icon:Settings },
   ]
 
-  // Мобільне нижнє меню
   const mobileLinks = isAdmin
     ? [
         { href:'/admin', label:'Дашборд', icon:BarChart2 },
@@ -58,6 +57,9 @@ export function Sidebar() {
       ]
 
   const isActive = (href: string) => pathname === href || (href !== '/admin' && href !== '/dashboard' && pathname.startsWith(href))
+
+  // Поки не знаємо розмір екрану — нічого не рендеримо щоб уникнути hydration mismatch
+  if (isMobile === null) return <div style={{ width:'220px', minWidth:'220px', background:'var(--bg2)', borderRight:'1px solid var(--border2)' }}/>
 
   // МОБІЛЬНА ВЕРСІЯ
   if (isMobile) {
@@ -88,7 +90,6 @@ export function Sidebar() {
         {mobileOpen && (
           <div style={{ position:'fixed', inset:0, zIndex:999, background:'var(--bg)', paddingTop:'56px', overflowY:'auto' }}>
             <div style={{ padding:'16px' }}>
-              {/* User info */}
               <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'16px', marginBottom:'16px', display:'flex', alignItems:'center', gap:'12px' }}>
                 <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', fontWeight:700, color:'#e60000', flexShrink:0 }}>
                   {session?.user?.name?.[0]?.toUpperCase() ?? 'U'}
@@ -98,26 +99,20 @@ export function Sidebar() {
                   <p style={{ fontSize:'11px', color:'var(--text3)', margin:0 }}>{session?.user?.email}</p>
                 </div>
               </div>
-
-              {/* Links */}
               <div style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
                 {links.map(l => {
                   const Icon = l.icon
                   const active = isActive(l.href)
                   return (
-                    <Link key={l.href} href={l.href} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'13px 16px', borderRadius:'10px', background: active ? 'rgba(230,0,0,0.1)' : 'transparent', border: active ? '1px solid rgba(230,0,0,0.2)' : '1px solid transparent', color: active ? '#e60000' : 'var(--text2)', textDecoration:'none', fontSize:'15px', fontWeight: active ? 700 : 500, transition:'all 0.15s' }}>
-                      <Icon size={20} />
-                      {l.label}
+                    <Link key={l.href} href={l.href} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'13px 16px', borderRadius:'10px', background: active ? 'rgba(230,0,0,0.1)' : 'transparent', border: active ? '1px solid rgba(230,0,0,0.2)' : '1px solid transparent', color: active ? '#e60000' : 'var(--text2)', textDecoration:'none', fontSize:'15px', fontWeight: active ? 700 : 500 }}>
+                      <Icon size={20} />{l.label}
                     </Link>
                   )
                 })}
               </div>
-
-              {/* Logout */}
               <button onClick={async () => { await fetch('/api/auth/logout', {method:'POST'}); signOut({callbackUrl:'/auth/login'}) }}
-                style={{ display:'flex', alignItems:'center', gap:'12px', width:'100%', padding:'13px 16px', borderRadius:'10px', background:'transparent', border:'1px solid transparent', color:'var(--text3)', fontSize:'15px', fontWeight:500, cursor:'pointer', marginTop:'8px', transition:'all 0.15s' }}>
-                <LogOut size={20} />
-                Вийти
+                style={{ display:'flex', alignItems:'center', gap:'12px', width:'100%', padding:'13px 16px', borderRadius:'10px', background:'transparent', border:'1px solid transparent', color:'var(--text3)', fontSize:'15px', fontWeight:500, cursor:'pointer', marginTop:'8px' }}>
+                <LogOut size={20} />Вийти
               </button>
             </div>
           </div>
@@ -129,7 +124,7 @@ export function Sidebar() {
             const Icon = l.icon
             const active = isActive(l.href)
             return (
-              <Link key={l.href} href={l.href} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'3px', color: active ? '#e60000' : 'var(--text3)', textDecoration:'none', padding:'8px 4px', transition:'color 0.15s' }}>
+              <Link key={l.href} href={l.href} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'3px', color: active ? '#e60000' : 'var(--text3)', textDecoration:'none', padding:'8px 4px' }}>
                 <Icon size={20} strokeWidth={active ? 2.5 : 1.8}/>
                 <span style={{ fontSize:'10px', fontWeight: active ? 700 : 400 }}>{l.label}</span>
               </Link>
@@ -147,7 +142,7 @@ export function Sidebar() {
     )
   }
 
-  // ДЕСКТОП ВЕРСІЯ (без змін)
+  // ДЕСКТОП ВЕРСІЯ
   const w = collapsed ? '64px' : '220px'
   return (
     <aside style={{ width:w, minWidth:w, background:'var(--bg2)', borderRight:'1px solid var(--border2)', boxShadow:'2px 0 12px rgba(0,0,0,0.15)', display:'flex', flexDirection:'column', height:'100vh', position:'sticky', top:0, transition:'width 0.25s ease, min-width 0.25s ease', overflow:'hidden' }}>
@@ -196,8 +191,7 @@ export function Sidebar() {
         )}
         <button onClick={async () => { await fetch('/api/auth/logout', {method:'POST'}); signOut({callbackUrl:'/auth/login'}) }}
           style={{ display:'flex', alignItems:'center', gap:'10px', width:'100%', padding: collapsed ? '10px' : '10px 12px', borderRadius:'8px', background:'transparent', border:'none', color:'var(--text3)', fontSize:'13px', cursor:'pointer', justifyContent: collapsed ? 'center' : 'flex-start', whiteSpace:'nowrap', overflow:'hidden' }}>
-          <LogOut size={18}/>
-          {!collapsed && 'Вийти'}
+          <LogOut size={18}/>{!collapsed && 'Вийти'}
         </button>
         <button onClick={() => setCollapsed(!collapsed)} style={{ display:'flex', alignItems:'center', gap:'10px', width:'100%', padding: collapsed ? '10px' : '10px 12px', borderRadius:'8px', background:'transparent', border:'none', color:'var(--text3)', fontSize:'13px', cursor:'pointer', justifyContent: collapsed ? 'center' : 'flex-start', whiteSpace:'nowrap', overflow:'hidden' }}>
           {collapsed ? <ChevronsRight size={18}/> : <><ChevronsLeft size={18}/><span>Згорнути</span></>}

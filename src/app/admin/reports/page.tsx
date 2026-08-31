@@ -39,7 +39,6 @@ function Trend({ curr, prev }: { curr:number; prev:number }) {
   )
 }
 
-const gridBg = { position:'fixed' as const, inset:0,  pointerEvents:'none' as const, zIndex:0 }
 const inpStyle = { padding:'10px 14px', background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', cursor:'pointer', fontFamily:'monospace' }
 
 export default function AdminReportsPage() {
@@ -57,6 +56,13 @@ export default function AdminReportsPage() {
   const [loading, setLoading] = useState(false)
   const [compare, setCompare] = useState(true)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check(); window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     fetch('/api/clients/list').then(r=>r.json()).then(d=>{ setClients(d); if(d.length>0) setSelectedClient(d[0].id) })
@@ -93,7 +99,8 @@ export default function AdminReportsPage() {
   }
 
   const tabStyle = (active: boolean, color?: string) => ({
-    padding:'7px 14px', borderRadius:'7px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
+    padding: isMobile ? '6px 10px' : '7px 14px',
+    borderRadius:'7px', fontSize: isMobile ? '11px' : '12px', fontWeight:600 as const, cursor:'pointer', border:'1px solid', transition:'all 0.15s',
     background: active?(color?`${color}18`:'rgba(230,0,0,0.12)'):'transparent',
     color: active?(color??'#ff4444'):'var(--text3)',
     borderColor: active?(color?`${color}40`:'rgba(230,0,0,0.3)'):'var(--border)',
@@ -110,73 +117,70 @@ export default function AdminReportsPage() {
     <div style={{ display:'flex', height:'100vh', overflow:'hidden', background:'var(--bg)' }}>
       <Sidebar />
       <main style={{ flex:1, overflowY:'auto' }}>
-        <div style={gridBg}/>
         {showDropdown && <div style={{ position:'fixed', inset:0, zIndex:40 }} onClick={()=>setShowDropdown(false)}/>}
 
-        <div style={{ maxWidth:'1200px', margin:'0 auto', padding:'36px 40px', position:'relative', zIndex:1 }}>
+        <div style={{ maxWidth:'1200px', margin:'0 auto', padding: isMobile ? '16px' : '36px 40px', position:'relative', zIndex:1 }}>
 
           {/* Header */}
-          <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'24px', flexWrap:'wrap', gap:'16px' }}>
-            <div>
-              <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// АДМІН · ЗВІТИ</p>
-              <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Звіти</h1>
-              {currentClient && <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>{currentClient.name} · {currentClient.company} · {days} днів</p>}
-            </div>
-            <div style={{ display:'flex', gap:'8px', alignItems:'center', flexWrap:'wrap' }}>
-              <button onClick={()=>setCompare(!compare)} style={tabStyle(compare)}>
-                {compare?'✓ Порівняння':'Порівняння'}
-              </button>
-              <button onClick={exportCSV} style={{ display:'flex', alignItems:'center', gap:'7px', padding:'9px 16px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text2)', fontSize:'13px', fontWeight:600, cursor:'pointer', transition:'all 0.15s' }}
-                onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.3)'; e.currentTarget.style.color='#ff4444' }}
-                onMouseLeave={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.color='rgba(255,255,255,0.6)' }}
-              ><Download size={14}/>Експорт CSV</button>
-
-              {/* Client dropdown */}
-              <div style={{ position:'relative', zIndex:50 }}>
-                <button onClick={()=>setShowDropdown(!showDropdown)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth:'180px', justifyContent:'space-between' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:'7px' }}>
-                    <Users size={13} style={{color:'var(--text3)'}}/>
-                    {currentClient?.name ?? 'Виберіть клієнта'}
-                  </div>
-                  <span style={{ fontSize:'10px', color:'var(--text3)', transform:showDropdown?'rotate(180deg)':'none', transition:'transform 0.2s', display:'inline-block' }}>▼</span>
+          <div className="anim-fade" style={{ marginBottom:'20px' }}>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// АДМІН · ЗВІТИ</p>
+            <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', flexWrap:'wrap', gap:'10px' }}>
+              <div>
+                <h1 style={{ fontSize: isMobile ? '22px' : '26px', fontWeight:800, color:'var(--text)', margin:0 }}>Звіти</h1>
+                {currentClient && <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>{currentClient.name} · {currentClient.company} · {days} днів</p>}
+              </div>
+              <div style={{ display:'flex', gap:'8px', alignItems:'center', flexWrap:'wrap' }}>
+                <button onClick={()=>setCompare(!compare)} style={tabStyle(compare)}>
+                  {compare ? '✓ Порівняння' : 'Порівняння'}
                 </button>
-                {showDropdown && (
-                  <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, minWidth:'220px', background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.5)', overflow:'hidden' }}>
-                    {clients.map((c,i)=>(
-                      <button key={c.id} onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
-                        style={{ width:'100%', display:'flex', flexDirection:'column' as const, alignItems:'flex-start', padding:'12px 16px', background:selectedClient===c.id?'rgba(230,0,0,0.1)':'transparent', border:'none', borderBottom:i<clients.length-1?'1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', transition:'background 0.15s', textAlign:'left' as const }}
-                        onMouseEnter={e=>{ if(selectedClient!==c.id) e.currentTarget.style.background='rgba(255,255,255,0.04)' }}
-                        onMouseLeave={e=>{ if(selectedClient!==c.id) e.currentTarget.style.background='transparent' }}
-                      >
-                        <span style={{ fontSize:'13px', fontWeight:600, color:selectedClient===c.id?'#ff4444':'#fff' }}>{c.name}</span>
-                        <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <button onClick={exportCSV} style={{ display:'flex', alignItems:'center', gap:'6px', padding: isMobile ? '7px 10px' : '9px 16px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text2)', fontSize:'13px', fontWeight:600, cursor:'pointer' }}>
+                  <Download size={14}/>{!isMobile && 'Експорт CSV'}
+                </button>
+                {/* Client dropdown */}
+                <div style={{ position:'relative', zIndex:50 }}>
+                  <button onClick={()=>setShowDropdown(!showDropdown)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 12px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth: isMobile ? '120px' : '180px', justifyContent:'space-between' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+                      <Users size={13} style={{color:'var(--text3)'}}/>
+                      <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth: isMobile ? '70px' : '130px' }}>{currentClient?.name ?? 'Клієнт'}</span>
+                    </div>
+                    <span style={{ fontSize:'10px', color:'var(--text3)' }}>▼</span>
+                  </button>
+                  {showDropdown && (
+                    <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, minWidth:'200px', background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.5)', overflow:'hidden', zIndex:100 }}>
+                      {clients.map((c,i)=>(
+                        <button key={c.id} onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
+                          style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background:selectedClient===c.id?'rgba(230,0,0,0.1)':'transparent', border:'none', borderBottom:i<clients.length-1?'1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', textAlign:'left' }}
+                        >
+                          <span style={{ fontSize:'13px', fontWeight:600, color:selectedClient===c.id?'#ff4444':'var(--text)' }}>{c.name}</span>
+                          <span style={{ fontSize:'11px', color:'var(--text3)', marginTop:'2px' }}>{c.company}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Пресети + дати */}
-          <div className="anim-up-1" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'20px', marginBottom:'16px' }}>
-            <div style={{ display:'flex', gap:'6px', flexWrap:'wrap', marginBottom:'16px' }}>
+          <div className="anim-up-1" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding: isMobile ? '14px' : '20px', marginBottom:'16px' }}>
+            <div style={{ display:'flex', gap:'6px', flexWrap:'wrap', marginBottom:'14px' }}>
               {PRESETS.map(p=>(
-                <button key={p.label} onClick={()=>applyPreset(p)} style={{ padding:'6px 12px', borderRadius:'6px', fontSize:'12px', fontWeight:600, cursor:'pointer', border:'1px solid', transition:'all 0.15s', background:activePreset===p.label?'rgba(230,0,0,0.12)':'transparent', color:activePreset===p.label?'#ff4444':'var(--text3)', borderColor:activePreset===p.label?'rgba(230,0,0,0.3)':'var(--border)' }}>
+                <button key={p.label} onClick={()=>applyPreset(p)} style={{ padding:'6px 10px', borderRadius:'6px', fontSize:'11px', fontWeight:600, cursor:'pointer', border:'1px solid', background:activePreset===p.label?'rgba(230,0,0,0.12)':'transparent', color:activePreset===p.label?'#ff4444':'var(--text3)', borderColor:activePreset===p.label?'rgba(230,0,0,0.3)':'var(--border)' }}>
                   {p.label}
                 </button>
               ))}
             </div>
-            <div style={{ display:'flex', gap:'12px', alignItems:'center', flexWrap:'wrap' }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                <Calendar size={14} style={{color:'var(--text3)'}}/>
-                <span style={{ fontSize:'12px', color:'var(--text3)' }}>Від</span>
-                <input type="date" value={from} onChange={e=>{ setFrom(e.target.value); setActivePreset('') }} max={to} style={{ ...inpStyle, colorScheme:'dark' }} onFocus={e=>{ e.target.style.borderColor='#e60000' }} onBlur={e=>{ e.target.style.borderColor='rgba(255,255,255,0.08)' }}/>
+                <Calendar size={14} style={{color:'var(--text3)', flexShrink:0}}/>
+                <span style={{ fontSize:'12px', color:'var(--text3)', width:'24px' }}>Від</span>
+                <input type="date" value={from} onChange={e=>{ setFrom(e.target.value); setActivePreset('') }} max={to} style={{ ...inpStyle, colorScheme:'dark', flex:1 }}/>
               </div>
-              <span style={{ fontSize:'12px', color:'var(--text4)' }}>→</span>
               <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                <span style={{ fontSize:'12px', color:'var(--text3)' }}>До</span>
-                <input type="date" value={to} onChange={e=>{ setTo(e.target.value); setActivePreset('') }} min={from} max={today} style={{ ...inpStyle, colorScheme:'dark' }} onFocus={e=>{ e.target.style.borderColor='#e60000' }} onBlur={e=>{ e.target.style.borderColor='rgba(255,255,255,0.08)' }}/>
+                <Calendar size={14} style={{color:'var(--text3)', flexShrink:0}}/>
+                <span style={{ fontSize:'12px', color:'var(--text3)', width:'24px' }}>До</span>
+                <input type="date" value={to} onChange={e=>{ setTo(e.target.value); setActivePreset('') }} min={from} max={today} style={{ ...inpStyle, colorScheme:'dark', flex:1 }}/>
               </div>
             </div>
           </div>
@@ -187,7 +191,7 @@ export default function AdminReportsPage() {
             {Array.from(new Map(data?.platforms.map(p=>[p.platform,p])).values()).map(p=>(
               <button key={p.platform} onClick={()=>setActivePlatform(p.platform)} style={{ ...tabStyle(activePlatform===p.platform, PCOLOR[p.platform]), display:'flex', alignItems:'center', gap:'7px' }}>
                 <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:PCOLOR[p.platform], display:'inline-block' }}/>
-                {PLABEL[p.platform]}
+                {isMobile ? (p.platform === 'FACEBOOK' ? 'Meta' : p.platform === 'GOOGLE' ? 'Google' : 'TikTok') : PLABEL[p.platform]}
               </button>
             ))}
           </div>
@@ -199,34 +203,32 @@ export default function AdminReportsPage() {
             </div>
           ) : summary && (
             <>
-              {/* KPI */}
-              <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'12px', marginBottom:'12px' }}>
+              {/* KPI верхні 4 */}
+              <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap:'10px', marginBottom:'10px' }}>
                 {[
                   { label:'Витрати', value:formatCurrency(summary.totalSpend), curr:summary.totalSpend, prev:prevSummary?.totalSpend, color:'#e60000' },
                   { label:'Покази', value:formatNumber(summary.totalImpressions), curr:summary.totalImpressions, prev:prevSummary?.totalImpressions, color:'var(--text)' },
                   { label:'Кліки', value:formatNumber(summary.totalClicks), curr:summary.totalClicks, prev:prevSummary?.totalClicks, color:'var(--text)' },
                   { label:'Конверсії', value:formatNumber(summary.totalConversions), curr:summary.totalConversions, prev:prevSummary?.totalConversions, color:'#00c864' },
                 ].map(card=>(
-                  <div key={card.label} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 20px' }}
-                    onMouseEnter={e=>{ e.currentTarget.style.borderColor='rgba(230,0,0,0.15)' }}
-                    onMouseLeave={e=>{ e.currentTarget.style.borderColor='rgba(255,255,255,0.06)' }}
-                  >
-                    <p style={{ fontSize:'11px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--text3)', margin:'0 0 10px' }}>{card.label}</p>
-                    <p style={{ fontSize:'20px', fontWeight:800, color:card.color, margin:'0 0 8px', fontFamily:'monospace' }}>{card.value}</p>
+                  <div key={card.label} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding: isMobile ? '14px' : '18px 20px' }}>
+                    <p style={{ fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--text3)', margin:'0 0 8px' }}>{card.label}</p>
+                    <p style={{ fontSize: isMobile ? '18px' : '20px', fontWeight:800, color:card.color, margin:'0 0 6px', fontFamily:'monospace' }}>{card.value}</p>
                     {compare && card.prev !== undefined && <Trend curr={card.curr} prev={card.prev}/>}
                   </div>
                 ))}
               </div>
 
-              <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px', marginBottom:'16px' }}>
+              {/* KPI нижні 3 */}
+              <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(3,1fr)' : 'repeat(3,1fr)', gap:'10px', marginBottom:'16px' }}>
                 {[
                   { label:'CTR', value:formatPercent(summary.ctr), curr:summary.ctr, prev:prevSummary?.ctr, color:'var(--text)' },
                   { label:'CPC', value:formatCurrency(summary.cpc), curr:summary.cpc, prev:prevSummary?.cpc, color:'var(--text)' },
                   { label:'ROAS', value:`${summary.roas.toFixed(2)}×`, curr:summary.roas, prev:prevSummary?.roas, color:summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444' },
                 ].map(card=>(
-                  <div key={card.label} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 20px', textAlign:'center' as const }}>
-                    <p style={{ fontSize:'11px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--text3)', margin:'0 0 8px' }}>{card.label}</p>
-                    <p style={{ fontSize:'22px', fontWeight:800, color:card.color, margin:'0 0 6px', fontFamily:'monospace' }}>{card.value}</p>
+                  <div key={card.label} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding: isMobile ? '14px' : '18px 20px', textAlign:'center' }}>
+                    <p style={{ fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--text3)', margin:'0 0 6px' }}>{card.label}</p>
+                    <p style={{ fontSize: isMobile ? '18px' : '22px', fontWeight:800, color:card.color, margin:'0 0 4px', fontFamily:'monospace' }}>{card.value}</p>
                     {compare && card.prev !== undefined && <Trend curr={card.curr} prev={card.prev}/>}
                   </div>
                 ))}
@@ -234,43 +236,40 @@ export default function AdminReportsPage() {
 
               {/* Щоденна таблиця */}
               <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
-                <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between' }}>
+                <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between' }}>
                   <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Щоденна розбивка</p>
                   <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)', margin:0 }}>{daily.length} днів</p>
                 </div>
-                <div style={{ maxHeight:'280px', overflowY:'auto' }}>
-                  <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                <div style={{ maxHeight:'280px', overflowY:'auto', overflowX:'auto', WebkitOverflowScrolling:'touch' } as any}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', minWidth: isMobile ? '500px' : 'auto' }}>
                     <thead style={{ position:'sticky', top:0, background:'var(--bg2)', zIndex:1 }}>
                       <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        {['Дата','Витрати','Дохід','Покази','Кліки','Конверсії','CTR','CPC'].map(h=>(
-                          <th key={h} style={{ padding:'10px 16px', textAlign:'left' as const, fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase' as const, letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                        {(isMobile ? ['Дата','Витрати','Кліки'] : ['Дата','Витрати','Дохід','Покази','Кліки','Конверсії','CTR','CPC']).map(h=>(
+                          <th key={h} style={{ padding:'10px 14px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase', letterSpacing:'0.08em', fontFamily:'monospace', whiteSpace:'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {[...daily].reverse().map(d=>(
-                        <tr key={d.date} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', transition:'background 0.15s' }}
-                          onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.02)' }}
-                          onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}
-                        >
-                          <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', fontWeight:600 }}>{new Date(d.date).toLocaleDateString('uk',{day:'2-digit',month:'short',year:'numeric'})}</td>
-                          <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'#e60000', fontWeight:700 }}>{formatCurrency(d.spend)}</td>
-                          <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'#00c864', fontWeight:700 }}>{formatCurrency(d.revenue)}</td>
-                          <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.impressions)}</td>
-                          <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.clicks)}</td>
-                          <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.conversions)}</td>
-                          <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{d.impressions>0?formatPercent((d.clicks/d.impressions)*100):'—'}</td>
-                          <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{d.clicks>0?formatCurrency(d.spend/d.clicks):'—'}</td>
+                        <tr key={d.date} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
+                          <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', fontWeight:600, whiteSpace:'nowrap' }}>{new Date(d.date).toLocaleDateString('uk',{day:'2-digit',month:'short'})}</td>
+                          <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'#e60000', fontWeight:700, whiteSpace:'nowrap' }}>{formatCurrency(d.spend)}</td>
+                          {!isMobile && <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'#00c864', fontWeight:700, whiteSpace:'nowrap' }}>{formatCurrency(d.revenue)}</td>}
+                          {!isMobile && <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{formatNumber(d.impressions)}</td>}
+                          <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{formatNumber(d.clicks)}</td>
+                          {!isMobile && <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{formatNumber(d.conversions)}</td>}
+                          {!isMobile && <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{d.impressions>0?formatPercent((d.clicks/d.impressions)*100):'—'}</td>}
+                          {!isMobile && <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{d.clicks>0?formatCurrency(d.spend/d.clicks):'—'}</td>}
                         </tr>
                       ))}
-                      {daily.length===0 && <tr><td colSpan={8} style={{ padding:'40px', textAlign:'center', color:'var(--text4)', fontSize:'13px' }}>Немає даних за обраний період</td></tr>}
+                      {daily.length===0 && <tr><td colSpan={isMobile ? 3 : 8} style={{ padding:'40px', textAlign:'center', color:'var(--text4)', fontSize:'13px' }}>Немає даних за обраний період</td></tr>}
                     </tbody>
                   </table>
                 </div>
               </div>
 
               {/* Графіки */}
-              <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
+              <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'16px' }}>
                 <SpendChart data={daily} title="Витрати та дохід"/>
                 <ClicksChart data={daily} title="Кліки та конверсії"/>
               </div>
