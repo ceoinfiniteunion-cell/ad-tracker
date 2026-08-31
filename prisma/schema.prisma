@@ -97,6 +97,9 @@ model CampaignMetric {
   platformData Json?
   adAccount    AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
 
+  @@index([adAccountId])
+  @@index([date])
+  @@unique([adAccountId, date])
   @@map("campaign_metrics")
 }
 
@@ -126,5 +129,6 @@ model AuditLog {
 
   @@index([userId])
   @@index([createdAt])
+  @@index([action])
   @@map("audit_logs")
 }

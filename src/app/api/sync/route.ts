@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAccountInsights, parseConversions, parseRevenue } from '@/lib/meta'
+import { getToken } from '@/lib/token-store'
 
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
@@ -12,7 +13,8 @@ export async function POST(request: NextRequest) {
   const to = new Date().toISOString().split('T')[0]
 
   const accounts = await prisma.adAccount.findMany({
-    where: { platform: 'FACEBOOK', isActive: true, accessToken: { not: null } }
+    where: { platform: 'FACEBOOK', isActive: true, accessToken: { not: null } },
+    take: 100,
   })
 
   let totalSynced = 0
@@ -20,24 +22,43 @@ export async function POST(request: NextRequest) {
 
   for (const account of accounts) {
     try {
-      const insights = await getAccountInsights(account.accountId, from, to)
+      // Декриптуємо токен
+      const { accessToken } = await getToken(account.id)
+      if (!accessToken) {
+        errors.push(`${account.name}: no token`)
+        continue
+      }
+
+      const insights = await getAccountInsights(account.accountId, from, to, accessToken)
+
       for (const day of insights) {
         const conversions = parseConversions(day.actions ?? [])
         const revenue = parseRevenue(day.action_values ?? [])
         const date = new Date(day.date_start)
-        const existing = await prisma.campaignMetric.findFirst({
-          where: { adAccountId: account.id, date }
+
+        // upsert замість findFirst + update/create
+        await prisma.campaignMetric.upsert({
+          where: {
+            adAccountId_date: { adAccountId: account.id, date }
+          },
+          update: {
+            spend: parseFloat(day.spend ?? '0'),
+            impressions: parseInt(day.impressions ?? '0'),
+            clicks: parseInt(day.clicks ?? '0'),
+            conversions,
+            revenue,
+          },
+          create: {
+            adAccountId: account.id,
+            date,
+            spend: parseFloat(day.spend ?? '0'),
+            impressions: parseInt(day.impressions ?? '0'),
+            clicks: parseInt(day.clicks ?? '0'),
+            conversions,
+            revenue,
+            campaignName: 'Auto Sync',
+          },
         })
-        if (existing) {
-          await prisma.campaignMetric.update({
-            where: { id: existing.id },
-            data: { spend: parseFloat(day.spend??'0'), impressions: parseInt(day.impressions??'0'), clicks: parseInt(day.clicks??'0'), conversions, revenue }
-          })
-        } else {
-          await prisma.campaignMetric.create({
-            data: { adAccountId: account.id, date, spend: parseFloat(day.spend??'0'), impressions: parseInt(day.impressions??'0'), clicks: parseInt(day.clicks??'0'), conversions, revenue, campaignName: 'Auto Sync' }
-          })
-        }
         totalSynced++
       }
     } catch (err: any) {

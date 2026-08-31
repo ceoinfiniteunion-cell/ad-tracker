@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTikTokInsights } from '@/lib/tiktok'
+import { getToken } from '@/lib/token-store'
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -19,12 +20,14 @@ export async function POST(request: NextRequest) {
   const dateTo = to ?? new Date().toISOString().split('T')[0]
 
   const account = await prisma.adAccount.findUnique({ where: { id: adAccountId } })
-  if (!account?.accessToken) {
-    return NextResponse.json({ error: 'No access token' }, { status: 404 })
-  }
+  if (!account) return NextResponse.json({ error: 'Account not found' }, { status: 404 })
+
+  // Декриптуємо токен
+  const { accessToken } = await getToken(adAccountId)
+  if (!accessToken) return NextResponse.json({ error: 'No access token' }, { status: 404 })
 
   try {
-    const rows = await getTikTokInsights(advertiserId, dateFrom, dateTo, account.accessToken)
+    const rows = await getTikTokInsights(advertiserId, dateFrom, dateTo, accessToken)
 
     let synced = 0
     for (const row of rows) {
@@ -64,20 +67,11 @@ export async function POST(request: NextRequest) {
         conversionRate: parseFloat(m.conversion_rate ?? '0'),
       }
 
-      const existing = await prisma.campaignMetric.findFirst({
-        where: { adAccountId, date },
+      await prisma.campaignMetric.upsert({
+        where: { adAccountId_date: { adAccountId, date } },
+        update: { spend, impressions, clicks, conversions, revenue: 0, campaignName: 'TikTok Import', platformData },
+        create: { adAccountId, date, spend, impressions, clicks, conversions, revenue: 0, campaignName: 'TikTok Import', platformData },
       })
-
-      if (existing) {
-        await prisma.campaignMetric.update({
-          where: { id: existing.id },
-          data: { spend, impressions, clicks, conversions, revenue: 0, campaignName: 'TikTok Import', platformData },
-        })
-      } else {
-        await prisma.campaignMetric.create({
-          data: { adAccountId, date, spend, impressions, clicks, conversions, revenue: 0, campaignName: 'TikTok Import', platformData },
-        })
-      }
       synced++
     }
 
