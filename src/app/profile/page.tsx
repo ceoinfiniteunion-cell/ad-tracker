@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { Sidebar } from '@/components/layout/Sidebar'
+import { Sidebar } from '@/components/layout/SidebarWrapper'
 import { User, Lock, Mail, Building2, Calendar, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 const gridBg = { position:'fixed' as const, inset:0,  pointerEvents:'none' as const, zIndex:0 }

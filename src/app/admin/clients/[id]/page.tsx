@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Sidebar } from '@/components/layout/Sidebar'
+import { Sidebar } from '@/components/layout/SidebarWrapper'
 import { ArrowLeft, Plus, Trash2, Power, AlertCircle, CheckCircle, Building2, Mail, Calendar, X } from 'lucide-react'
 import { CommentsSection } from '@/components/ui/CommentsSection'
 
