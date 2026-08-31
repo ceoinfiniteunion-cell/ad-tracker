@@ -229,39 +229,57 @@ export default function AdminReportsPage() {
 
               {/* Щоденна таблиця */}
               <div className="anim-up-3" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
-                <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between' }}>
+                <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                   <p style={{ fontSize:'12px', fontWeight:700, color:'var(--text2)', textTransform:'uppercase', letterSpacing:'0.08em', margin:0 }}>Щоденна розбивка</p>
                   <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text4)', margin:0 }}>{daily.length} днів</p>
                 </div>
-                <div style={{ maxHeight:'280px', overflowY:'auto', overflowX:'auto', WebkitOverflowScrolling:'touch' } as any}>
-                  <table style={{ width:'100%', borderCollapse:'collapse', tableLayout:'fixed' }}>
-                    <thead style={{ position:'sticky', top:0, background:'var(--bg2)', zIndex:1 }}>
-                      <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
-                        {(isMobile ? ['Дата','Витрати','Кліки'] : ['Дата','Витрати','Дохід','Покази','Кліки','Конверсії','CTR','CPC']).map((h,hi)=>(
-                          <th key={h} style={{ padding:'10px 14px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase', letterSpacing:'0.08em', fontFamily:'monospace', whiteSpace:'nowrap', width: isMobile ? (hi===0?'33%':hi===1?'37%':'30%') : 'auto' }}>{h}</th>
+                <div style={{ maxHeight:'300px', overflowY:'auto' }}>
+                  {isMobile ? (
+                    <div>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', borderBottom:'1px solid rgba(255,255,255,0.06)', padding:'8px 16px', position:'sticky', top:0, background:'var(--bg2)', zIndex:1 }}>
+                        {['ДАТА','ВИТРАТИ','КЛІКИ'].map(h=>(
+                          <span key={h} style={{ fontSize:'10px', fontWeight:600, color:'var(--text4)', letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</span>
                         ))}
-                      </tr>
-                    </thead>
-                    <tbody>
+                      </div>
                       {[...daily].reverse().map(d=>(
-                        <tr key={d.date} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
-                          <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', fontWeight:600, whiteSpace:'nowrap' }}>{new Date(d.date).toLocaleDateString('uk',{day:'2-digit',month:'short'})}</td>
-                          <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'#e60000', fontWeight:700, whiteSpace:'nowrap' }}>{formatCurrency(d.spend)}</td>
-                          {!isMobile && <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'#00c864', fontWeight:700, whiteSpace:'nowrap' }}>{formatCurrency(d.revenue)}</td>}
-                          {!isMobile && <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{formatNumber(d.impressions)}</td>}
-                          <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{formatNumber(d.clicks)}</td>
-                          {!isMobile && <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{formatNumber(d.conversions)}</td>}
-                          {!isMobile && <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{d.impressions>0?formatPercent((d.clicks/d.impressions)*100):'—'}</td>}
-                          {!isMobile && <td style={{ padding:'11px 14px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', whiteSpace:'nowrap' }}>{d.clicks>0?formatCurrency(d.spend/d.clicks):'—'}</td>}
-                        </tr>
+                        <div key={d.date} style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', padding:'10px 16px', borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
+                          <span style={{ fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', fontWeight:600 }}>{new Date(d.date).toLocaleDateString('uk',{day:'2-digit',month:'short'})}</span>
+                          <span style={{ fontFamily:'monospace', fontSize:'12px', color:'#e60000', fontWeight:700 }}>{formatCurrency(d.spend)}</span>
+                          <span style={{ fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.clicks)}</span>
+                        </div>
                       ))}
-                      {daily.length===0 && <tr><td colSpan={isMobile ? 3 : 8} style={{ padding:'40px', textAlign:'center', color:'var(--text4)', fontSize:'13px' }}>Немає даних за обраний період</td></tr>}
-                    </tbody>
-                  </table>
+                      {daily.length===0 && <p style={{ padding:'40px', textAlign:'center', color:'var(--text4)', fontSize:'13px', margin:0 }}>Немає даних</p>}
+                    </div>
+                  ) : (
+                    <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                      <thead style={{ position:'sticky', top:0, background:'var(--bg2)', zIndex:1 }}>
+                        <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
+                          {['Дата','Витрати','Дохід','Покази','Кліки','Конверсії','CTR','CPC'].map(h=>(
+                            <th key={h} style={{ padding:'10px 16px', textAlign:'left', fontSize:'10px', fontWeight:600, color:'var(--text4)', textTransform:'uppercase', letterSpacing:'0.08em', fontFamily:'monospace' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[...daily].reverse().map(d=>(
+                          <tr key={d.date} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
+                            <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)', fontWeight:600 }}>{new Date(d.date).toLocaleDateString('uk',{day:'2-digit',month:'short',year:'numeric'})}</td>
+                            <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'#e60000', fontWeight:700 }}>{formatCurrency(d.spend)}</td>
+                            <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'#00c864', fontWeight:700 }}>{formatCurrency(d.revenue)}</td>
+                            <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.impressions)}</td>
+                            <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.clicks)}</td>
+                            <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.conversions)}</td>
+                            <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{d.impressions>0?formatPercent((d.clicks/d.impressions)*100):'—'}</td>
+                            <td style={{ padding:'11px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{d.clicks>0?formatCurrency(d.spend/d.clicks):'—'}</td>
+                          </tr>
+                        ))}
+                        {daily.length===0 && <tr><td colSpan={8} style={{ padding:'40px', textAlign:'center', color:'var(--text4)', fontSize:'13px' }}>Немає даних за обраний період</td></tr>}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
 
-              {/* Графіки */}
+                            {/* Графіки */}
               <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'16px' }}>
                 <SpendChart data={daily} title="Витрати та дохід"/>
                 <ClicksChart data={daily} title="Кліки та конверсії"/>
