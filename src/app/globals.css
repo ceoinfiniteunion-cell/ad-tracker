@@ -395,4 +395,14 @@ html::before {
     padding-right: 16px !important;
     padding-bottom: 80px !important;
   }
+  main > div[style*="860px"],
+  main > div[style*="900px"],
+  main > div[style*="1100px"],
+  main > div[style*="1200px"],
+  main > div[style*="1400px"] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-top: 16px !important;
+    padding-bottom: 80px !important;
+  }
 }

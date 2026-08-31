@@ -146,7 +146,7 @@ export default function ClientDetailPage() {
   if (loading) return (
     <div style={{ display:'flex', height:'100vh', background:'var(--bg)' }}>
       <Sidebar />
-      <div style={{ flex:1, padding:'36px 40px' }}>
+      <div style={{ flex:1, padding:'16px' }}>
         <div style={{ marginBottom:'32px' }}>
           <div style={{ width:'120px', height:'11px', borderRadius:'4px', background:'var(--bg3)', backgroundImage:'linear-gradient(90deg,var(--bg3) 0%,var(--bg2) 50%,var(--bg3) 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite', marginBottom:'12px' }}/>
           <div style={{ width:'260px', height:'28px', borderRadius:'8px', background:'var(--bg3)', backgroundImage:'linear-gradient(90deg,var(--bg3) 0%,var(--bg2) 50%,var(--bg3) 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite' }}/>
