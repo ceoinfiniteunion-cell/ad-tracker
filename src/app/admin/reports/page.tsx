@@ -146,7 +146,7 @@ export default function AdminReportsPage() {
                     <span style={{ fontSize:'10px', color:'var(--text3)' }}>▼</span>
                   </button>
                   {showDropdown && (
-                    <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, minWidth:'200px', background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.5)', overflow:'hidden', zIndex:100 }}>
+                    <div style={{ position:'absolute', top:'calc(100% + 6px)', right:0, left:0, minWidth:'160px', background:'var(--bg3)', border:'1px solid var(--border2)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.5)', overflow:'hidden', zIndex:100 }}>
                       {clients.map((c,i)=>(
                         <button key={c.id} onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}
                           style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'flex-start', padding:'12px 16px', background:selectedClient===c.id?'rgba(230,0,0,0.1)':'transparent', border:'none', borderBottom:i<clients.length-1?'1px solid rgba(255,255,255,0.04)':'none', cursor:'pointer', textAlign:'left' }}

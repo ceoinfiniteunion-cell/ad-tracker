@@ -387,3 +387,12 @@ html::before {
     display: none !important;
   }
 }
+
+/* Client detail та profile — не перебиваємо padding */
+@media (max-width: 767px) {
+  main > div[style*="max-width"] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-bottom: 80px !important;
+  }
+}
