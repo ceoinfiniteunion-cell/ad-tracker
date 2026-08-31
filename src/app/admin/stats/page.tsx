@@ -80,7 +80,7 @@ export default function AdminStatsPage() {
                 {currentClient && <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>{currentClient.company}</p>}
               </div>
               {/* Клієнт dropdown */}
-              <div style={{ position:'relative' }}>
+              <div style={{ position:'relative', zIndex:100 }}>
                 <button onClick={()=>setShowDropdown(v=>!v)}
                   style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 14px', background:'rgba(255,255,255,0.04)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', fontWeight:600, cursor:'pointer', minWidth: isMobile ? '140px' : '180px', justifyContent:'space-between' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:'7px' }}>
@@ -92,7 +92,7 @@ export default function AdminStatsPage() {
                 {showDropdown && (
                   <>
                     <div style={{ position:'fixed', inset:0, zIndex:9998 }} onClick={()=>setShowDropdown(false)}/>
-                    <div style={{ position:'absolute', top:'calc(100% + 6px)', left:0, right:'auto', minWidth:'200px', maxWidth:'calc(100vw - 32px)', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:9999, overflow:'hidden' }}>
+                    <div style={{ position:'fixed', top:'auto', left:'16px', right:'16px', minWidth:'auto', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.8)', zIndex:9999, overflow:'hidden' }}>
                       {clients.map((c,i)=>(
                         <button key={c.id}
                           onClick={()=>{ setSelectedClient(c.id); setShowDropdown(false) }}

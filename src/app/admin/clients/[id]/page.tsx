@@ -191,8 +191,8 @@ export default function ClientDetailPage() {
               <ArrowLeft size={13}/>Назад до клієнтів
             </Link>
 
-            <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:'16px' }}>
+            <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'8px', flexWrap:'wrap' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'12px', flex:1, minWidth:0 }}>
                 <div style={{ width:'52px', height:'52px', borderRadius:'14px', background:'rgba(230,0,0,0.1)', border:'1px solid rgba(230,0,0,0.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                   <span style={{ fontSize:'22px', fontWeight:800, color:'#e60000' }}>{client.name[0].toUpperCase()}</span>
                 </div>
@@ -207,7 +207,7 @@ export default function ClientDetailPage() {
                 </div>
               </div>
               <button onClick={()=>setShowModal(true)}
-                style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'11px 20px', background:'#e60000', color:'var(--text)', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor:'pointer', transition:'all 0.15s' }}
+                style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'9px 14px', background:'#e60000', color:'#fff', fontSize:'12px', fontWeight:700, borderRadius:'8px', border:'none', cursor:'pointer', flexShrink:0 }}
                 onMouseEnter={e=>{(e.currentTarget).style.background='#cc0000';(e.currentTarget).style.boxShadow='0 4px 20px rgba(230,0,0,0.35)';(e.currentTarget).style.transform='translateY(-1px)'}}
                 onMouseLeave={e=>{(e.currentTarget).style.background='#e60000';(e.currentTarget).style.boxShadow='none';(e.currentTarget).style.transform='none'}}
               ><Plus size={15}/>Додати кабінет</button>
