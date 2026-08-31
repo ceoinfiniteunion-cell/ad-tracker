@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
   const { to, clientName, company, dateRange, totals, platforms } = await request.json()
 
-  if (!to) return NextResponse.json({ error: 'Missing email' }, { status: 400 })
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; if (!to || !emailRegex.test(to)) return NextResponse.json({ error: 'Invalid email' }, { status: 400 })
 
   const transporter = nodemailer.createTransport({
     service: 'gmail',

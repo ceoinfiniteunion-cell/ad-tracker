@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { saveToken } from '@/lib/token-store'
 
 export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXTAUTH_URL!
@@ -9,6 +10,14 @@ export async function GET(request: NextRequest) {
   if (!session) return NextResponse.redirect(`${baseUrl}/auth/login`)
 
   const code = request.nextUrl.searchParams.get('code')
+  const state = request.nextUrl.searchParams.get('state')
+  const cookieState = request.cookies.get('google_oauth_state')?.value
+
+  if (!state || !cookieState || state !== cookieState) {
+    console.error('[GOOGLE OAUTH] State mismatch — possible CSRF attack')
+    return NextResponse.redirect(`${baseUrl}/connect?error=invalid_state`)
+  }
+
   if (!code) return NextResponse.redirect(`${baseUrl}/connect?error=no_code`)
 
   const clientId = process.env.GOOGLE_CLIENT_ID!
@@ -26,45 +35,31 @@ export async function GET(request: NextRequest) {
         redirect_uri: redirectUri,
         grant_type: 'authorization_code',
       }),
+      signal: AbortSignal.timeout(10000),
     })
+
     const tokens = await tokenRes.json()
-    if (!tokens.access_token) return NextResponse.redirect(`${baseUrl}/connect?error=no_token`)
-
-    const clientId2 = (session.user as any).clientId
-
-    // upsert — оновлює якщо вже є, створює якщо немає
-    const existing = await prisma.adAccount.findFirst({
-      where: { clientId: clientId2, platform: 'GOOGLE' }
-    })
-
-    if (existing) {
-      await prisma.adAccount.update({
-        where: { id: existing.id },
-        data: {
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token ?? existing.refreshToken,
-          tokenStatus: 'active',
-          isActive: true,
-        }
-      })
-    } else {
-      await prisma.adAccount.create({
-        data: {
-          clientId: clientId2,
-          platform: 'GOOGLE',
-          accountId: 'google_oauth',
-          name: 'Google Ads (OAuth)',
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          tokenStatus: 'active',
-          isActive: true,
-        }
-      })
+    if (tokens.error) {
+      console.error('[GOOGLE OAUTH] Token error:', tokens.error)
+      return NextResponse.redirect(`${baseUrl}/connect?error=token_failed`)
     }
 
-    return NextResponse.redirect(`${baseUrl}/connect?success=google`)
-  } catch (e: any) {
-    console.error('Google callback error:', e)
-    return NextResponse.redirect(`${baseUrl}/connect?error=failed`)
+    const clientId2 = (session.user as any).clientId
+    if (!clientId2) return NextResponse.redirect(`${baseUrl}/connect?error=no_client`)
+
+    const adAccount = await prisma.adAccount.findFirst({
+      where: { clientId: clientId2, platform: 'GOOGLE' },
+    })
+
+    if (adAccount && tokens.access_token) {
+      await saveToken(adAccount.id, tokens.access_token, tokens.refresh_token)
+    }
+
+    const response = NextResponse.redirect(`${baseUrl}/connect?success=google`)
+    response.cookies.delete('google_oauth_state')
+    return response
+  } catch (e) {
+    console.error('[GOOGLE OAUTH] Error:', e)
+    return NextResponse.redirect(`${baseUrl}/connect?error=server_error`)
   }
 }

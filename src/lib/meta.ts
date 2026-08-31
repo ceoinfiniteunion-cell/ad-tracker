@@ -7,7 +7,7 @@ async function metaFetch(path: string, params: Record<string, string> = {}, toke
   const url = new URL(`${BASE_URL}${path}`)
   url.searchParams.set('access_token', accessToken)
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
-  const res = await fetch(url.toString(), { cache: 'no-store' })
+  const res = await fetch(url.toString(), { cache: 'no-store', signal: AbortSignal.timeout(10000) })
   const data = await res.json()
   if (data.error) throw new Error(`Meta API: ${data.error.message}`)
   return data
