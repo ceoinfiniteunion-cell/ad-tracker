@@ -132,3 +132,21 @@ model AuditLog {
   @@index([action])
   @@map("audit_logs")
 }
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  count     Int      @default(0)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  @@map("rate_limits")
+}
+
+model LoginAttempt {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  count        Int       @default(0)
+  lastAt       DateTime  @default(now())
+  blockedUntil DateTime?
+  @@map("login_attempts")
+}

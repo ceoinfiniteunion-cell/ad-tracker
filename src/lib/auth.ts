@@ -3,6 +3,8 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 import { loginAttempts } from './login-attempts'
+import { isTokenBlacklisted } from './jwt-blacklist'
+import { randomUUID } from 'crypto'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -17,44 +19,41 @@ export const authOptions: NextAuthOptions = {
 
         const email = credentials.email.toLowerCase().trim()
 
-        // Перевірка блокування після невдалих спроб
-        const attempts = loginAttempts.get(email)
-        if (attempts && attempts.blockedUntil && Date.now() < attempts.blockedUntil) {
-          const mins = Math.ceil((attempts.blockedUntil - Date.now()) / 60000)
-          throw new Error(`Акаунт тимчасово заблоковано. Спробуйте через ${mins} хв.`)
+        // Перевірка блокування
+        const { blocked, minsLeft } = await loginAttempts.isBlocked(email)
+        if (blocked) {
+          throw new Error(`Акаунт тимчасово заблоковано. Спробуйте через ${minsLeft} хв.`)
         }
 
         const user = await prisma.user.findUnique({ where: { email } })
-
         if (!user || !user.password) {
-          loginAttempts.recordFail(email)
+          await loginAttempts.recordFail(email)
           return null
         }
 
-        // Перевірка статусу клієнта
-        if (user.role === 'CLIENT') {
-          if ((user as any).status === 'PENDING') {
-            throw new Error('Ваш акаунт очікує підтвердження адміністратора.')
-          }
-          if ((user as any).status === 'REJECTED') {
-            throw new Error('Ваш акаунт відхилено. Зверніться до підтримки.')
-          }
+        // Перевірка статусу
+        if ((user as any).status === 'PENDING') {
+          throw new Error('Ваш акаунт очікує підтвердження адміністратора.')
+        }
+        if ((user as any).status === 'REJECTED') {
+          throw new Error('Ваш акаунт відхилено. Зверніться до підтримки.')
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password)
         if (!isValid) {
-          loginAttempts.recordFail(email)
+          await loginAttempts.recordFail(email)
           return null
         }
 
-        // Успішний вхід — скидаємо лічильник
-        loginAttempts.reset(email)
+        // Успішний вхід
+        await loginAttempts.reset(email)
 
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
+          jti: randomUUID(), // унікальний ID токена для blacklist
         }
       },
     }),
@@ -64,12 +63,20 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = (user as any).role
         token.id = user.id
-        // Додаємо clientId для клієнтів
+        token.jti = (user as any).jti ?? randomUUID()
+
         if ((user as any).role === 'CLIENT') {
           const client = await prisma.client.findFirst({ where: { userId: user.id } })
           token.clientId = client?.id
         }
       }
+
+      // Перевірка blacklist при кожному запиті
+      if (token.jti) {
+        const blacklisted = await isTokenBlacklisted(token.jti as string).catch(() => false)
+        if (blacklisted) throw new Error('Token revoked')
+      }
+
       return token
     },
     async session({ session, token }) {
@@ -77,6 +84,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).role = token.role
         ;(session.user as any).id = token.id
         ;(session.user as any).clientId = token.clientId
+        ;(session.user as any).jti = token.jti
       }
       return session
     },
@@ -87,7 +95,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 24 години
+    maxAge: 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
 }

@@ -1,22 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { getToken } from 'next-auth/jwt'
 import { authOptions } from '@/lib/auth'
 import { blacklistToken } from '@/lib/jwt-blacklist'
-import { prisma } from '@/lib/prisma'
 
-export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
-
-  if (token?.jti && token?.exp) {
-    await blacklistToken(token.jti as string, token.exp as number)
-    await prisma.auditLog.create({
-      data: { action: 'LOGOUT', userId: (session.user as any).id ?? 'unknown', meta: { email: session.user?.email } }
-    }).catch(() => {})
-  }
-
-  return NextResponse.json({ success: true })
+export async function POST() {
+  try {
+    const session = await getServerSession(authOptions)
+    if (session?.user) {
+      const jti = (session.user as any).jti
+      if (jti) {
+        // Blacklist токен на 24 години
+        const expiresAt = Math.floor(Date.now() / 1000) + 24 * 60 * 60
+        await blacklistToken(jti, expiresAt)
+      }
+    }
+  } catch {}
+  return NextResponse.json({ ok: true })
 }
