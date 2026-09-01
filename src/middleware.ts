@@ -60,6 +60,7 @@ export default withAuth(
         const pathname = req.nextUrl.pathname
         // Публічні API routes
         if (pathname === '/api/auth/register') return true
+        if (pathname.startsWith('/api/auth/2fa/')) return true
         if (pathname.startsWith('/api/cron/')) return true
         if (pathname === '/api/health') return true
         return !!token
@@ -72,6 +73,6 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/admin/:path*',
-    '/api/((?!auth/register|cron/|health).*)',
+    '/api/((?!auth/register|auth/2fa|cron/|health).*)',
   ],
 }
