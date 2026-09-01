@@ -278,7 +278,7 @@ export default function DashboardPage() {
       {customize && (
         <div style={{ position:'fixed', inset:0, zIndex:200 }}>
           <div onClick={()=>setCustomize(false)} style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.7)' }}/>
-          <div style={{ position:'absolute', right:0, top:0, bottom:0, width: isMobile ? '100%' : '400px', background:'var(--bg2)', borderLeft:'1px solid rgba(255,255,255,0.08)', overflowY:'auto', padding:'24px' }}>
+          <div style={{ position:'absolute', right:0, top:0, bottom:0, width: isMobile ? '100%' : '400px', background:'var(--bg2)', borderLeft:'1px solid var(--border)', overflowY:'auto', padding:'24px' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'24px' }}>
               <h2 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', margin:0 }}>Customize метрики</h2>
               <button onClick={()=>setCustomize(false)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)' }}><X size={18}/></button>
@@ -290,10 +290,10 @@ export default function DashboardPage() {
                 </p>
                 {PLATFORM_METRICS[section].map(m=>(
                   <label key={m.key+m.label} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'12px', cursor:'pointer', marginBottom:'4px' }}>
-                    <div onClick={()=>toggleMetric(m.key)} style={{ width:'18px', height:'18px', borderRadius:'5px', border:`1px solid ${selectedMetrics.includes(m.key)?'#e60000':'rgba(255,255,255,0.15)'}`, background: selectedMetrics.includes(m.key)?'rgba(230,0,0,0.2)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, cursor:'pointer' }}>
+                    <div onClick={()=>toggleMetric(m.key)} style={{ width:'18px', height:'18px', borderRadius:'5px', border:`1px solid ${selectedMetrics.includes(m.key)?'#e60000':'var(--border)'}`, background: selectedMetrics.includes(m.key)?'rgba(230,0,0,0.15)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, cursor:'pointer' }}>
                       {selectedMetrics.includes(m.key) && <Check size={11} color="#e60000"/>}
                     </div>
-                    <span style={{ fontSize:'15px', color: selectedMetrics.includes(m.key)?'#fff':'rgba(255,255,255,0.5)', fontWeight: selectedMetrics.includes(m.key)?600:400 }}>{m.label}</span>
+                    <span style={{ fontSize:'15px', color: selectedMetrics.includes(m.key)?'var(--text)':'var(--text3)', fontWeight: selectedMetrics.includes(m.key)?600:400 }}>{m.label}</span>
                   </label>
                 ))}
               </div>
