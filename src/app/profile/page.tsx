@@ -224,6 +224,17 @@ export default function ProfilePage() {
                       {twoFALoading ? '...' : twoFAEnabled ? 'Вимкнути' : 'Увімкнути'}
                     </button>
                   </div>
+                  {showVerifyForm && (
+                    <div style={{ display:'flex', flexDirection:'column', gap:'10px', padding:'14px', background:'var(--bg3)', borderRadius:'10px', border:'1px solid var(--border)' }}>
+                      <p style={{ fontSize:'12px', color:'var(--text3)', margin:0 }}>Введіть 6-значний код з листа для підтвердження</p>
+                      <input value={verifyCode} onChange={e=>setVerifyCode(e.target.value.replace(/\D/g,'').slice(0,6))} placeholder="123456" maxLength={6}
+                        style={{ padding:'10px 14px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'20px', fontWeight:800, letterSpacing:'8px', fontFamily:'monospace', textAlign:'center', outline:'none' }}/>
+                      <button onClick={confirm2FA} disabled={verifying||verifyCode.length!==6}
+                        style={{ padding:'10px', background:(verifying||verifyCode.length!==6)?'rgba(0,200,100,0.3)':'#00c864', color:'#fff', fontWeight:700, fontSize:'13px', borderRadius:'8px', border:'none', cursor:(verifying||verifyCode.length!==6)?'not-allowed':'pointer' }}>
+                        {verifying ? 'Перевіряємо...' : '✓ Підтвердити і увімкнути'}
+                      </button>
+                    </div>
+                  )}
                   {twoFAMsg && (
                     <div style={{ padding:'10px 14px', borderRadius:'8px', fontSize:'13px', fontWeight:600, background: twoFAMsg.ok ? 'rgba(0,200,100,0.1)' : 'rgba(230,0,0,0.1)', border:`1px solid ${twoFAMsg.ok ? 'rgba(0,200,100,0.2)' : 'rgba(230,0,0,0.2)'}`, color: twoFAMsg.ok ? '#00c864' : '#ff6b6b' }}>
                       {twoFAMsg.text}
