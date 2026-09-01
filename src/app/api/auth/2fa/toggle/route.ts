@@ -1,13 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { NextResponse } from 'next/server'
 
-export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { enabled } = await req.json()
-  const userId = (session.user as any).id
-  await prisma.user.update({ where: { id: userId }, data: { twoFactorEnabled: enabled } })
-  return NextResponse.json({ ok: true, twoFactorEnabled: enabled })
+// Цей endpoint більше не використовується.
+// 2FA вмикається/вимикається через /api/auth/2fa/send + /api/auth/2fa/verify
+export async function POST() {
+  return NextResponse.json({ error: 'Use /api/auth/2fa/send and /api/auth/2fa/verify' }, { status: 410 })
 }
