@@ -22,7 +22,8 @@ export default function LoginPage() {
     if (rememberMe) { localStorage.setItem('remembered_email', email) } else { localStorage.removeItem('remembered_email') }
     const result = await signIn('credentials', { email, password, redirect: false })
     if (result?.error) {
-      if (result.error.includes('PENDING')) { setError('Ваша заявка ще на розгляді. Очікуйте підтвердження від адміністратора.') }
+      if (result.error.includes('заблоковано') || result.error.includes('blocked')) { setError(result.error) }
+      else if (result.error.includes('підтвердження') || result.error.includes('PENDING')) { setError('Ваша заявка ще на розгляді. Очікуйте підтвердження від адміністратора.') }
       else if (result.error.includes('REJECTED')) { setError('Ваш акаунт відхилено. Зверніться до підтримки.') }
       else { setError('Невірний email або пароль') }
       setLoading(false)

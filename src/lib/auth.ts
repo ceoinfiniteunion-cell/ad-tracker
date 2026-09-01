@@ -1,13 +1,10 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import bcrypt from 'bcryptjs'
-import crypto from 'crypto'
 import { prisma } from './prisma'
-import { isTokenBlacklisted } from './jwt-blacklist'
+import bcrypt from 'bcryptjs'
+import { loginAttempts } from './login-attempts'
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: 'jwt', maxAge: 24 * 60 * 60 },
-  pages: { signIn: '/auth/login' },
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -18,34 +15,45 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase().trim() },
-          include: { client: true },
-        })
+        const email = credentials.email.toLowerCase().trim()
 
-        if (!user) {
-          await prisma.auditLog.create({ data: { action: 'LOGIN_FAILED', userId: 'unknown', meta: { email: credentials.email, reason: 'user_not_found' } } }).catch(() => {})
+        // Перевірка блокування після невдалих спроб
+        const attempts = loginAttempts.get(email)
+        if (attempts && attempts.blockedUntil && Date.now() < attempts.blockedUntil) {
+          const mins = Math.ceil((attempts.blockedUntil - Date.now()) / 60000)
+          throw new Error(`Акаунт тимчасово заблоковано. Спробуйте через ${mins} хв.`)
+        }
+
+        const user = await prisma.user.findUnique({ where: { email } })
+
+        if (!user || !user.password) {
+          loginAttempts.recordFail(email)
           return null
+        }
+
+        // Перевірка статусу клієнта
+        if (user.role === 'CLIENT') {
+          const client = await prisma.client.findFirst({ where: { userId: user.id } })
+          if (client && client.status !== 'ACTIVE') {
+            throw new Error('Ваш акаунт очікує підтвердження адміністратора.')
+          }
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password)
         if (!isValid) {
-          await prisma.auditLog.create({ data: { action: 'LOGIN_FAILED', userId: user.id, meta: { email: user.email, reason: 'wrong_password' } } }).catch(() => {})
+          loginAttempts.recordFail(email)
           return null
         }
 
-        if (user.status === 'PENDING') {
-          await prisma.auditLog.create({ data: { action: 'LOGIN_FAILED', userId: user.id, meta: { reason: 'pending' } } }).catch(() => {})
-          throw new Error('PENDING')
-        }
-        if (user.status === 'REJECTED') {
-          await prisma.auditLog.create({ data: { action: 'LOGIN_FAILED', userId: user.id, meta: { reason: 'rejected' } } }).catch(() => {})
-          throw new Error('REJECTED')
-        }
+        // Успішний вхід — скидаємо лічильник
+        loginAttempts.reset(email)
 
-        await prisma.auditLog.create({ data: { action: 'LOGIN_SUCCESS', userId: user.id, meta: { email: user.email, role: user.role } } }).catch(() => {})
-
-        return { id: user.id, email: user.email, name: user.name, role: user.role, clientId: user.client?.id ?? null }
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        }
       },
     }),
   ],
@@ -53,24 +61,31 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role
-        token.clientId = (user as any).clientId
-        token.jti = crypto.randomUUID()
+        token.id = user.id
+        // Додаємо clientId для клієнтів
+        if ((user as any).role === 'CLIENT') {
+          const client = await prisma.client.findFirst({ where: { userId: user.id } })
+          token.clientId = client?.id
+        }
       }
       return token
     },
     async session({ session, token }) {
-      // Перевіряємо blacklist
-      if (token.jti) {
-        const blacklisted = await isTokenBlacklisted(token.jti as string)
-        if (blacklisted) throw new Error('Token revoked')
-      }
-
       if (session.user) {
-        (session.user as any).id = token.sub
-        ;(session.user as any).role = token.role
+        (session.user as any).role = token.role
+        ;(session.user as any).id = token.id
         ;(session.user as any).clientId = token.clientId
       }
       return session
     },
   },
+  pages: {
+    signIn: '/auth/login',
+    error: '/auth/login',
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 24 * 60 * 60, // 24 години
+  },
+  secret: process.env.NEXTAUTH_SECRET,
 }

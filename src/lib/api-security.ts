@@ -1,42 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from './auth'
-import { rateLimit, getIp } from './rate-limit'
 
-export { rateLimit, getIp, LIMITS } from './rate-limit'
+// Rate limiter для API (in-memory)
+const apiStore = new Map<string, { count: number; resetAt: number }>()
 
-export async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }), session: null }
-  if ((session.user as any).role !== 'ADMIN') return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }), session: null }
-  return { error: null, session }
+export function checkApiRateLimit(key: string, max = 60, windowMs = 60000): boolean {
+  const now = Date.now()
+  const rec = apiStore.get(key)
+  if (!rec || now > rec.resetAt) {
+    apiStore.set(key, { count: 1, resetAt: now + windowMs })
+    return true
+  }
+  if (rec.count >= max) return false
+  rec.count++
+  return true
 }
 
+// Перевірка що юзер авторизований і є адміном
+export async function requireAdmin(req?: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  if ((session.user as any).role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  return null // OK
+}
+
+// Перевірка що юзер авторизований
 export async function requireAuth() {
   const session = await getServerSession(authOptions)
-  if (!session) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }), session: null }
+  if (!session?.user) {
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }), session: null }
+  }
   return { error: null, session }
 }
 
-export function sanitizeString(str: unknown, maxLen = 500): string {
-  if (typeof str !== 'string') return ''
-  return str.trim().slice(0, maxLen).replace(/<[^>]*>/g, '')
+// Валідація пароля
+export function validatePassword(password: string): string | null {
+  if (password.length < 8) return 'Пароль має містити мінімум 8 символів'
+  if (!/[A-Z]/.test(password) && !/[a-z]/.test(password)) return 'Пароль має містити літери'
+  if (!/[0-9]/.test(password)) return 'Пароль має містити хоча б одну цифру'
+  return null
 }
 
-export function isValidEmail(email: unknown): boolean {
-  if (typeof email !== 'string') return false
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254
+// Санітизація вхідних даних
+export function sanitize(str: string): string {
+  return str.trim().slice(0, 1000)
 }
 
-export function isValidPassword(password: unknown): boolean {
-  if (typeof password !== 'string') return false
-  return password.length >= 6 && password.length <= 128
-}
-
-export function withSecurityHeaders(response: NextResponse): NextResponse {
+// Security headers
+export function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-XSS-Protection', '1; mode=block')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
   return response
 }
