@@ -1,8 +1,8 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function sendTwoFactorCode(email: string, code: string, name: string) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  
   const { error } = await resend.emails.send({
     from: 'Infinite Union Ad Tracker <onboarding@resend.dev>',
     to: email,
