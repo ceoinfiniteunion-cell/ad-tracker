@@ -30,6 +30,9 @@ export default function ProfilePage() {
   const [adminMsg, setAdminMsg] = useState<{text:string;ok:boolean}|null>(null)
   const [twoFAEnabled, setTwoFAEnabled] = useState(false)
   const [twoFALoading, setTwoFALoading] = useState(false)
+  const [showVerifyForm, setShowVerifyForm] = useState(false)
+  const [verifyCode, setVerifyCode] = useState('')
+  const [verifying, setVerifying] = useState(false)
   const [twoFAMsg, setTwoFAMsg] = useState<{text:string;ok:boolean}|null>(null)
 
   useEffect(() => {
@@ -65,6 +68,20 @@ export default function ProfilePage() {
     if (res.ok) { showToast('Пароль змінено', true); setCurrentPwd(''); setNewPwd(''); setConfirmPwd('') }
     else showToast(data.error||'Помилка', false)
     setPwdSaving(false)
+  }
+
+  const confirm2FA = async () => {
+    if (verifyCode.length !== 6) return
+    setVerifying(true)
+    const verRes = await fetch('/api/auth/2fa/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: profile?.email, code: verifyCode }) })
+    const verData = await verRes.json()
+    if (verData.ok) {
+      const res = await fetch('/api/auth/2fa/toggle', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ enabled: true }) })
+      if (res.ok) { setTwoFAEnabled(true); setShowVerifyForm(false); setVerifyCode(''); setTwoFAMsg({ text: '✓ Двофакторна автентифікація увімкнена', ok: true }) }
+    } else {
+      setTwoFAMsg({ text: verData.error || 'Невірний код', ok: false })
+    }
+    setVerifying(false)
   }
 
   const toggle2FA = async () => {
