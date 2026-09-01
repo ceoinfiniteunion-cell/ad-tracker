@@ -80,6 +80,6 @@ export function isValidPassword(password: string): boolean {
   return password.length >= 8
 }
 
-export function sanitizeString(str: string): string {
-  return str.trim().slice(0, 1000)
+export function sanitizeString(str: string, maxLen = 1000): string {
+  return str.trim().slice(0, maxLen)
 }
