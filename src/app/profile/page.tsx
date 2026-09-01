@@ -90,7 +90,7 @@ export default function ProfilePage() {
       setTwoFALoading(true); setTwoFAMsg(null)
       const res = await fetch('/api/auth/2fa/send', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ email: profile?.email })
+        body:JSON.stringify({ email: session?.user?.email || profile?.email })
       })
       setTwoFALoading(false)
       if (res.ok) {
