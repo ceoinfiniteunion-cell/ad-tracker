@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings, FileText, Zap, Link2, Sun, Moon, ChevronsLeft, ChevronsRight, Menu, X, Shield } from 'lucide-react'
+import { Users, LayoutDashboard, LogOut, Plus, BarChart2, Settings, FileText, Zap, Link2, Sun, Moon, ChevronsLeft, ChevronsRight, Menu, X, Shield, HelpCircle } from 'lucide-react'
 import { useTheme } from '@/lib/theme'
 
 export function Sidebar() {
@@ -32,6 +32,7 @@ export function Sidebar() {
     { href:'/reports', label:'Звіти', icon:FileText },
     { href:'/connect', label:'Мої кабінети', icon:Link2 },
     { href:'/profile', label:'Профіль', icon:Settings },
+    { href:'https://t.me/infiniteunion_manager', label:'Допомога', icon:HelpCircle, external:true },
   ]
 
   const mobileLinks = isAdmin
@@ -45,7 +46,7 @@ export function Sidebar() {
         { href:'/dashboard', label:'Дашборд', icon:LayoutDashboard },
         { href:'/stats', label:'Статистика', icon:BarChart2 },
         { href:'/reports', label:'Звіти', icon:FileText },
-        { href:'/connect', label:'Кабінети', icon:Link2 },
+        { href:'https://t.me/infiniteunion_manager', label:'Допомога', icon:HelpCircle, external:true },
       ]
 
   const isActive = (href: string) => pathname === href || (href !== '/admin' && href !== '/dashboard' && pathname.startsWith(href))
@@ -111,7 +112,7 @@ export function Sidebar() {
           const Icon = l.icon
           const active = isActive(l.href)
           return (
-            <Link key={l.href} href={l.href} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'3px', color: active ? '#e60000' : 'var(--text3)', textDecoration:'none', padding:'8px 4px' }}>
+            <Link key={l.href} href={l.href} target={(l as any).external ? '_blank' : undefined} rel={(l as any).external ? 'noopener noreferrer' : undefined} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'3px', color: active ? '#e60000' : 'var(--text3)', textDecoration:'none', padding:'8px 4px' }}>
               <Icon size={20} strokeWidth={active ? 2.5 : 1.8}/>
               <span style={{ fontSize:'10px', fontWeight: active ? 700 : 400 }}>{l.label}</span>
             </Link>
@@ -147,7 +148,7 @@ export function Sidebar() {
             const Icon = l.icon
             const active = isActive(l.href)
             return (
-              <Link key={l.href} href={l.href} title={collapsed ? l.label : undefined}
+              <Link key={l.href} href={l.href} title={collapsed ? l.label : undefined} target={(l as any).external ? '_blank' : undefined} rel={(l as any).external ? 'noopener noreferrer' : undefined}
                 style={{ display:'flex', alignItems:'center', gap:'10px', padding: collapsed ? '10px' : '10px 12px', borderRadius:'8px', marginBottom:'2px', background: active ? 'rgba(230,0,0,0.1)' : 'transparent', color: active ? '#e60000' : 'var(--text2)', textDecoration:'none', fontSize:'13px', fontWeight: active ? 700 : 500, transition:'all 0.15s', justifyContent: collapsed ? 'center' : 'flex-start', whiteSpace:'nowrap', overflow:'hidden' }}>
                 <Icon size={18} style={{ flexShrink:0 }}/>
                 {!collapsed && l.label}
