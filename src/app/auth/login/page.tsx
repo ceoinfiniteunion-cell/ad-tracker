@@ -1,97 +1,202 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle, Loader2, Shield } from 'lucide-react'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  const [step, setStep] = useState<'credentials'|'2fa'>('credentials')
+  const [code, setCode] = useState('')
+  const [sendingCode, setSendingCode] = useState(false)
+  const [codeError, setCodeError] = useState('')
 
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('remembered_email')
-    if (savedEmail) { setEmail(savedEmail); setRememberMe(true) }
-  }, [])
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true); setError('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true); setError('')
-    if (rememberMe) { localStorage.setItem('remembered_email', email) } else { localStorage.removeItem('remembered_email') }
-    const result = await signIn('credentials', { email, password, redirect: false })
-    if (result?.error) {
-      if (result.error.includes('заблоковано') || result.error.includes('blocked')) { setError(result.error) }
-      else if (result.error.includes('підтвердження') || result.error.includes('PENDING')) { setError('Ваша заявка ще на розгляді. Очікуйте підтвердження від адміністратора.') }
-      else if (result.error.includes('REJECTED')) { setError('Ваш акаунт відхилено. Зверніться до підтримки.') }
-      else { setError('Невірний email або пароль') }
+    // Перевіряємо чи потрібен 2FA
+    const checkRes = await fetch('/api/auth/2fa/status-by-email', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password })
+    })
+    const checkData = await checkRes.json()
+
+    if (checkData.requires2FA) {
+      // Відправляємо код
+      setSendingCode(true)
+      await fetch('/api/auth/2fa/send', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ email })
+      })
+      setSendingCode(false)
+      setStep('2fa')
       setLoading(false)
-    } else { router.push('/'); router.refresh() }
+      return
+    }
+
+    if (checkData.error) {
+      setError(checkData.error)
+      setLoading(false)
+      return
+    }
+
+    // Звичайний вхід без 2FA
+    const result = await signIn('credentials', { email, password, redirect: false })
+    setLoading(false)
+
+    if (result?.error) {
+      if (result.error.includes('заблоковано')) setError(result.error)
+      else if (result.error.includes('підтвердження')) setError('Ваша заявка ще на розгляді.')
+      else if (result.error.includes('відхилено')) setError('Ваш акаунт відхилено.')
+      else setError('Невірний email або пароль')
+    } else {
+      router.push('/dashboard')
+      router.refresh()
+    }
   }
 
+  const handleVerify2FA = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true); setCodeError('')
+
+    const verifyRes = await fetch('/api/auth/2fa/verify', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, code })
+    })
+    const verifyData = await verifyRes.json()
+
+    if (!verifyData.ok) {
+      setCodeError(verifyData.error || 'Невірний код')
+      setLoading(false)
+      return
+    }
+
+    // Код вірний — входимо
+    const result = await signIn('credentials', { email, password, redirect: false })
+    setLoading(false)
+
+    if (result?.error) {
+      setError(result.error)
+      setStep('credentials')
+    } else {
+      router.push('/dashboard')
+      router.refresh()
+    }
+  }
+
+  const inp = { width:'100%', padding:'13px 16px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', color:'var(--text)', fontSize:'15px', outline:'none', boxSizing:'border-box' as const }
+
   return (
-    <div style={{ minHeight:'100vh', background:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', position:'relative', overflow:'hidden' }}>
-      <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize:'44px 44px', pointerEvents:'none' }} />
-      <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'500px', height:'500px', borderRadius:'50%', background:'radial-gradient(circle, rgba(230,0,0,0.12) 0%, transparent 70%)', pointerEvents:'none' }} />
-      <svg style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', pointerEvents:'none', opacity:0.07 }} viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
-        <path d="M-100,450 C100,200 300,700 500,450 C700,200 900,700 1100,450 C1300,200 1500,700 1700,450" fill="none" stroke="#e60000" strokeWidth="2" strokeDasharray="12 8" style={{ animation:'snake 8s linear infinite' }} />
-        <path d="M-100,350 C150,100 350,600 550,350 C750,100 950,600 1150,350 C1350,100 1550,600 1750,350" fill="none" stroke="#e60000" strokeWidth="1" strokeDasharray="8 12" style={{ animation:'snake 12s linear infinite reverse' }} />
-      </svg>
-      <div className="anim-up" style={{ width:'100%', maxWidth:'380px', position:'relative', zIndex:10 }}>
-        <div style={{ textAlign:'center', marginBottom:'40px' }}>
-          <div className="anim-float" style={{ display:'inline-block', marginBottom:'20px' }}>
-            <svg width="64" height="32" viewBox="0 0 64 32">
-              <ellipse cx="20" cy="16" rx="12" ry="10" fill="none" stroke="#e60000" strokeWidth="2.5" opacity="0.9"/>
-              <ellipse cx="44" cy="16" rx="12" ry="10" fill="none" stroke="#e60000" strokeWidth="2.5" opacity="0.9"/>
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg)', padding:'20px' }}>
+      <div style={{ width:'100%', maxWidth:'400px' }}>
+        {/* Logo */}
+        <div style={{ textAlign:'center', marginBottom:'32px' }}>
+          <div style={{ width:'56px', height:'56px', background:'rgba(230,0,0,0.12)', border:'1px solid rgba(230,0,0,0.25)', borderRadius:'14px', display:'inline-flex', alignItems:'center', justifyContent:'center', marginBottom:'16px' }}>
+            <svg width="28" height="14" viewBox="0 0 44 22">
+              <ellipse cx="11" cy="11" rx="9" ry="8" fill="none" stroke="#e60000" strokeWidth="2.5"/>
+              <ellipse cx="33" cy="11" rx="9" ry="8" fill="none" stroke="#e60000" strokeWidth="2.5"/>
             </svg>
           </div>
-          <div style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.2em', color:'var(--text3)', marginBottom:'8px' }}>INFINITE UNION</div>
-          <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Ad Tracker</h1>
-          <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>Аналітика рекламних кампаній</p>
+          <h1 style={{ fontSize:'22px', fontWeight:800, color:'var(--text)', margin:0 }}>Ad Tracker</h1>
+          <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>by Infinite Union</p>
         </div>
-        <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'32px', boxShadow:'0 0 60px rgba(230,0,0,0.08)' }}>
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom:'20px' }}>
-              <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'8px' }}>Email</label>
-              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" required
-                style={{ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', transition:'border-color 0.2s, box-shadow 0.2s', boxSizing:'border-box' }}
-                onFocus={e=>{ e.target.style.borderColor='#e60000'; e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.15)' }}
-                onBlur={e=>{ e.target.style.borderColor='rgba(255,255,255,0.07)'; e.target.style.boxShadow='none' }}
-              />
-            </div>
-            <div style={{ marginBottom:'16px' }}>
-              <label style={{ display:'block', fontSize:'11px', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'8px' }}>Пароль</label>
-              <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" required
-                style={{ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', transition:'border-color 0.2s, box-shadow 0.2s', boxSizing:'border-box' }}
-                onFocus={e=>{ e.target.style.borderColor='#e60000'; e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.15)' }}
-                onBlur={e=>{ e.target.style.borderColor='rgba(255,255,255,0.07)'; e.target.style.boxShadow='none' }}
-              />
-            </div>
-            <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'20px', cursor:'pointer' }} onClick={()=>setRememberMe(!rememberMe)}>
-              <div style={{ width:'18px', height:'18px', borderRadius:'4px', flexShrink:0, border: rememberMe ? '2px solid #e60000' : '2px solid rgba(255,255,255,0.2)', background: rememberMe ? '#e60000' : 'transparent', display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.15s' }}>
-                {rememberMe && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+
+        <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'28px' }}>
+          {step === 'credentials' ? (
+            <>
+              <h2 style={{ fontSize:'18px', fontWeight:700, color:'var(--text)', margin:'0 0 6px' }}>Вхід в систему</h2>
+              <p style={{ fontSize:'13px', color:'var(--text3)', margin:'0 0 24px' }}>Введіть ваші дані для входу</p>
+
+              <form onSubmit={handleLogin} style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+                <div>
+                  <label style={{ display:'block', fontSize:'11px', fontWeight:600, color:'var(--text3)', marginBottom:'7px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Email</label>
+                  <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" required style={inp}
+                    onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}}
+                    onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.1)';e.target.style.boxShadow='none'}}
+                  />
+                </div>
+                <div>
+                  <label style={{ display:'block', fontSize:'11px', fontWeight:600, color:'var(--text3)', marginBottom:'7px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Пароль</label>
+                  <div style={{ position:'relative' }}>
+                    <input type={showPassword?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" required style={{ ...inp, paddingRight:'44px' }}
+                      onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}}
+                      onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.1)';e.target.style.boxShadow='none'}}
+                    />
+                    <button type="button" onClick={()=>setShowPassword(!showPassword)} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'var(--text3)', padding:'4px', display:'flex' }}>
+                      {showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
+                    </button>
+                  </div>
+                </div>
+
+                {error && (
+                  <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 14px', background:'rgba(230,0,0,0.1)', border:'1px solid rgba(230,0,0,0.2)', borderRadius:'8px', color:'#ff6b6b', fontSize:'13px' }}>
+                    <AlertCircle size={14} style={{flexShrink:0}}/>{error}
+                  </div>
+                )}
+
+                <button type="submit" disabled={loading} style={{ padding:'13px', background: loading?'rgba(230,0,0,0.5)':'#e60000', color:'#fff', fontWeight:700, fontSize:'15px', borderRadius:'10px', border:'none', cursor: loading?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', marginTop:'4px' }}>
+                  {loading ? <><Loader2 size={16} style={{animation:'spin 0.8s linear infinite'}}/>Входимо...</> : 'Увійти'}
+                </button>
+              </form>
+
+              <div style={{ textAlign:'center', marginTop:'20px' }}>
+                <p style={{ fontSize:'13px', color:'var(--text3)', margin:0 }}>
+                  Немає акаунту?{' '}
+                  <Link href="/auth/register" style={{ color:'#e60000', textDecoration:'none', fontWeight:600 }}>Зареєструватись</Link>
+                </p>
               </div>
-              <span style={{ fontSize:'13px', color:'var(--text3)', userSelect:'none' }}>Запам'ятати мене</span>
-            </div>
-            {error && (
-              <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'12px 16px', background:'rgba(230,0,0,0.1)', border:'1px solid rgba(230,0,0,0.25)', borderRadius:'8px', color:'#ff6b6b', fontSize:'13px', marginBottom:'16px' }}>
-                <AlertCircle size={15} style={{ flexShrink:0 }} />{error}
+            </>
+          ) : (
+            <>
+              <div style={{ textAlign:'center', marginBottom:'20px' }}>
+                <div style={{ width:'48px', height:'48px', background:'rgba(230,0,0,0.12)', borderRadius:'12px', display:'inline-flex', alignItems:'center', justifyContent:'center', marginBottom:'12px' }}>
+                  <Shield size={22} style={{color:'#e60000'}}/>
+                </div>
+                <h2 style={{ fontSize:'18px', fontWeight:700, color:'var(--text)', margin:'0 0 6px' }}>Підтвердження входу</h2>
+                <p style={{ fontSize:'13px', color:'var(--text3)', margin:0 }}>Код відправлено на <strong style={{color:'var(--text)'}}>{email}</strong></p>
               </div>
-            )}
-            <button type="submit" disabled={loading}
-              style={{ width:'100%', padding:'13px', background: loading ? '#555' : '#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'8px', border:'none', cursor: loading ? 'not-allowed' : 'pointer', transition:'all 0.2s', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}
-              onMouseEnter={e=>{ if (!loading) { (e.target as HTMLElement).style.background='#cc0000'; (e.target as HTMLElement).style.boxShadow='0 4px 24px rgba(230,0,0,0.4)'; (e.target as HTMLElement).style.transform='translateY(-1px)' }}}
-              onMouseLeave={e=>{ (e.target as HTMLElement).style.background='#e60000'; (e.target as HTMLElement).style.boxShadow='none'; (e.target as HTMLElement).style.transform='none' }}
-            >
-              {loading ? <><Loader2 size={16} style={{ animation:'spin 1s linear infinite' }} />Входимо...</> : 'Увійти →'}
-            </button>
-          </form>
-          <p style={{ textAlign:'center', fontSize:'13px', color:'var(--text3)', marginTop:'20px', marginBottom:0 }}>
-            Ще немає акаунту?{' '}<a href="/auth/register" style={{ color:'#e60000', textDecoration:'none', fontWeight:600 }}>Подати заявку</a>
-          </p>
+
+              <form onSubmit={handleVerify2FA} style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+                <div>
+                  <label style={{ display:'block', fontSize:'11px', fontWeight:600, color:'var(--text3)', marginBottom:'7px', textTransform:'uppercase', letterSpacing:'0.08em' }}>6-значний код</label>
+                  <input value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,'').slice(0,6))} placeholder="123456" maxLength={6} required style={{ ...inp, textAlign:'center', fontSize:'28px', fontWeight:800, letterSpacing:'8px', fontFamily:'monospace' }}
+                    onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}}
+                    onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.1)';e.target.style.boxShadow='none'}}
+                  />
+                </div>
+
+                {codeError && (
+                  <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 14px', background:'rgba(230,0,0,0.1)', border:'1px solid rgba(230,0,0,0.2)', borderRadius:'8px', color:'#ff6b6b', fontSize:'13px' }}>
+                    <AlertCircle size={14} style={{flexShrink:0}}/>{codeError}
+                  </div>
+                )}
+
+                <button type="submit" disabled={loading||code.length!==6} style={{ padding:'13px', background:(loading||code.length!==6)?'rgba(230,0,0,0.4)':'#e60000', color:'#fff', fontWeight:700, fontSize:'15px', borderRadius:'10px', border:'none', cursor:(loading||code.length!==6)?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
+                  {loading ? <><Loader2 size={16} style={{animation:'spin 0.8s linear infinite'}}/>Перевіряємо...</> : 'Підтвердити'}
+                </button>
+
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                  <button type="button" onClick={()=>setStep('credentials')} style={{ background:'none', border:'none', color:'var(--text3)', fontSize:'13px', cursor:'pointer' }}>
+                    ← Назад
+                  </button>
+                  <button type="button" onClick={async()=>{ setSendingCode(true); await fetch('/api/auth/2fa/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}); setSendingCode(false) }} disabled={sendingCode} style={{ background:'none', border:'none', color:'#e60000', fontSize:'13px', cursor:'pointer', fontWeight:600 }}>
+                    {sendingCode ? 'Відправляємо...' : 'Відправити знову'}
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
         </div>
-        <p style={{ textAlign:'center', fontSize:'11px', fontFamily:'monospace', color:'rgba(255,255,255,0.18)', marginTop:'24px' }}>© 2026 · Infinite Union · All rights reserved</p>
       </div>
     </div>
   )

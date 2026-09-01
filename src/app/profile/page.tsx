@@ -28,6 +28,9 @@ export default function ProfilePage() {
   const [newAdmin, setNewAdmin] = useState({ name:'', email:'', password:'' })
   const [addingAdmin, setAddingAdmin] = useState(false)
   const [adminMsg, setAdminMsg] = useState<{text:string;ok:boolean}|null>(null)
+  const [twoFAEnabled, setTwoFAEnabled] = useState(false)
+  const [twoFALoading, setTwoFALoading] = useState(false)
+  const [twoFAMsg, setTwoFAMsg] = useState<{text:string;ok:boolean}|null>(null)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -38,6 +41,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetch('/api/profile').then(r=>r.json()).then(d=>{ setProfile(d); setName(d.name||''); setLoading(false) })
+    fetch('/api/auth/2fa/status').then(r=>r.json()).then(d=>{ setTwoFAEnabled(d.twoFactorEnabled) })
   }, [])
 
   const showToast = (msg: string, ok: boolean) => { setToast({msg,ok}); setTimeout(()=>setToast(null), 3500) }
@@ -61,6 +65,16 @@ export default function ProfilePage() {
     if (res.ok) { showToast('Пароль змінено', true); setCurrentPwd(''); setNewPwd(''); setConfirmPwd('') }
     else showToast(data.error||'Помилка', false)
     setPwdSaving(false)
+  }
+
+  const toggle2FA = async () => {
+    setTwoFALoading(true); setTwoFAMsg(null)
+    const res = await fetch('/api/auth/2fa/toggle', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ enabled: !twoFAEnabled }) })
+    if (res.ok) {
+      setTwoFAEnabled(!twoFAEnabled)
+      setTwoFAMsg({ text: !twoFAEnabled ? '✓ Двофакторна автентифікація увімкнена' : '✓ Двофакторна автентифікація вимкнена', ok: true })
+    } else setTwoFAMsg({ text: 'Помилка', ok: false })
+    setTwoFALoading(false)
   }
 
   const createAdmin = async () => {
@@ -180,6 +194,41 @@ export default function ProfilePage() {
                     style={{ padding:'12px', background:(pwdSaving||!currentPwd||!newPwd||!confirmPwd||newPwd!==confirmPwd)?'rgba(230,0,0,0.3)':'#e60000', color:'#fff', fontWeight:700, fontSize:'13px', borderRadius:'8px', border:'none', cursor:(pwdSaving||!currentPwd||!newPwd||!confirmPwd||newPwd!==confirmPwd)?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
                     {pwdSaving ? <><div style={{width:'14px',height:'14px',border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>Змінюємо...</> : <><Lock size={15}/>Змінити пароль</>}
                   </button>
+                </div>
+              </div>
+
+              {/* 2FA секція */}
+              <div className="anim-up-4" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
+                <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:'8px' }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <div>
+                    <p style={{ fontSize:'13px', fontWeight:700, color:'var(--text)', margin:0 }}>Двофакторна автентифікація</p>
+                    <p style={{ fontSize:'12px', color:'var(--text3)', margin:0 }}>Захист акаунту через email-код</p>
+                  </div>
+                </div>
+                <div style={{ padding: isMobile ? '16px' : '20px' }}>
+                  <p style={{ fontSize:'13px', color:'var(--text3)', margin:'0 0 16px', lineHeight:1.6 }}>
+                    При увімкненій 2FA кожного разу при вході на вашу пошту буде надходити 6-значний код підтвердження. Це захищає акаунт навіть якщо хтось дізнається ваш пароль.
+                  </p>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', background:'var(--bg3)', borderRadius:'10px', marginBottom:'12px' }}>
+                    <div>
+                      <p style={{ fontSize:'13px', fontWeight:600, color:'var(--text)', margin:0 }}>
+                        {twoFAEnabled ? '🔒 Увімкнено' : '🔓 Вимкнено'}
+                      </p>
+                      <p style={{ fontSize:'12px', color:'var(--text3)', margin:0 }}>
+                        {twoFAEnabled ? 'Код надходить на ' + profile?.email : 'Додатковий захист вимкнено'}
+                      </p>
+                    </div>
+                    <button onClick={toggle2FA} disabled={twoFALoading}
+                      style={{ padding:'8px 16px', background: twoFAEnabled ? 'rgba(255,68,68,0.12)' : 'rgba(0,200,100,0.12)', color: twoFAEnabled ? '#ff4444' : '#00c864', border:`1px solid ${twoFAEnabled ? 'rgba(255,68,68,0.25)' : 'rgba(0,200,100,0.25)'}`, borderRadius:'8px', fontSize:'13px', fontWeight:700, cursor: twoFALoading ? 'not-allowed' : 'pointer' }}>
+                      {twoFALoading ? '...' : twoFAEnabled ? 'Вимкнути' : 'Увімкнути'}
+                    </button>
+                  </div>
+                  {twoFAMsg && (
+                    <div style={{ padding:'10px 14px', borderRadius:'8px', fontSize:'13px', fontWeight:600, background: twoFAMsg.ok ? 'rgba(0,200,100,0.1)' : 'rgba(230,0,0,0.1)', border:`1px solid ${twoFAMsg.ok ? 'rgba(0,200,100,0.2)' : 'rgba(230,0,0,0.2)'}`, color: twoFAMsg.ok ? '#00c864' : '#ff6b6b' }}>
+                      {twoFAMsg.text}
+                    </div>
+                  )}
                 </div>
               </div>
 

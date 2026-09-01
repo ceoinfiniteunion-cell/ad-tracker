@@ -14,6 +14,9 @@ model User {
   name      String
   role      Role       @default(CLIENT)
   status    UserStatus @default(PENDING)
+  twoFactorEnabled Boolean  @default(false)
+  twoFactorCode    String?
+  twoFactorExpiry  DateTime?
   company   String?
   phone     String?
   createdAt DateTime   @default(now())
