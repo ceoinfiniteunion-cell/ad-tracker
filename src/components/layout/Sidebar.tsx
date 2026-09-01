@@ -32,7 +32,7 @@ export function Sidebar() {
     { href:'/reports', label:'Звіти', icon:FileText },
     { href:'/connect', label:'Мої кабінети', icon:Link2 },
     { href:'/profile', label:'Профіль', icon:Settings },
-    { href:'https://t.me/infiniteunion_manager', label:'Допомога', icon:HelpCircle, external:true },
+    { href:'/help', label:'Допомога', icon:HelpCircle },
   ]
 
   const mobileLinks = isAdmin
@@ -46,7 +46,7 @@ export function Sidebar() {
         { href:'/dashboard', label:'Дашборд', icon:LayoutDashboard },
         { href:'/stats', label:'Статистика', icon:BarChart2 },
         { href:'/reports', label:'Звіти', icon:FileText },
-        { href:'https://t.me/infiniteunion_manager', label:'Допомога', icon:HelpCircle, external:true },
+        { href:'/help', label:'Допомога', icon:HelpCircle },
       ]
 
   const isActive = (href: string) => pathname === href || (href !== '/admin' && href !== '/dashboard' && pathname.startsWith(href))
