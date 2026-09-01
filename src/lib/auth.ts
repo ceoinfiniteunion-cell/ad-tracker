@@ -33,9 +33,11 @@ export const authOptions: NextAuthOptions = {
 
         // Перевірка статусу клієнта
         if (user.role === 'CLIENT') {
-          const client = await prisma.client.findFirst({ where: { userId: user.id } })
-          if (client && client.status !== 'ACTIVE') {
+          if ((user as any).status === 'PENDING') {
             throw new Error('Ваш акаунт очікує підтвердження адміністратора.')
+          }
+          if ((user as any).status === 'REJECTED') {
+            throw new Error('Ваш акаунт відхилено. Зверніться до підтримки.')
           }
         }
 
