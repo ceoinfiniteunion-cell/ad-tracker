@@ -339,7 +339,7 @@ export default function ConnectPage() {
                   const ts = TOKEN_STATUS[acc.tokenStatus??'no_token'] ?? TOKEN_STATUS['no_token']
                   return (
                     <div key={acc.id} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 22px' }} onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(230,0,0,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)'}}>
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                      <div style={{ display:'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent:'space-between', gap:'8px', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
                           <div style={{ width:'44px', height:'44px', borderRadius:'10px', background:p.bg, border:`1px solid ${p.color}30`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                             <span style={{ fontSize:'9px', fontWeight:800, color:p.color, fontFamily:'monospace' }}>{p.short}</span>

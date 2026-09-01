@@ -143,7 +143,7 @@ export default function ReportsPage() {
                 {data?.client?.company} · {days} {days===1?'день':days<5?'дні':'днів'} · {from} → {to}
               </p>
             </div>
-            <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
+            <div style={{ display:'flex', gap:'8px', alignItems:'center', flexWrap:'wrap' }}>
               <button onClick={()=>setCompare(!compare)} style={{ ...tabStyle(compare), fontSize:'12px' }}>
                 {compare ? '✓ Порівняння' : 'Порівняння'}
               </button>

@@ -133,7 +133,7 @@ export default function StatsPage() {
         <div style={{ maxWidth:'1100px', margin:'0 auto', padding: isMobile ? '16px' : '36px 40px', position:'relative', zIndex:1 }}>
 
           {/* Header */}
-          <div className="anim-fade" style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'28px' }}>
+          <div className="anim-fade" style={{ display:'flex', flexDirection: isMobile ? 'column' : 'row', alignItems:'flex-start', justifyContent:'space-between', marginBottom: isMobile ? '16px' : '28px' }}>
             <div>
               <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// ДЕТАЛЬНА СТАТИСТИКА</p>
               <h1 style={{ fontSize:'26px', fontWeight:800, color:'var(--text)', margin:0 }}>Статистика</h1>
@@ -206,7 +206,7 @@ export default function StatsPage() {
 
                   {/* Дропдаун кабінетів */}
                   {dropdown===pl && hasMultiple && (
-                    <div style={{ position:'absolute', top:0, left:'calc(100% + 8px)', minWidth:'240px', background:'var(--bg4)', border:'1px solid var(--border2)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:100, overflow:'hidden' }}>
+                    <div style={{ position: isMobile ? 'fixed' : 'absolute', top: isMobile ? 'auto' : 0, bottom: isMobile ? 60 : 'auto', left: isMobile ? 16 : 'calc(100% + 8px)', right: isMobile ? 16 : 'auto', minWidth:'240px', background:'var(--bg4)', border:'1px solid var(--border2)', borderRadius:'10px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)', zIndex:100, overflow:'hidden' }}>
                       {/* Всі кабінети цієї платформи */}
                       <button
                         onClick={()=>{ setActiveAccount('all'); setDropdown(null) }}
@@ -246,7 +246,7 @@ export default function StatsPage() {
 
           {/* Режим порівняння */}
           {compareMode && data && (
-            <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'16px 20px', marginBottom:'16px' }}>
+            <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding: isMobile ? '12px' : '16px 20px', marginBottom:'16px', overflowX:'auto' }}>
               <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text4)', marginBottom:'12px' }}>// ПОРІВНЯННЯ КАБІНЕТІВ</p>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', marginBottom:'16px' }}>
                 {/* Кабінет 1 */}
