@@ -60,3 +60,26 @@ export function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
   return response
 }
+
+// Legacy exports for backward compatibility
+export async function rateLimit(key: string, max: number, windowMs: number): Promise<{ ok: boolean }> {
+  const ok = checkApiRateLimit(key, max, windowMs)
+  return { ok }
+}
+
+export function getIp(req: Request): string {
+  const forwarded = (req as any).headers?.get?.('x-forwarded-for')
+  return forwarded?.split(',')[0].trim() ?? 'unknown'
+}
+
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+}
+
+export function isValidPassword(password: string): boolean {
+  return password.length >= 8
+}
+
+export function sanitizeString(str: string): string {
+  return str.trim().slice(0, 1000)
+}
