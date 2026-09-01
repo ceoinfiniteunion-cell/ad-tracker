@@ -76,7 +76,7 @@ export function ClicksChart({ data, title='Кліки та конверсії', 
           <Tooltip
             contentStyle={{ background:tooltipBg, border:`1px solid ${tooltipBorder}`, borderRadius:'8px', color:tooltipColor, fontSize:'12px' }}
             formatter={(v: number, n: string) => [
-              <span style={{ fontWeight:700, fontFamily:'monospace' }}>{v.toLocaleString()}</span>,
+              <span key="val" style={{ fontWeight:700, fontFamily:'monospace' }}>{v.toLocaleString()}</span>,
               n==='clicks'?'Кліки':'Конверсії'
             ]}
             labelStyle={{ fontWeight:700, marginBottom:'6px', color:tooltipColor }}

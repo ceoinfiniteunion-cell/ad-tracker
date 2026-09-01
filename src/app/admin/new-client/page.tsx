@@ -53,7 +53,7 @@ export default function NewClientPage() {
             </Link>
             <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// НОВИЙ КЛІЄНТ</p>
             <h1 style={{ fontSize: isMobile ? '22px' : '26px', fontWeight:800, color:'var(--text)', margin:0 }}>Додати клієнта</h1>
-            {!isMobile && <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>Заповніть дані та прив'яжіть рекламні кабінети</p>}
+            {!isMobile && <p style={{ fontSize:'13px', color:'var(--text3)', marginTop:'6px' }}>Заповніть дані та прив&apos;яжіть рекламні кабінети</p>}
           </div>
 
           <form onSubmit={handleSubmit} className="anim-up-1">
@@ -62,7 +62,7 @@ export default function NewClientPage() {
               <p style={sectionTitle}>Основна інформація</p>
               <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'14px', marginBottom:'14px' }}>
                 <div>
-                  <label style={lbl}>Ім'я</label>
+                  <label style={lbl}>Ім&apos;я</label>
                   <input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Іван Петренко" required style={inp}
                     onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}}
                     onBlur={e=>{e.target.style.borderColor='var(--border)';e.target.style.boxShadow='none'}}

@@ -6,7 +6,7 @@ export default function PrivacyPage() {
       <p style={{ color:'#666', marginBottom:'40px' }}>Last updated: August 9, 2026</p>
 
       <h2 style={{ fontSize:'20px', fontWeight:700, marginTop:'32px' }}>1. About This App</h2>
-      <p>Infinite Union Ad Tracker ("the App") is an advertising analytics platform developed by Infinite Union agency. The App allows clients to connect their advertising accounts (Meta/Facebook, Google Ads, TikTok) and view performance metrics in one dashboard.</p>
+      <p>Infinite Union Ad Tracker (&quot;the App&quot;) is an advertising analytics platform developed by Infinite Union agency. The App allows clients to connect their advertising accounts (Meta/Facebook, Google Ads, TikTok) and view performance metrics in one dashboard.</p>
 
       <h2 style={{ fontSize:'20px', fontWeight:700, marginTop:'32px' }}>2. Data We Access</h2>
       <p>When you connect your Meta/Facebook advertising account, the App requests access to:</p>

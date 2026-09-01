@@ -188,7 +188,7 @@ export function GoalsSection({ totals, clientId }: Props) {
             </div>
 
             <div style={{ marginBottom:'20px' }}>
-              <label style={{ display:'block', fontSize:'10px', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'6px' }}>Назва (необов'язково)</label>
+              <label style={{ display:'block', fontSize:'10px', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--text3)', marginBottom:'6px' }}>Назва (необов&apos;язково)</label>
               <input value={form.label} onChange={e=>setForm({...form,label:e.target.value})}
                 placeholder="напр. Ціль на липень"
                 style={{ width:'100%', padding:'10px 12px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'13px', outline:'none', boxSizing:'border-box' as const }}

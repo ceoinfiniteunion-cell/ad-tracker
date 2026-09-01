@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const cleanEmail = email.toLowerCase().trim()
 
     if (cleanName.length < 2) {
-      return NextResponse.json({ error: "Ім'я має бути мінімум 2 символи" }, { status: 400 })
+      return NextResponse.json({ error: "Ім&apos;я має бути мінімум 2 символи" }, { status: 400 })
     }
 
     const existing = await prisma.user.findUnique({ where: { email: cleanEmail } })

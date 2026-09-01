@@ -60,7 +60,7 @@ export default function RegisterPage() {
           ) : (
             <form onSubmit={handleSubmit}>
               {[
-                { key: 'name', label: "Ім'я та прізвище *", placeholder: 'Іван Петренко', type: 'text' },
+                { key: 'name', label: "Ім&apos;я та прізвище *", placeholder: 'Іван Петренко', type: 'text' },
                 { key: 'email', label: 'Email *', placeholder: 'your@email.com', type: 'email' },
                 { key: 'password', label: 'Пароль *', placeholder: '••••••••', type: 'password' },
                 { key: 'company', label: 'Компанія', placeholder: 'Назва компанії', type: 'text' },
