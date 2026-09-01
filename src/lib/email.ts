@@ -4,7 +4,7 @@ export async function sendTwoFactorCode(email: string, code: string, name: strin
   const resend = new Resend(process.env.RESEND_API_KEY)
   
   const { error } = await resend.emails.send({
-    from: 'Infinite Union Ad Tracker <onboarding@resend.dev>',
+    from: 'Infinite Union Ad Tracker <noreply@infiniteunion.com.ua>',
     to: email,
     subject: `🔐 Код підтвердження 2FA — ${code}`,
     html: `
