@@ -85,13 +85,31 @@ export default function ProfilePage() {
   }
 
   const toggle2FA = async () => {
-    setTwoFALoading(true); setTwoFAMsg(null)
-    const res = await fetch('/api/auth/2fa/toggle', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ enabled: !twoFAEnabled }) })
-    if (res.ok) {
-      setTwoFAEnabled(!twoFAEnabled)
-      setTwoFAMsg({ text: !twoFAEnabled ? '✓ Двофакторна автентифікація увімкнена' : '✓ Двофакторна автентифікація вимкнена', ok: true })
-    } else setTwoFAMsg({ text: 'Помилка', ok: false })
-    setTwoFALoading(false)
+    if (!twoFAEnabled) {
+      // Увімкнення — спочатку відправляємо код
+      setTwoFALoading(true); setTwoFAMsg(null)
+      const res = await fetch('/api/auth/2fa/send', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ email: profile?.email })
+      })
+      setTwoFALoading(false)
+      if (res.ok) {
+        setShowVerifyForm(true)
+        setTwoFAMsg({ text: 'Код відправлено на ' + profile?.email + '. Введіть його нижче.', ok: true })
+      } else {
+        setTwoFAMsg({ text: 'Помилка відправки коду', ok: false })
+      }
+    } else {
+      // Вимкнення
+      setTwoFALoading(true); setTwoFAMsg(null)
+      const res = await fetch('/api/auth/2fa/toggle', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ enabled: false })
+      })
+      if (res.ok) { setTwoFAEnabled(false); setShowVerifyForm(false); setTwoFAMsg({ text: '✓ Двофакторна автентифікація вимкнена', ok: true }) }
+      else setTwoFAMsg({ text: 'Помилка', ok: false })
+      setTwoFALoading(false)
+    }
   }
 
   const createAdmin = async () => {
