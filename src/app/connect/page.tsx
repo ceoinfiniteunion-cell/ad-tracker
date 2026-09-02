@@ -16,7 +16,7 @@ const defaultForm = { name:'', accountId:'', accessToken:'' }
 const PLATFORMS = {
   FACEBOOK: { label:'Meta / Facebook', color:'#1877f2', bg:'rgba(24,119,242,0.1)', short:'META', autoSync:true },
   GOOGLE: { label:'Google Ads', color:'#e60000', bg:'rgba(230,0,0,0.1)', short:'GGL', autoSync:false },
-  TIKTOK: { label:'TikTok Ads', color:'rgba(255,255,255,0.8)', bg:'var(--border)', short:'TIK', autoSync:false },
+  TIKTOK: { label:'TikTok Ads', color:'#000000', bg:'rgba(255,255,255,0.06)', short:'TIK', autoSync:true },
 }
 
 const TOKEN_STATUS: Record<string, {label:string;color:string;bg:string}> = {
@@ -91,7 +91,10 @@ export default function ConnectPage() {
     const error = params.get('error')
     if (success === 'google') showToast('✓ Google Ads підключено успішно!', 'ok')
     if (success === 'meta') showToast('✓ Meta / Facebook підключено успішно!', 'ok')
-    if (error === 'failed') showToast('Помилка підключення Meta', 'err')
+    if (success === 'tiktok') showToast('✓ TikTok Ads підключено успішно!', 'ok')
+    if (error === 'failed' && !params.get('platform')) showToast('Помилка підключення Meta', 'err')
+    if (error === 'failed' && params.get('platform') === 'tiktok') showToast('Помилка підключення TikTok', 'err')
+    if (error === 'token_failed') showToast('TikTok: помилка отримання токену', 'err')
     if (error === 'no_token') showToast('Помилка: не вдалось отримати токен', 'err')
     if (error === 'failed') showToast('Помилка підключення Google', 'err')
   }, [])
@@ -264,8 +267,12 @@ export default function ConnectPage() {
                     ))}
                   </div>
 
-                  <button onClick={()=>{ if(selectedPlatform==='FACEBOOK'){ window.location.href='/api/auth/meta' } else { setStep('form') } }} style={{ width:'100%', padding:'14px', background:pInfo.color === 'rgba(255,255,255,0.8)' ? '#333' : pInfo.color, color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
-                    {selectedPlatform==='FACEBOOK' ? '🔗 Підключити через Meta OAuth' : 'Я готовий — ввести дані →'}
+                  <button onClick={()=>{ 
+                    if(selectedPlatform==='FACEBOOK'){ window.location.href='/api/auth/meta' }
+                    else if(selectedPlatform==='TIKTOK'){ window.location.href='/api/auth/tiktok' }
+                    else { setStep('form') } 
+                  }} style={{ width:'100%', padding:'14px', background:selectedPlatform==='TIKTOK' ? '#000' : pInfo.color === 'rgba(255,255,255,0.8)' ? '#333' : pInfo.color, color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
+                    {selectedPlatform==='FACEBOOK' ? '🔗 Підключити через Meta OAuth' : selectedPlatform==='TIKTOK' ? '🎵 Підключити через TikTok OAuth' : 'Я готовий — ввести дані →'}
                   </button>
                 </div>
               </div>
