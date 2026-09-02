@@ -383,6 +383,19 @@ export default function ClientDetailPage() {
                 </p>
               </div>
 
+              {form.platform === 'TIKTOK' && (
+                <div style={{ marginBottom:'16px' }}>
+                  <label style={lbl}>Access Token</label>
+                  <input value={form.accessToken} onChange={e=>setForm({...form,accessToken:e.target.value})} placeholder="Отримай в TikTok Business API Portal" style={inp}
+                    onFocus={e=>{e.target.style.borderColor='#e60000';e.target.style.boxShadow='0 0 0 3px rgba(230,0,0,0.12)'}}
+                    onBlur={e=>{e.target.style.borderColor='rgba(255,255,255,0.07)';e.target.style.boxShadow='none'}}
+                  />
+                  <p style={{ fontSize:'11px', color:'var(--text4)', marginTop:'6px', fontFamily:'monospace' }}>
+                    business-api.tiktok.com → My Apps → Authorization → Long-term token
+                  </p>
+                </div>
+              )}
+
               {formError && (
                 <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'11px 14px', background:'rgba(230,0,0,0.1)', border:'1px solid rgba(230,0,0,0.2)', borderRadius:'8px', color:'#ff6b6b', fontSize:'12px', marginBottom:'16px' }}>
                   <AlertCircle size={13}/>{formError}
