@@ -6,7 +6,7 @@ import { User, Lock, Mail, Building2, Calendar, CheckCircle, AlertCircle, Eye, E
 const gridBg = { position:'fixed' as const, inset:0,  pointerEvents:'none' as const, zIndex:0 }
 const inp = (focused: boolean) => ({ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:`1px solid ${focused ? '#e60000' : 'rgba(255,255,255,0.07)'}`, borderRadius:'8px', color:'var(--text)', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, transition:'border-color 0.2s, box-shadow 0.2s', boxShadow: focused ? '0 0 0 3px rgba(230,0,0,0.12)' : 'none' })
 const lbl = { display:'block', fontSize:'10px', fontWeight:600 as const, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--text3)', marginBottom:'8px' }
-interface Profile { name: string; email: string; createdAt: string }
+interface Profile { name: string; email: string; createdAt: string; role: string; twoFactorEnabled?: boolean; client?: { company?: string; currency?: string } }
 export default function ProfilePage() {
   const { data: session, update: updateSession } = useSession()
   const isAdmin = (session?.user as any)?.role === 'ADMIN'
@@ -15,6 +15,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<{msg:string;ok:boolean}|null>(null)
   const [name, setName] = useState('')
+  const [currency, setCurrency] = useState('USD')
+  const [currencySaving, setCurrencySaving] = useState(false)
   const [nameFocused, setNameFocused] = useState(false)
   const [nameSaving, setNameSaving] = useState(false)
   const [currentPwd, setCurrentPwd] = useState('')
@@ -43,9 +45,17 @@ export default function ProfilePage() {
   }, [])
 
   useEffect(() => {
-    fetch('/api/profile').then(r=>r.json()).then(d=>{ setProfile(d); setName(d.name||''); setLoading(false) })
+    fetch('/api/profile').then(r=>r.json()).then(d=>{ setProfile(d); setName(d.name||''); setCurrency(d.client?.currency||'USD'); setLoading(false) })
     fetch('/api/auth/2fa/status').then(r=>r.json()).then(d=>{ setTwoFAEnabled(d.twoFactorEnabled) })
   }, [])
+
+  const saveCurrency = async (val: string) => {
+    setCurrencySaving(true)
+    await fetch('/api/profile', { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ currency: val }) })
+    setCurrency(val)
+    setCurrencySaving(false)
+    showToast('Валюту змінено', true)
+  }
 
   const showToast = (msg: string, ok: boolean) => { setToast({msg,ok}); setTimeout(()=>setToast(null), 3500) }
 
@@ -192,6 +202,24 @@ export default function ProfilePage() {
                     <input value={profile?.email||''} disabled style={{ ...inp(false), opacity:0.5, cursor:'not-allowed' }}/>
                     <p style={{ fontSize:'11px', color:'var(--text4)', marginTop:'6px' }}>Email не можна змінити. Зверніться до адміністратора.</p>
                   </div>
+                  {profile?.role === 'CLIENT' && (
+                    <div style={{ marginTop:'14px' }}>
+                      <label style={lbl}>ВАЛЮТА ВІДОБРАЖЕННЯ</label>
+                      <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' as const }}>
+                        {[
+                          { code:'USD', label:'$ USD' },
+                          { code:'UAH', label:'₴ UAH' },
+                          { code:'EUR', label:'€ EUR' },
+                        ].map(c => (
+                          <button key={c.code} onClick={()=>saveCurrency(c.code)} disabled={currencySaving}
+                            style={{ padding:'8px 16px', borderRadius:'8px', border:`1px solid ${currency===c.code ? '#e60000' : 'var(--border)'}`, background: currency===c.code ? 'rgba(230,0,0,0.1)' : 'var(--bg3)', color: currency===c.code ? '#e60000' : 'var(--text3)', fontWeight: currency===c.code ? 700 : 400, fontSize:'13px', cursor:'pointer', transition:'all 0.15s' }}>
+                            {c.label}
+                          </button>
+                        ))}
+                      </div>
+                      <p style={{ fontSize:'11px', color:'var(--text4)', marginTop:'6px' }}>Курс конвертації береться актуальний з відкритого API</p>
+                    </div>
+                  )}
                 </div>
               </div>
 

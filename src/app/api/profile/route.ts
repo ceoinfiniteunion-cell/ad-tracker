@@ -9,7 +9,11 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const user = await prisma.user.findUnique({
     where: { id: (session.user as any).id },
-    select: { id:true, name:true, email:true, role:true, createdAt:true, client: { select: { company:true } } }
+    select: {
+      id: true, name: true, email: true, role: true, createdAt: true,
+      twoFactorEnabled: true,
+      client: { select: { company: true, currency: true } }
+    }
   })
   return NextResponse.json(user)
 }
@@ -17,10 +21,12 @@ export async function GET() {
 export async function PATCH(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { name, currentPassword, newPassword } = await request.json()
+  const { name, currentPassword, newPassword, currency } = await request.json()
   const userId = (session.user as any).id
-
-  const user = await prisma.user.findUnique({ where: { id: userId } })
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { client: true }
+  })
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const updateData: any = {}
@@ -34,12 +40,21 @@ export async function PATCH(request: NextRequest) {
     updateData.password = await bcrypt.hash(newPassword, 12)
   }
 
-  if (Object.keys(updateData).length === 0) return NextResponse.json({ error: 'Немає змін' }, { status: 400 })
+  // Оновити валюту для клієнта
+  if (currency && user.client) {
+    await prisma.client.update({
+      where: { id: user.client.id },
+      data: { currency }
+    })
+  }
 
-  const updated = await prisma.user.update({
+  if (Object.keys(updateData).length > 0) {
+    await prisma.user.update({ where: { id: userId }, data: updateData })
+  }
+
+  const updated = await prisma.user.findUnique({
     where: { id: userId },
-    data: updateData,
-    select: { id:true, name:true, email:true, role:true }
+    select: { id: true, name: true, email: true, role: true, client: { select: { currency: true } } }
   })
   return NextResponse.json(updated)
 }

@@ -18,6 +18,7 @@ model User {
   twoFactorCode    String?
   twoFactorExpiry  DateTime?
   company   String?
+  currency  String  @default("USD")
   phone     String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -30,6 +31,7 @@ model Client {
   id         String      @id @default(cuid())
   name       String
   company    String
+  currency   String      @default("USD")
   userId     String      @unique
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
