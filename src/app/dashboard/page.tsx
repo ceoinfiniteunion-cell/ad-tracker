@@ -62,10 +62,10 @@ const PLATFORM_METRICS: Record<string, { key: string; label: string; format: 'cu
 
 const DEFAULT_METRICS = ['totalSpend','totalImpressions','totalClicks','totalConversions','ctr','cpc','roas']
 
-function formatVal(val: any, format: string) {
+function formatVal(val: any, format: string, currency = 'USD', rate = 1) {
   if (val === undefined || val === null) return '—'
   switch(format) {
-    case 'currency': return formatCurrency(val)
+    case 'currency': return formatCurrency(Number(val) * rate, currency)
     case 'number': return formatNumber(val)
     case 'percent': return formatPercent(val)
     case 'x': return `${Number(val).toFixed(2)}×`
@@ -89,6 +89,8 @@ export default function DashboardPage() {
   const { data: session } = useSession()
   const [data, setData] = useState<ClientDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currency, setCurrency] = useState('USD')
+  const [exchangeRate, setExchangeRate] = useState(1)
   const [activeTab, setActiveTab] = useState<'all'|Platform>('all')
   const [customize, setCustomize] = useState(false)
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(DEFAULT_METRICS)

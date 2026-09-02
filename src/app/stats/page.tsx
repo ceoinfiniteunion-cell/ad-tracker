@@ -38,6 +38,8 @@ export default function StatsPage() {
   const { data: session } = useSession()
   const [data, setData] = useState<ClientDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currency, setCurrency] = useState('USD')
+  const [exchangeRate, setExchangeRate] = useState(1)
   const [period, setPeriod] = useState(30)
   const [activePlatform, setActivePlatform] = useState<'all'|Platform>('all')
   const [activeAccount, setActiveAccount] = useState<string>('all')
