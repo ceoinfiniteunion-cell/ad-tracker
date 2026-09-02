@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
         const spend = parseFloat(m.spend ?? '0')
         const impressions = parseInt(m.impressions ?? '0')
         const clicks = parseInt(m.clicks ?? '0')
+        const conversions = parseInt(m.real_time_conversion ?? m.result ?? '0')
         const reach = parseInt(m.reach ?? '0')
         const videoViews = parseInt(m.video_play_actions ?? '0')
 
@@ -87,8 +88,8 @@ export async function POST(request: NextRequest) {
 
         await prisma.campaignMetric.upsert({
           where: { adAccountId_date: { adAccountId, date } },
-          update: { spend, impressions, clicks, conversions: 0, revenue: 0, campaignName: 'TikTok Import', platformData },
-          create: { adAccountId, date, spend, impressions, clicks, conversions: 0, revenue: 0, campaignName: 'TikTok Import', platformData },
+          update: { spend, impressions, clicks, conversions, revenue: 0, campaignName: 'TikTok Import', platformData },
+          create: { adAccountId, date, spend, impressions, clicks, conversions, revenue: 0, campaignName: 'TikTok Import', platformData },
         })
         synced++
       }
