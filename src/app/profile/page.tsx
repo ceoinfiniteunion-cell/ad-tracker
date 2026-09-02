@@ -63,7 +63,7 @@ export default function ProfilePage() {
     if (newPwd !== confirmPwd) { showToast('Паролі не співпадають', false); return }
     if (newPwd.length < 8) { showToast('Пароль мінімум 8 символів', false); return }
     setPwdSaving(true)
-    const res = await fetch('/api/profile/password', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({currentPassword:currentPwd, newPassword:newPwd}) })
+    const res = await fetch('/api/profile', { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({currentPassword:currentPwd, newPassword:newPwd}) })
     const data = await res.json()
     if (res.ok) { showToast('Пароль змінено', true); setCurrentPwd(''); setNewPwd(''); setConfirmPwd('') }
     else showToast(data.error||'Помилка', false)
