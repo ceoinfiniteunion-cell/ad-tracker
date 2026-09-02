@@ -56,6 +56,21 @@ export default function StatsPage() {
   }, [])
 
   useEffect(() => {
+    // Завантажити валюту
+    fetch('/api/profile').then(r=>r.json()).then(async d => {
+      const cur = d.client?.currency ?? 'USD'
+      setCurrency(cur)
+      if (cur !== 'USD') {
+        try {
+          const rateRes = await fetch('/api/currency?to=' + cur)
+          const rateData = await rateRes.json()
+          setExchangeRate(rateData.rate ?? 1)
+        } catch {}
+      }
+    }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
     setLoading(true)
     const from = getFrom(period)
     const to = new Date().toISOString().split('T')[0]
@@ -284,12 +299,12 @@ export default function StatsPage() {
                 if (!sB) return null
 
                 const rows = [
-                  { label:'Витрати', keyA:'totalSpend', keyB:'totalSpend', fmt:(v:number)=>formatCurrency(v), better:'lower' },
-                  { label:'Дохід', keyA:'totalRevenue', keyB:'totalRevenue', fmt:(v:number)=>formatCurrency(v), better:'higher' },
+                  { label:'Витрати', keyA:'totalSpend', keyB:'totalSpend', fmt:(v:number)=>formatCurrency((v) * exchangeRate, currency), better:'lower' },
+                  { label:'Дохід', keyA:'totalRevenue', keyB:'totalRevenue', fmt:(v:number)=>formatCurrency((v) * exchangeRate, currency), better:'higher' },
                   { label:'Покази', keyA:'totalImpressions', keyB:'totalImpressions', fmt:(v:number)=>formatNumber(v), better:'higher' },
                   { label:'Кліки', keyA:'totalClicks', keyB:'totalClicks', fmt:(v:number)=>formatNumber(v), better:'higher' },
                   { label:'CTR', keyA:'ctr', keyB:'ctr', fmt:(v:number)=>formatPercent(v), better:'higher' },
-                  { label:'CPC', keyA:'cpc', keyB:'cpc', fmt:(v:number)=>formatCurrency(v), better:'lower' },
+                  { label:'CPC', keyA:'cpc', keyB:'cpc', fmt:(v:number)=>formatCurrency((v) * exchangeRate, currency), better:'lower' },
                   { label:'ROAS', keyA:'roas', keyB:'roas', fmt:(v:number)=>`${v.toFixed(2)}×`, better:'higher' },
                   { label:'Конверсії', keyA:'totalConversions', keyB:'totalConversions', fmt:(v:number)=>formatNumber(v), better:'higher' },
                 ]
@@ -362,11 +377,11 @@ export default function StatsPage() {
                   </thead>
                   <tbody>
                     {[
-                      { metric:'Витрати на рекламу', value:formatCurrency(summary.totalSpend), detail:`Дохід: ${formatCurrency(summary.totalRevenue)}`, color:'#e60000' },
+                      { metric:'Витрати на рекламу', value:formatCurrency((summary.totalSpend) * exchangeRate, currency), detail:`Дохід: ${formatCurrency((summary.totalRevenue) * exchangeRate, currency)}`, color:'#e60000' },
                       { metric:'Покази', value:formatNumber(summary.totalImpressions), detail:'Унікальні покази оголошень', color:'var(--text2)' },
                       { metric:'Кліки', value:formatNumber(summary.totalClicks), detail:`CTR: ${formatPercent(summary.ctr)}`, color:'var(--text2)' },
-                      { metric:'Конверсії', value:formatNumber(summary.totalConversions), detail:`Вартість: ${formatCurrency(summary.totalConversions>0 ? summary.totalSpend/summary.totalConversions : 0)}`, color:'#00c864' },
-                      { metric:'CPC', value:formatCurrency(summary.cpc), detail:'Середня вартість кліку', color:'var(--text2)' },
+                      { metric:'Конверсії', value:formatNumber(summary.totalConversions), detail:`Вартість: ${formatCurrency((summary.totalConversions>0 ? summary.totalSpend/summary.totalConversions : 0) * exchangeRate, currency)}`, color:'#00c864' },
+                      { metric:'CPC', value:formatCurrency((summary.cpc) * exchangeRate, currency), detail:'Середня вартість кліку', color:'var(--text2)' },
                       { metric:'ROAS', value:`${summary.roas.toFixed(2)}×`, detail:`$1 витрат → $${summary.roas.toFixed(2)} доходу`, color: summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444' },
                     ].map(row=>(
                       <tr key={row.metric} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', transition:'background 0.15s' }}
@@ -415,11 +430,11 @@ export default function StatsPage() {
                                 </div>
                               </div>
                             </td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'#e60000', fontWeight:700 }}>{formatCurrency(p.summary.totalSpend)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'#e60000', fontWeight:700 }}>{formatCurrency((p.summary.totalSpend) * exchangeRate, currency)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatNumber(p.summary.totalImpressions)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatNumber(p.summary.totalClicks)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatPercent(p.summary.ctr)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatCurrency(p.summary.cpc)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatCurrency((p.summary.cpc) * exchangeRate, currency)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', fontWeight:700, color: p.summary.roas>=2?'#00c864':p.summary.roas>=1?'#fbbf24':'#ff4444' }}>{p.summary.roas.toFixed(2)}×</td>
                           </tr>
                         )
