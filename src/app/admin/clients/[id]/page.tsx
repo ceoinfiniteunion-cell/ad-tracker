@@ -61,7 +61,7 @@ export default function ClientDetailPage() {
       const res = await fetch('/api/tiktok/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adAccountId: acc.id, advertiserId: acc.accountId })
+        body: JSON.stringify({ adAccountId: acc.id, advertiserId: acc.accountId, from: '2024-01-01', to: new Date().toISOString().split('T')[0] })
       })
       const data = await res.json()
       if (data.ok) showToast('✓ TikTok Sync: ' + data.synced + ' днів синхронізовано', 'ok')
