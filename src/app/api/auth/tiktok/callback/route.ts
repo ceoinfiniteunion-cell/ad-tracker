@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         if (existing) {
           await prisma.adAccount.update({
             where: { id: existing.id },
-            data: { accessToken, tokenStatus: 'active', isActive: true, name }
+            data: { accessToken, tokenStatus: 'valid', isActive: true, name }
           })
         } else {
           await prisma.adAccount.create({
