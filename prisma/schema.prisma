@@ -46,8 +46,9 @@ model Client {
 model AdAccount {
   id           String           @id @default(cuid())
   name         String
-  accountId    String
-  platform     Platform
+  accountId        String
+  platform         Platform
+  accountCurrency  String   @default("USD")
   clientId     String
   isActive     Boolean          @default(true)
   createdAt    DateTime         @default(now())

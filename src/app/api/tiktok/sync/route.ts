@@ -43,6 +43,14 @@ export async function POST(request: NextRequest) {
   const { accessToken } = await getToken(adAccountId)
   if (!accessToken) return NextResponse.json({ error: 'No access token' }, { status: 404 })
 
+  // Отримати курс UAH→USD для конвертації
+  let uahToUsd = 1
+  try {
+    const rateRes = await fetch('https://open.er-api.com/v6/latest/UAH')
+    const rateData = await rateRes.json()
+    uahToUsd = rateData.rates?.USD ?? (1/41)
+  } catch { uahToUsd = 1/41 }
+
   try {
     const chunks = getChunks(dateFrom, dateTo)
     let synced = 0
@@ -57,7 +65,7 @@ export async function POST(request: NextRequest) {
         if (!dateStr) continue
 
         const date = new Date(dateStr)
-        const spend = parseFloat(m.spend ?? '0')
+        const spend = parseFloat(m.spend ?? '0') * uahToUsd // конвертуємо UAH→USD
         const impressions = parseInt(m.impressions ?? '0')
         const clicks = parseInt(m.clicks ?? '0')
         const conversions = parseInt(m.real_time_conversion ?? m.result ?? '0')
