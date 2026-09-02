@@ -33,7 +33,7 @@ export async function getTikTokInsights(
     data_level: 'AUCTION_ADVERTISER',
     dimensions: JSON.stringify(['stat_time_day']),
     metrics: JSON.stringify([
-      'spend', 'impressions', 'clicks', 'conversions', 'conversion_rate',
+      'spend', 'impressions', 'clicks', 'conversion_rate',
       'ctr', 'cpc', 'cpm', 'reach', 'frequency',
       'video_play_actions', 'video_watched_2s', 'video_watched_6s',
       'video_views_p25', 'video_views_p50', 'video_views_p75', 'video_views_p100',
