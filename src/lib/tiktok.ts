@@ -30,6 +30,7 @@ export async function getTikTokInsights(
   const data = await tiktokFetch('/report/integrated/get/', {
     advertiser_id: advertiserId,
     report_type: 'BASIC',
+    data_level: 'AUCTION_ADVERTISER',
     dimensions: JSON.stringify(['stat_time_day']),
     metrics: JSON.stringify([
       'spend', 'impressions', 'clicks', 'conversions', 'conversion_rate',
