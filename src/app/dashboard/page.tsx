@@ -105,7 +105,20 @@ export default function DashboardPage() {
   useEffect(() => {
     const saved = localStorage.getItem('dashboard_metrics')
     if (saved) setSelectedMetrics(JSON.parse(saved))
-    fetch('/api/metrics').then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
+    // Завантажити валюту спочатку, потім дані
+    fetch('/api/profile').then(r=>r.json()).then(async d => {
+      const cur = d.client?.currency ?? 'USD'
+      setCurrency(cur)
+      if (cur !== 'USD') {
+        try {
+          const rateRes = await fetch('/api/currency?to=' + cur)
+          const rateData = await rateRes.json()
+          setExchangeRate(rateData.rate ?? 1)
+        } catch {}
+      }
+    }).catch(() => {}).finally(() => {
+      fetch('/api/metrics').then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
+    })
   }, [])
 
   const toggleMetric = (key: string) => {
