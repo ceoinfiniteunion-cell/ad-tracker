@@ -233,7 +233,7 @@ export default function DashboardPage() {
               <div style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(200px, 1fr))', gap:'10px', marginBottom:'24px' }}>
                 {commonSelected.map(m => (
                   <div key={m.key} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding: isMobile ? '14px' : '16px 20px' }}>
-                    <p style={{ fontSize: isMobile ? '16px' : '18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(summary[m.key]>=2?'#00c864':summary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'var(--text)', margin:0 }}>{formatVal(summary[m.key], m.format)}</p>
+                    <p style={{ fontSize: isMobile ? '16px' : '18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(summary[m.key]>=2?'#00c864':summary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'var(--text)', margin:0 }}>{formatVal(summary[m.key], m.format, currency, exchangeRate)}</p>
                     <p style={{ fontSize:'10px', color:'var(--text3)', marginTop:'5px', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600 }}>{m.label}</p>
                   </div>
                 ))}
@@ -271,7 +271,7 @@ export default function DashboardPage() {
                 <div style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(180px, 1fr))', gap:'10px' }}>
                   {metricsToShow.map(m => (
                     <div key={m.key} style={{ background:'var(--bg2)', border:`1px solid ${color}15`, borderRadius:'10px', padding: isMobile ? '12px 14px' : '14px 18px' }}>
-                      <p style={{ fontSize: isMobile ? '15px' : '18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(platformSummary[m.key]>=2?'#00c864':platformSummary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'var(--text)', margin:0 }}>{formatVal(platformSummary[m.key], m.format)}</p>
+                      <p style={{ fontSize: isMobile ? '15px' : '18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(platformSummary[m.key]>=2?'#00c864':platformSummary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'var(--text)', margin:0 }}>{formatVal(platformSummary[m.key], m.format, currency, exchangeRate)}</p>
                       <p style={{ fontSize:'10px', color:'var(--text3)', marginTop:'4px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>{m.label}</p>
                     </div>
                   ))}
