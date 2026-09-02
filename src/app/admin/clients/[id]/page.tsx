@@ -31,7 +31,7 @@ export default function ClientDetailPage() {
   const [toast, setToast] = useState<{msg:string;type:'ok'|'err'} | null>(null)
   const [deleting, setDeleting] = useState<string|null>(null)
   const [toggling, setToggling] = useState<string|null>(null)
-  const [form, setForm] = useState({ name:'', accountId:'', platform:'FACEBOOK' as 'FACEBOOK'|'GOOGLE'|'TIKTOK' })
+  const [form, setForm] = useState({ name:'', accountId:'', platform:'FACEBOOK' as 'FACEBOOK'|'GOOGLE'|'TIKTOK', accessToken:'' })
   const [saving, setSaving] = useState(false)
   const [syncing, setSyncing] = useState<string|null>(null)
   const [tiktokSyncing, setTiktokSyncing] = useState<string|null>(null)
@@ -107,7 +107,7 @@ export default function ClientDetailPage() {
     if (res.ok) {
       const acc = await res.json()
       setClient(prev => prev ? { ...prev, adAccounts: [acc, ...prev.adAccounts] } : prev)
-      setForm({ name:'', accountId:'', platform:'FACEBOOK' })
+      setForm({ name:'', accountId:'', platform:'FACEBOOK', accessToken:'' })
       setShowModal(false)
       showToast('Кабінет додано успішно', 'ok')
     } else {
@@ -333,7 +333,7 @@ export default function ClientDetailPage() {
                 <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'4px' }}>// НОВИЙ КАБІНЕТ</p>
                 <h2 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', margin:0 }}>Підключити платформу</h2>
               </div>
-              <button onClick={()=>{setShowModal(false);setFormError('');setForm({name:'',accountId:'',platform:'FACEBOOK'})}}
+              <button onClick={()=>{setShowModal(false);setFormError('');setForm({name:'',accountId:'',platform:'FACEBOOK',accessToken:''})}}
                 style={{ width:'32px', height:'32px', background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text3)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <X size={15}/>
               </button>
