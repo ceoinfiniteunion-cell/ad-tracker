@@ -12,7 +12,7 @@ export async function GET() {
     select: {
       id: true, name: true, email: true, role: true, createdAt: true,
       twoFactorEnabled: true,
-      client: { select: { company: true, currency: true } }
+      client: { select: { company: true, currency: true, conversionValue: true } }
     }
   })
   return NextResponse.json(user)
@@ -21,12 +21,9 @@ export async function GET() {
 export async function PATCH(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { name, currentPassword, newPassword, currency } = await request.json()
+  const { name, currentPassword, newPassword, currency, conversionValue } = await request.json()
   const userId = (session.user as any).id
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { client: true }
-  })
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: { client: true } })
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const updateData: any = {}
@@ -40,12 +37,15 @@ export async function PATCH(request: NextRequest) {
     updateData.password = await bcrypt.hash(newPassword, 12)
   }
 
-  // Оновити валюту для клієнта
-  if (currency && user.client) {
-    await prisma.client.update({
-      where: { id: user.client.id },
-      data: { currency }
-    })
+  if (user.client) {
+    const clientUpdate: any = {}
+    if (currency) clientUpdate.currency = currency
+    if (conversionValue !== undefined) {
+      clientUpdate.conversionValue = (conversionValue === null || conversionValue === '') ? null : Number(conversionValue)
+    }
+    if (Object.keys(clientUpdate).length > 0) {
+      await prisma.client.update({ where: { id: user.client.id }, data: clientUpdate })
+    }
   }
 
   if (Object.keys(updateData).length > 0) {
@@ -54,7 +54,7 @@ export async function PATCH(request: NextRequest) {
 
   const updated = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, role: true, client: { select: { currency: true } } }
+    select: { id: true, name: true, email: true, role: true, client: { select: { currency: true, conversionValue: true } } }
   })
   return NextResponse.json(updated)
 }

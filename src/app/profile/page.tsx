@@ -17,6 +17,9 @@ export default function ProfilePage() {
   const [name, setName] = useState('')
   const [currency, setCurrency] = useState('USD')
   const [currencySaving, setCurrencySaving] = useState(false)
+  const [conversionValue, setConversionValue] = useState<string>('')
+  const [convValueSaving, setConvValueSaving] = useState(false)
+  const [convValueEnabled, setConvValueEnabled] = useState(false)
   const [nameFocused, setNameFocused] = useState(false)
   const [nameSaving, setNameSaving] = useState(false)
   const [currentPwd, setCurrentPwd] = useState('')
@@ -45,7 +48,12 @@ export default function ProfilePage() {
   }, [])
 
   useEffect(() => {
-    fetch('/api/profile').then(r=>r.json()).then(d=>{ setProfile(d); setName(d.name||''); setCurrency(d.client?.currency||'USD'); setLoading(false) })
+    fetch('/api/profile').then(r=>r.json()).then(d=>{
+      setProfile(d); setName(d.name||''); setCurrency(d.client?.currency||'USD'); setLoading(false)
+      const cv = d.client?.conversionValue
+      if (cv && cv > 0) { setConvValueEnabled(true); setConversionValue(String(cv)) }
+      else { setConvValueEnabled(false); setConversionValue('') }
+    })
     fetch('/api/auth/2fa/status').then(r=>r.json()).then(d=>{ setTwoFAEnabled(d.twoFactorEnabled) })
   }, [])
 
@@ -55,6 +63,14 @@ export default function ProfilePage() {
     setCurrency(val)
     setCurrencySaving(false)
     showToast('Валюту змінено', true)
+  }
+
+  const saveConversionValue = async (value: string | null) => {
+    setConvValueSaving(true)
+    const num = value === null || value === '' ? null : Number(value)
+    await fetch('/api/profile', { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ conversionValue: num }) })
+    setConvValueSaving(false)
+    showToast(num ? `Ціна конверсії: $${num}` : 'Ціну конверсії скинуто', true)
   }
 
   const showToast = (msg: string, ok: boolean) => { setToast({msg,ok}); setTimeout(()=>setToast(null), 3500) }
@@ -305,6 +321,61 @@ export default function ProfilePage() {
                   )}
                 </div>
               </div>
+
+              {/* Ціна конверсії — тільки для CLIENT */}
+              {!isAdmin && (
+                <div className="anim-up-4" style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden', marginBottom:'16px' }}>
+                  <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                      <span style={{ fontSize:'16px' }}>💰</span>
+                      <div>
+                        <p style={{ fontSize:'13px', fontWeight:700, color:'var(--text)', margin:0 }}>Ціна конверсії</p>
+                        <p style={{ fontSize:'12px', color:'var(--text3)', margin:0 }}>Кастомний розрахунок доходу в статистиці</p>
+                      </div>
+                    </div>
+                    <button onClick={()=>{
+                      const next = !convValueEnabled
+                      setConvValueEnabled(next)
+                      if (!next) { setConversionValue(''); saveConversionValue(null) }
+                    }} style={{ padding:'7px 14px', background: convValueEnabled ? 'rgba(0,200,100,0.12)' : 'rgba(255,255,255,0.06)', color: convValueEnabled ? '#00c864' : 'var(--text3)', border:`1px solid ${convValueEnabled ? 'rgba(0,200,100,0.25)' : 'var(--border)'}`, borderRadius:'8px', fontSize:'12px', fontWeight:700, cursor:'pointer', transition:'all 0.15s' }}>
+                      {convValueEnabled ? '✓ Увімкнено' : 'Вимкнено'}
+                    </button>
+                  </div>
+                  <div style={{ padding: isMobile ? '16px' : '20px' }}>
+                    <p style={{ fontSize:'12px', color:'var(--text3)', margin:'0 0 16px', lineHeight:1.6 }}>
+                      Вкажіть середню вартість однієї конверсії для вашого бізнесу. Тоді <strong style={{color:'var(--text2)'}}>Дохід</strong> і <strong style={{color:'var(--text2)'}}>ROAS</strong> в статистиці розраховуватимуться автоматично: <code style={{fontFamily:'monospace',fontSize:'11px',background:'var(--bg3)',padding:'2px 6px',borderRadius:'4px'}}>Дохід = Конверсії × Ціна</code>
+                    </p>
+                    {convValueEnabled && (
+                      <div>
+                        <label style={lbl}>ЦІНА ОДНІЄЇ КОНВЕРСІЇ (USD)</label>
+                        <div style={{ display:'flex', gap:'10px', alignItems:'center' }}>
+                          <div style={{ position:'relative', flex:1 }}>
+                            <span style={{ position:'absolute', left:'12px', top:'50%', transform:'translateY(-50%)', color:'var(--text3)', fontSize:'14px', fontWeight:600 }}>$</span>
+                            <input type="number" min="0" step="0.01" value={conversionValue}
+                              onChange={e=>setConversionValue(e.target.value)}
+                              onKeyDown={e=>e.key==='Enter'&&saveConversionValue(conversionValue)}
+                              placeholder="0.00"
+                              style={{ ...inp(false), paddingLeft:'28px', fontFamily:'monospace', fontSize:'16px', fontWeight:700 }}/>
+                          </div>
+                          <button onClick={()=>saveConversionValue(conversionValue)}
+                            disabled={convValueSaving||!conversionValue||Number(conversionValue)<=0}
+                            style={{ padding:'0 20px', height:'44px', background:(convValueSaving||!conversionValue||Number(conversionValue)<=0)?'rgba(0,200,100,0.3)':'#00c864', color:'#fff', fontWeight:700, fontSize:'13px', borderRadius:'8px', border:'none', cursor:(convValueSaving||!conversionValue||Number(conversionValue)<=0)?'not-allowed':'pointer', whiteSpace:'nowrap' as const, flexShrink:0 }}>
+                            {convValueSaving ? '...' : 'Зберегти'}
+                          </button>
+                        </div>
+                        {conversionValue && Number(conversionValue) > 0 && (
+                          <p style={{ fontSize:'11px', color:'var(--text3)', marginTop:'8px' }}>
+                            Приклад: 100 конверсій × ${conversionValue} = <span style={{color:'#00c864',fontWeight:700,fontFamily:'monospace'}}>${(100*Number(conversionValue)).toLocaleString()}</span>
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {!convValueEnabled && (
+                      <p style={{ fontSize:'12px', color:'var(--text4)', fontStyle:'italic' }}>Дохід береться напряму з рекламного кабінету.</p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Додати адміна - тільки для ADMIN */}
               {isAdmin && (

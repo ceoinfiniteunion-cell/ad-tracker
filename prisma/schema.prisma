@@ -31,8 +31,9 @@ model Client {
   id         String      @id @default(cuid())
   name       String
   company    String
-  currency   String      @default("USD")
-  userId     String      @unique
+  currency          String      @default("USD")
+  conversionValue   Float?      // Custom revenue per conversion (USD)
+  userId            String      @unique
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   adAccounts AdAccount[]
