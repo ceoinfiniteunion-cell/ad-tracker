@@ -16,7 +16,7 @@ const defaultForm = { name:'', accountId:'', accessToken:'' }
 const PLATFORMS = {
   FACEBOOK: { label:'Meta / Facebook', color:'#1877f2', bg:'rgba(24,119,242,0.1)', short:'META', autoSync:true },
   GOOGLE: { label:'Google Ads', color:'#e60000', bg:'rgba(230,0,0,0.1)', short:'GGL', autoSync:false },
-  TIKTOK: { label:'TikTok Ads', color:'#000000', bg:'rgba(255,255,255,0.06)', short:'TIK', autoSync:true },
+  TIKTOK: { label:'TikTok Ads', color:'#69C9D0', bg:'rgba(105,201,208,0.08)', short:'TIK', autoSync:true },
 }
 
 const TOKEN_STATUS: Record<string, {label:string;color:string;bg:string}> = {
@@ -234,10 +234,10 @@ export default function ConnectPage() {
                 ← Назад
               </button>
 
-              <div style={{ background:'var(--bg2)', border:`2px solid ${pInfo.color}50`, borderRadius:'16px', overflow:'hidden', marginBottom:'16px', boxShadow:`0 4px 24px ${pInfo.color}15` }}>
-                <div style={{ background:`linear-gradient(135deg, ${pInfo.bg}, transparent)`, padding:'28px', borderBottom:`1px solid ${pInfo.color}20` }}>
+              <div style={{ background:'var(--bg2)', border:`1px solid ${pInfo.color}`, borderRadius:'16px', overflow:'hidden', marginBottom:'16px', boxShadow:`0 4px 32px ${pInfo.color}20` }}>
+                <div style={{ background:`linear-gradient(135deg, ${pInfo.color}12, ${pInfo.color}04)`, padding:'28px', borderBottom:`1px solid ${pInfo.color}30` }}>
                   <div style={{ display:'flex', alignItems:'center', gap:'14px', marginBottom:'8px' }}>
-                    <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:pInfo.bg, border:`1px solid ${pInfo.color}40`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:`${pInfo.color}18`, border:`2px solid ${pInfo.color}60`, display:'flex', alignItems:'center', justifyContent:'center' }}>
                       <span style={{ fontSize:'11px', fontWeight:800, color:pInfo.color, fontFamily:'monospace' }}>{pInfo.short}</span>
                     </div>
                     <div>
@@ -251,14 +251,14 @@ export default function ConnectPage() {
                   <div style={{ display:'flex', flexDirection:'column', gap:'20px', marginBottom:'28px' }}>
                     {instructions.steps.map((s, i)=>(
                       <div key={i} style={{ display:'flex', gap:'16px' }}>
-                        <div style={{ width:'32px', height:'32px', borderRadius:'50%', background:pInfo.bg, border:`2px solid ${pInfo.color}70`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontFamily:'monospace', fontSize:'13px', fontWeight:800, color:pInfo.color }}>
+                        <div style={{ width:'32px', height:'32px', borderRadius:'50%', background:`${pInfo.color}15`, border:`2px solid ${pInfo.color}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontFamily:'monospace', fontSize:'13px', fontWeight:800, color:pInfo.color }}>
                           {s.icon}
                         </div>
                         <div style={{ flex:1 }}>
                           <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)', margin:'0 0 6px' }}>{s.title}</p>
                           <p style={{ fontSize:'13px', color:'var(--text2)', margin:0, lineHeight:1.6 }}>{s.desc}</p>
                           {s.link && (
-                            <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ display:'inline-flex', alignItems:'center', gap:'6px', marginTop:'10px', padding:'8px 16px', background:pInfo.bg, border:`1px solid ${pInfo.color}40`, borderRadius:'8px', color:pInfo.color, fontSize:'13px', fontWeight:600, textDecoration:'none', transition:'all 0.15s' }}>
+                            <a href={s.link} target="_blank" rel="noopener noreferrer" style={{ display:'inline-flex', alignItems:'center', gap:'6px', marginTop:'10px', padding:'8px 16px', background:`${pInfo.color}12`, border:`1px solid ${pInfo.color}60`, borderRadius:'8px', color:pInfo.color, fontSize:'13px', fontWeight:600, textDecoration:'none', transition:'all 0.15s' }}>
                               <ExternalLink size={13}/>{s.linkText}
                             </a>
                           )}
@@ -271,7 +271,7 @@ export default function ConnectPage() {
                     if(selectedPlatform==='FACEBOOK'){ window.location.href='/api/auth/meta' }
                     else if(selectedPlatform==='TIKTOK'){ window.location.href='/api/auth/tiktok' }
                     else { setStep('form') } 
-                  }} style={{ width:'100%', padding:'14px', background:selectedPlatform==='TIKTOK' ? '#000' : pInfo.color === 'rgba(255,255,255,0.8)' ? '#333' : pInfo.color, color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
+                  }} style={{ width:'100%', padding:'14px', background:selectedPlatform==='TIKTOK' ? '#000' : pInfo.color, color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
                     {selectedPlatform==='FACEBOOK' ? '🔗 Підключити через Meta OAuth' : selectedPlatform==='TIKTOK' ? '🎵 Підключити через TikTok OAuth' : 'Я готовий — ввести дані →'}
                   </button>
                 </div>
