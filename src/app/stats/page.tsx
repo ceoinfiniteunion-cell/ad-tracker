@@ -59,6 +59,7 @@ export default function StatsPage() {
   const [compareAccount, setCompareAccount] = useState<string>('')
   const [dropdown, setDropdown] = useState<Platform|null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const portalRef = useRef<HTMLDivElement>(null)
 
   const dateFrom = period !== null ? getFrom(period) : customFrom
   const dateTo = period !== null ? today() : customTo
@@ -96,7 +97,10 @@ export default function StatsPage() {
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdown(null)
-      if (datePickerRef.current && !datePickerRef.current.contains(e.target as Node)) setShowDatePicker(false)
+      if (
+        datePickerRef.current && !datePickerRef.current.contains(e.target as Node) &&
+        portalRef.current && !portalRef.current.contains(e.target as Node)
+      ) setShowDatePicker(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
@@ -191,7 +195,7 @@ export default function StatsPage() {
                 </button>
 
                 {showDatePicker && typeof window !== 'undefined' && createPortal(
-                  <div style={{
+                  <div ref={portalRef} style={{
                     position: 'fixed',
                     top: isMobile ? 'auto' : pickerPos.top,
                     bottom: isMobile ? 70 : 'auto',
