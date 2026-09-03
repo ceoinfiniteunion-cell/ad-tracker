@@ -358,7 +358,7 @@ export default function ReportsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {[...daily].reverse().map((d,i)=>(
+                      {[...dailyWithRevenue].reverse().map((d,i)=>(
                         <tr key={d.date} style={{ borderBottom:'1px solid rgba(255,255,255,0.03)', transition:'background 0.15s' }}
                           onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.02)' }}
                           onMouseLeave={e=>{ e.currentTarget.style.background='transparent' }}

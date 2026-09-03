@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useSession } from 'next-auth/react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { SpendChart } from '@/components/charts/SpendChart'
@@ -189,7 +190,7 @@ export default function StatsPage() {
                   )}
                 </button>
 
-                {showDatePicker && (
+                {showDatePicker && typeof window !== 'undefined' && createPortal(
                   <div style={{
                     position: 'fixed',
                     top: isMobile ? 'auto' : pickerPos.top,
@@ -232,7 +233,7 @@ export default function StatsPage() {
                       </button>
                     </div>
                   </div>
-                )}
+                , document.body)}
               </div>
 
               <button onClick={()=>{ setCompareMode(!compareMode); setCompareAccount('') }}
