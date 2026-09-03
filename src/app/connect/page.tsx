@@ -234,8 +234,8 @@ export default function ConnectPage() {
                 ← Назад
               </button>
 
-              <div style={{ background:'var(--bg2)', border:`1px solid ${pInfo.color}30`, borderRadius:'16px', overflow:'hidden', marginBottom:'16px' }}>
-                <div style={{ background:`linear-gradient(135deg, ${pInfo.bg}, rgba(0,0,0,0))`, padding:'28px', borderBottom:'1px solid var(--border)' }}>
+              <div style={{ background:'var(--bg2)', border:`2px solid ${pInfo.color}50`, borderRadius:'16px', overflow:'hidden', marginBottom:'16px', boxShadow:`0 4px 24px ${pInfo.color}15` }}>
+                <div style={{ background:`linear-gradient(135deg, ${pInfo.bg}, transparent)`, padding:'28px', borderBottom:`1px solid ${pInfo.color}20` }}>
                   <div style={{ display:'flex', alignItems:'center', gap:'14px', marginBottom:'8px' }}>
                     <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:pInfo.bg, border:`1px solid ${pInfo.color}40`, display:'flex', alignItems:'center', justifyContent:'center' }}>
                       <span style={{ fontSize:'11px', fontWeight:800, color:pInfo.color, fontFamily:'monospace' }}>{pInfo.short}</span>
@@ -251,7 +251,7 @@ export default function ConnectPage() {
                   <div style={{ display:'flex', flexDirection:'column', gap:'20px', marginBottom:'28px' }}>
                     {instructions.steps.map((s, i)=>(
                       <div key={i} style={{ display:'flex', gap:'16px' }}>
-                        <div style={{ width:'32px', height:'32px', borderRadius:'50%', background:pInfo.bg, border:`1px solid ${pInfo.color}40`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontFamily:'monospace', fontSize:'13px', fontWeight:800, color:pInfo.color }}>
+                        <div style={{ width:'32px', height:'32px', borderRadius:'50%', background:pInfo.bg, border:`2px solid ${pInfo.color}70`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontFamily:'monospace', fontSize:'13px', fontWeight:800, color:pInfo.color }}>
                           {s.icon}
                         </div>
                         <div style={{ flex:1 }}>
@@ -271,7 +271,7 @@ export default function ConnectPage() {
                     if(selectedPlatform==='FACEBOOK'){ window.location.href='/api/auth/meta' }
                     else if(selectedPlatform==='TIKTOK'){ window.location.href='/api/auth/tiktok' }
                     else { setStep('form') } 
-                  }} style={{ width:'100%', padding:'14px', background:selectedPlatform==='TIKTOK' ? '#000' : pInfo.color === 'rgba(255,255,255,0.8)' ? '#333' : pInfo.color, color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
+                  }} style={{ width:'100%', padding:'14px', background:selectedPlatform==='TIKTOK' ? '#000' : pInfo.color === 'rgba(255,255,255,0.8)' ? '#333' : pInfo.color, color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
                     {selectedPlatform==='FACEBOOK' ? '🔗 Підключити через Meta OAuth' : selectedPlatform==='TIKTOK' ? '🎵 Підключити через TikTok OAuth' : 'Я готовий — ввести дані →'}
                   </button>
                 </div>
@@ -286,7 +286,7 @@ export default function ConnectPage() {
                 ← Назад до інструкції
               </button>
 
-              <div style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding:'32px' }}>
+              <div style={{ background:'var(--bg2)', border:'1px solid var(--border2)', borderRadius:'16px', padding:'32px', boxShadow:'0 4px 24px rgba(0,0,0,0.08)' }}>
                 <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// КРОК 4 — ВВЕДІТЬ ДАНІ</p>
                 <h2 style={{ fontSize:'20px', fontWeight:800, color:'var(--text)', margin:'0 0 24px' }}>Підключити {pInfo.label}</h2>
 
@@ -320,7 +320,7 @@ export default function ConnectPage() {
                     <button type="button" onClick={()=>{setSelectedPlatform(null);setStep('platform')}} style={{ padding:'13px', background:'transparent', border:'1px solid var(--border2)', borderRadius:'10px', color:'var(--text3)', fontSize:'14px', fontWeight:600, cursor:'pointer' }}>
                       Скасувати
                     </button>
-                    <button type="submit" disabled={saving} style={{ padding:'13px', background:saving?'#333':'#e60000', color:'var(--text)', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:saving?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }} onMouseEnter={e=>{if(!saving)e.currentTarget.style.background='#cc0000'}} onMouseLeave={e=>{e.currentTarget.style.background=saving?'#333':'#e60000'}}>
+                    <button type="submit" disabled={saving} style={{ padding:'13px', background:saving?'#333':'#e60000', color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:saving?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }} onMouseEnter={e=>{if(!saving)e.currentTarget.style.background='#cc0000'}} onMouseLeave={e=>{e.currentTarget.style.background=saving?'#333':'#e60000'}}>
                       {saving?<><div style={{width:'14px',height:'14px',border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>Підключаємо...</>:'✓ Підключити кабінет'}
                     </button>
                   </div>
