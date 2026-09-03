@@ -59,6 +59,9 @@ export default function ReportsPage() {
   const [prevData, setPrevData] = useState<ClientDashboardData|null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [currency, setCurrency] = useState('USD')
+  const [exchangeRate, setExchangeRate] = useState(1)
+  const [conversionValue, setConversionValue] = useState<number | null>(null)
   const [compare, setCompare] = useState(true)
   const [emailModal, setEmailModal] = useState(false)
   const [emailTo, setEmailTo] = useState('')
@@ -88,6 +91,21 @@ export default function ReportsPage() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  useEffect(() => {
+    fetch('/api/profile').then(r=>r.json()).then(async d => {
+      const cur = d.client?.currency ?? 'USD'
+      setCurrency(cur)
+      const cv = d.client?.conversionValue ?? null
+      setConversionValue(cv && cv > 0 ? cv : null)
+      if (cur !== 'USD') {
+        try {
+          const rr = await fetch('/api/currency?to=' + cur)
+          const rd = await rr.json()
+          setExchangeRate(rd.rate ?? 1)
+        } catch {}
+      }
+    }).catch(() => {})
+  }, [])
   useEffect(() => { fetchData(from, to) }, [from, to, compare])
 
   const applyPreset = (preset: typeof PRESETS[0]) => {
@@ -101,7 +119,7 @@ export default function ReportsPage() {
     const daily = activePlatform==='all' ? merge((data?.platforms ?? []).map(p=>p.daily).flat()) : ap?.daily ?? []
     const rows = [
       ['Дата','Витрати','Покази','Кліки','Конверсії','Дохід'],
-      ...daily.map(d=>[d.date, d.spend.toFixed(2), d.impressions, d.clicks, d.conversions, d.revenue.toFixed(2)])
+      ...dailyWithRevenue.map(d=>[d.date, d.spend.toFixed(2), d.impressions, d.clicks, d.conversions, d.revenue.toFixed(2)])
     ]
     const csv = rows.map(r=>r.join(',')).join('\n')
     const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'})
@@ -123,6 +141,11 @@ export default function ReportsPage() {
   const prevSummary = activePlatform==='all' ? prevData?.totals : prevData?.platforms.find(p=>p.platform===activePlatform)?.summary
   const daily = !data ? [] : activePlatform==='all' ? merge((data?.platforms ?? []).map(p=>p.daily).flat()) : ap?.daily ?? []
 
+  const calcRevenue = (conversions: number, apiRevenue: number) =>
+    conversionValue ? conversions * conversionValue : apiRevenue
+  const effectiveRevenue = summary ? calcRevenue(summary.totalConversions, summary.totalRevenue) : 0
+  const prevEffectiveRevenue = prevSummary ? calcRevenue(prevSummary.totalConversions, prevSummary.totalRevenue) : 0
+  const dailyWithRevenue = daily.map(d => ({ ...d, revenue: calcRevenue(d.conversions, d.revenue) }))
   const days = Math.ceil((new Date(to).getTime()-new Date(from).getTime())/(1000*60*60*24))+1
 
   return (
@@ -235,7 +258,7 @@ export default function ReportsPage() {
               {/* KPI картки з трендом */}
               <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap:'12px', marginBottom:'12px' }}>
                 {[
-                  { label:'Витрати', value:formatCurrency(summary.totalSpend), prev:prevSummary?.totalSpend, color:'#e60000' },
+                  { label:'Витрати', value:formatCurrency(summary.totalSpend * exchangeRate, currency), prev:prevSummary?.totalSpend, color:'#e60000' },
                   { label:'Покази', value:formatNumber(summary.totalImpressions), prev:prevSummary?.totalImpressions, color:'var(--text)' },
                   { label:'Кліки', value:formatNumber(summary.totalClicks), prev:prevSummary?.totalClicks, color:'var(--text)' },
                   { label:'Конверсії', value:formatNumber(summary.totalConversions), prev:prevSummary?.totalConversions, color:'#00c864' },
@@ -254,8 +277,8 @@ export default function ReportsPage() {
               <div className="anim-up-2" style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(3,1fr)' : 'repeat(3,1fr)', gap:'10px', marginBottom:'16px' }}>
                 {[
                   { label:'CTR', value:formatPercent(summary.ctr), prev:prevSummary?.ctr, color:'var(--text)', curr:summary.ctr },
-                  { label:'CPC', value:formatCurrency(summary.cpc), prev:prevSummary?.cpc, color:'var(--text)', curr:summary.cpc },
-                  { label:'ROAS', value:`${summary.roas.toFixed(2)}×`, prev:prevSummary?.roas, color: summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444', curr:summary.roas },
+                  { label:'CPC', value:formatCurrency(summary.cpc * exchangeRate, currency), prev:prevSummary?.cpc, color:'var(--text)', curr:summary.cpc },
+                  { label:'ROAS', value:`${(summary.totalSpend>0?effectiveRevenue/summary.totalSpend:0).toFixed(2)}×`, prev:prevSummary?(prevSummary.totalSpend>0?prevEffectiveRevenue/prevSummary.totalSpend:0):undefined, color: (summary.totalSpend>0?effectiveRevenue/summary.totalSpend:0)>=2?'#00c864':(summary.totalSpend>0?effectiveRevenue/summary.totalSpend:0)>=1?'#fbbf24':'#ff4444', curr:(summary.totalSpend>0?effectiveRevenue/summary.totalSpend:0) },
                 ].map(card=>(
                   <div key={card.label} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'12px', padding:'18px 20px', textAlign:'center' as const }}>
                     <p style={{ fontSize:'11px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--text3)', margin:'0 0 8px' }}>{card.label}</p>
@@ -300,17 +323,17 @@ export default function ReportsPage() {
                               </div>
                             </td>
                             <td style={{ padding:'14px 16px' }}>
-                              <p style={{ fontFamily:'monospace', fontSize:'13px', color:'#e60000', fontWeight:700, margin:0 }}>{formatCurrency(p.summary.totalSpend)}</p>
+                              <p style={{ fontFamily:'monospace', fontSize:'13px', color:'#e60000', fontWeight:700, margin:0 }}>{formatCurrency(p.summary.totalSpend * exchangeRate, currency)}</p>
                               {compare && pp && <Trend curr={p.summary.totalSpend} prev={pp.summary.totalSpend}/>}
                             </td>
                             <td style={{ padding:'14px 16px' }}>
-                              <p style={{ fontFamily:'monospace', fontSize:'13px', color:'#00c864', fontWeight:700, margin:0 }}>{formatCurrency(p.summary.totalRevenue)}</p>
+                              <p style={{ fontFamily:'monospace', fontSize:'13px', color:'#00c864', fontWeight:700, margin:0 }}>{formatCurrency(calcRevenue(p.summary.totalConversions, p.summary.totalRevenue) * exchangeRate, currency)}</p>
                             </td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatNumber(p.summary.totalImpressions)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatNumber(p.summary.totalClicks)}</td>
                             <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatPercent(p.summary.ctr)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatCurrency(p.summary.cpc)}</td>
-                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', fontWeight:700, color: p.summary.roas>=2?'#00c864':p.summary.roas>=1?'#fbbf24':'#ff4444' }}>{p.summary.roas.toFixed(2)}×</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', color:'var(--text2)' }}>{formatCurrency(p.summary.cpc * exchangeRate, currency)}</td>
+                            <td style={{ padding:'14px 16px', fontFamily:'monospace', fontSize:'13px', fontWeight:700, color: (() => { const r = p.summary.totalSpend>0 ? calcRevenue(p.summary.totalConversions, p.summary.totalRevenue)/p.summary.totalSpend : 0; return r>=2?'#00c864':r>=1?'#fbbf24':'#ff4444' })() }}>{(() => { const r = p.summary.totalSpend>0 ? calcRevenue(p.summary.totalConversions, p.summary.totalRevenue)/p.summary.totalSpend : 0; return r.toFixed(2) })(  )}×</td>
                           </tr>
                         )
                       })}
@@ -344,7 +367,7 @@ export default function ReportsPage() {
                             {new Date(d.date).toLocaleDateString('uk',{day:'2-digit',month:'short',year:'numeric'})}
                           </td>
                           <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'#e60000', fontWeight:700 }}>{formatCurrency(d.spend)}</td>
-                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'#00c864', fontWeight:700 }}>{formatCurrency(d.revenue)}</td>
+                          <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'#00c864', fontWeight:700 }}>{formatCurrency(d.revenue * exchangeRate, currency)}</td>
                           <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.impressions)}</td>
                           <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.clicks)}</td>
                           <td style={{ padding:'12px 16px', fontFamily:'monospace', fontSize:'12px', color:'var(--text2)' }}>{formatNumber(d.conversions)}</td>
@@ -362,8 +385,8 @@ export default function ReportsPage() {
 
               {/* Графіки */}
               <div className="anim-up-4" style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'16px' }}>
-                <SpendChart data={daily} title="Витрати та дохід"/>
-                <ClicksChart data={daily} title="Кліки та конверсії"/>
+                <SpendChart data={dailyWithRevenue} title="Витрати та дохід"/>
+                <ClicksChart data={dailyWithRevenue} title="Кліки та конверсії"/>
               </div>
             </>
           )}

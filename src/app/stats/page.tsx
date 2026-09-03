@@ -46,6 +46,7 @@ export default function StatsPage() {
   const [customFrom, setCustomFrom] = useState('')
   const [customTo, setCustomTo] = useState('')
   const [showDatePicker, setShowDatePicker] = useState(false)
+  const [pickerPos, setPickerPos] = useState({ top: 0, right: 0 })
   const [tempFrom, setTempFrom] = useState('')
   const [tempTo, setTempTo] = useState('')
   const datePickerRef = useRef<HTMLDivElement>(null)
@@ -171,7 +172,12 @@ export default function StatsPage() {
 
               <div ref={datePickerRef} style={{ position:'relative' }}>
                 <button
-                  onClick={()=>{ setTempFrom(customFrom||getFrom(30)); setTempTo(customTo||today()); setShowDatePicker(!showDatePicker) }}
+                  onClick={(e)=>{
+                    setTempFrom(customFrom||getFrom(30)); setTempTo(customTo||today())
+                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                    setPickerPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right })
+                    setShowDatePicker(!showDatePicker)
+                  }}
                   style={{ ...tabStyle(isCustom), display:'flex', alignItems:'center', gap:'6px' }}
                 >
                   <Calendar size={12}/>
@@ -185,13 +191,13 @@ export default function StatsPage() {
 
                 {showDatePicker && (
                   <div style={{
-                    position: isMobile ? 'fixed' : 'absolute',
-                    top: isMobile ? 'auto' : 'calc(100% + 8px)',
-                    bottom: isMobile ? 60 : 'auto',
-                    right: isMobile ? 16 : 0, left: isMobile ? 16 : 'auto',
+                    position: 'fixed',
+                    top: isMobile ? 'auto' : pickerPos.top,
+                    bottom: isMobile ? 70 : 'auto',
+                    right: isMobile ? 16 : pickerPos.right, left: isMobile ? 16 : 'auto',
                     background:'var(--bg4)', border:'1px solid var(--border2)',
-                    borderRadius:'12px', boxShadow:'0 16px 48px rgba(0,0,0,0.6)',
-                    zIndex:200, padding:'16px', minWidth:'260px'
+                    borderRadius:'12px', boxShadow:'0 24px 64px rgba(0,0,0,0.8)',
+                    zIndex:9999, padding:'16px', minWidth:'260px'
                   }}>
                     <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.1em', color:'var(--text3)', marginBottom:'12px' }}>// ДІАПАЗОН ДАТ</p>
                     <div style={{ display:'flex', flexDirection:'column' as const, gap:'10px', marginBottom:'12px' }}>
