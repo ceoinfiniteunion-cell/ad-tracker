@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAccountInsights, parseConversions, parseRevenue, parseLeads } from '@/lib/meta'
+import { refreshAccessToken, getGoogleAdsCampaignMetrics } from '@/lib/google'
+import { getToken } from '@/lib/token-store'
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
@@ -55,5 +57,59 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, synced: totalSynced, accounts: accounts.length, errors, from, to })
+  // Google Ads sync
+  const googleAccounts = await prisma.adAccount.findMany({
+    where: { isActive: true, platform: 'GOOGLE', refreshToken: { not: null } },
+  })
+
+  for (const account of googleAccounts) {
+    try {
+      const { refreshToken } = await getToken(account.id)
+      if (!refreshToken) { errors.push(`${account.name}: no refresh token`); continue }
+
+      const token = await refreshAccessToken(refreshToken)
+      await prisma.adAccount.update({ where: { id: account.id }, data: { tokenStatus: 'valid' } })
+
+      const results = await getGoogleAdsCampaignMetrics(token, account.accountId, from, to)
+
+      const byDate: Record<string, { spend: number; impressions: number; clicks: number; conversions: number; revenue: number; videoViews: number; campaigns: string[] }> = {}
+      for (const row of results) {
+        const date = row.segments?.date as string | undefined
+        if (!date) continue
+        if (!byDate[date]) byDate[date] = { spend: 0, impressions: 0, clicks: 0, conversions: 0, revenue: 0, videoViews: 0, campaigns: [] }
+        const d = byDate[date]
+        d.spend += (Number(row.metrics?.costMicros) || 0) / 1_000_000
+        d.impressions += Number(row.metrics?.impressions) || 0
+        d.clicks += Number(row.metrics?.clicks) || 0
+        d.conversions += Number(row.metrics?.conversions) || 0
+        d.revenue += Number(row.metrics?.conversionsValue) || 0
+        d.videoViews += Number(row.metrics?.videoViews) || 0
+        if (row.campaign?.name) d.campaigns.push(String(row.campaign.name))
+      }
+
+      for (const [dateStr, d] of Object.entries(byDate)) {
+        const date = new Date(dateStr)
+        const platformData = {
+          videoViews: d.videoViews,
+          ctr: d.impressions > 0 ? (d.clicks / d.impressions) * 100 : 0,
+          cpc: d.clicks > 0 ? d.spend / d.clicks : 0,
+          cpm: d.impressions > 0 ? (d.spend / d.impressions) * 1000 : 0,
+          roas: d.spend > 0 ? d.revenue / d.spend : 0,
+          costPerConversion: d.conversions > 0 ? d.spend / d.conversions : 0,
+          campaigns: Array.from(new Set(d.campaigns)) as string[],
+        }
+        const existing = await prisma.campaignMetric.findFirst({ where: { adAccountId: account.id, date } })
+        if (existing) {
+          await prisma.campaignMetric.update({ where: { id: existing.id }, data: { spend: d.spend, impressions: d.impressions, clicks: d.clicks, conversions: d.conversions, revenue: d.revenue, campaignName: 'Google Ads Import', platformData } })
+        } else {
+          await prisma.campaignMetric.create({ data: { adAccountId: account.id, date, spend: d.spend, impressions: d.impressions, clicks: d.clicks, conversions: d.conversions, revenue: d.revenue, campaignName: 'Google Ads Import', platformData } })
+        }
+        totalSynced++
+      }
+    } catch (err: any) {
+      errors.push(`${account.name}: ${err.message}`)
+    }
+  }
+
+  return NextResponse.json({ ok: true, synced: totalSynced, accounts: accounts.length + googleAccounts.length, errors, from, to })
 }
