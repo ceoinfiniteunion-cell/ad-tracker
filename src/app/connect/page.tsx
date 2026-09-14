@@ -63,6 +63,9 @@ const INSTRUCTIONS: Record<Platform, {title:string; steps:{icon:string;title:str
 export default function ConnectPage() {
   const [accounts, setAccounts] = useState<AdAccount[]>([])
   const [isMobile, setIsMobile] = useState(false)
+  const [googleSetup, setGoogleSetup] = useState(false)
+  const [googleCustomerId, setGoogleCustomerId] = useState('')
+  const [googleSaving, setGoogleSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null)
   const [showTokenModal, setShowTokenModal] = useState<AdAccount|null>(null)
@@ -89,7 +92,7 @@ export default function ConnectPage() {
     const params = new URLSearchParams(window.location.search)
     const success = params.get('success')
     const error = params.get('error')
-    if (success === 'google') showToast('✓ Google Ads підключено успішно!', 'ok')
+    if (success === 'google') setGoogleSetup(true)
     if (success === 'meta') showToast('✓ Meta / Facebook підключено успішно!', 'ok')
     if (success === 'tiktok') showToast('✓ TikTok Ads підключено успішно!', 'ok')
     if (error === 'failed' && !params.get('platform')) showToast('Помилка підключення Meta', 'err')
@@ -161,6 +164,28 @@ export default function ConnectPage() {
       const d = await res.json(); showToast(d.error??'Помилка', 'err')
     }
     setTokenSaving(false)
+  }
+
+  const saveGoogleCustomerId = async () => {
+    if (!googleCustomerId.trim()) return
+    setGoogleSaving(true)
+    const cleanId = googleCustomerId.replace(/-/g, '').trim()
+    try {
+      const res = await fetch('/api/my-accounts')
+      const accs = await res.json()
+      const googleAcc = Array.isArray(accs) ? accs.find((a: any) => a.platform === 'GOOGLE') : null
+      if (googleAcc) {
+        await fetch(`/api/my-accounts/${googleAcc.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accountId: cleanId, name: `Google Ads ${cleanId}` })
+        })
+      }
+      setGoogleSetup(false)
+      showToast('✓ Google Ads підключено успішно!', 'ok')
+      window.location.reload()
+    } catch { showToast('Помилка збереження', 'err') }
+    setGoogleSaving(false)
   }
 
   const handleDelete = async (id: string) => {
@@ -425,6 +450,41 @@ export default function ConnectPage() {
               <button onClick={()=>{setShowTokenModal(null);setTokenInput('')}} style={{ padding:'12px', background:'transparent', border:'1px solid var(--border2)', borderRadius:'8px', color:'var(--text3)', fontSize:'13px', fontWeight:600, cursor:'pointer' }}>Скасувати</button>
               <button onClick={handleUpdateToken} disabled={tokenSaving||!tokenInput} style={{ padding:'12px', background:(tokenSaving||!tokenInput)?'rgba(230,0,0,0.3)':'#e60000', color:'var(--text)', fontSize:'13px', fontWeight:700, borderRadius:'8px', border:'none', cursor:(tokenSaving||!tokenInput)?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
                 {tokenSaving?<><div style={{width:'13px',height:'13px',border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin 0.8s linear infinite'}}/>Перевірка...</>:'Зберегти і перевірити'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Google Setup Modal */}
+      {googleSetup && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
+          <div style={{ background:'var(--bg2)', border:'1px solid rgba(230,0,0,0.3)', borderRadius:'16px', padding:'32px', maxWidth:'440px', width:'100%' }}>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// GOOGLE ADS</p>
+            <h2 style={{ fontSize:'20px', fontWeight:800, color:'var(--text)', margin:'0 0 8px' }}>Вкажи Customer ID</h2>
+            <p style={{ fontSize:'13px', color:'var(--text3)', margin:'0 0 24px', lineHeight:1.6 }}>
+              Авторизація пройшла успішно! Тепер вкажи ID свого рекламного кабінету Google Ads.<br/>
+              Знайди його у верхньому правому куті <a href="https://ads.google.com" target="_blank" style={{color:'#e60000'}}>ads.google.com</a> — формат: <code style={{fontFamily:'monospace', background:'var(--bg3)', padding:'2px 6px', borderRadius:'4px'}}>XXX-XXX-XXXX</code>
+            </p>
+            <div style={{ marginBottom:'20px' }}>
+              <label style={{ display:'block', fontSize:'10px', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--text3)', marginBottom:'8px' }}>CUSTOMER ID</label>
+              <input
+                value={googleCustomerId}
+                onChange={e=>setGoogleCustomerId(e.target.value)}
+                onKeyDown={e=>e.key==='Enter'&&saveGoogleCustomerId()}
+                placeholder="235-580-2813"
+                style={{ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'16px', fontFamily:'monospace', fontWeight:700, outline:'none', boxSizing:'border-box' as const }}
+                autoFocus
+              />
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 2fr', gap:'10px' }}>
+              <button onClick={()=>{ setGoogleSetup(false); showToast('Додай Customer ID пізніше через кнопку "+ Додати токен"', 'ok') }}
+                style={{ padding:'12px', background:'transparent', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text3)', fontSize:'13px', fontWeight:600, cursor:'pointer' }}>
+                Пізніше
+              </button>
+              <button onClick={saveGoogleCustomerId} disabled={googleSaving||!googleCustomerId.trim()}
+                style={{ padding:'12px', background:(googleSaving||!googleCustomerId.trim())?'rgba(230,0,0,0.3)':'#e60000', color:'#fff', border:'none', borderRadius:'10px', fontSize:'13px', fontWeight:700, cursor:(googleSaving||!googleCustomerId.trim())?'not-allowed':'pointer' }}>
+                {googleSaving ? 'Зберігаємо...' : '✓ Підключити'}
               </button>
             </div>
           </div>
