@@ -15,7 +15,7 @@ const defaultForm = { name:'', accountId:'', accessToken:'' }
 
 const PLATFORMS = {
   FACEBOOK: { label:'Meta / Facebook', color:'#1877f2', bg:'rgba(24,119,242,0.1)', short:'META', autoSync:true },
-  GOOGLE: { label:'Google Ads', color:'#e60000', bg:'rgba(230,0,0,0.1)', short:'GGL', autoSync:false },
+  GOOGLE: { label:'Google Ads', color:'#e60000', bg:'rgba(230,0,0,0.1)', short:'GGL', autoSync:true },
   TIKTOK: { label:'TikTok Ads', color:'#69C9D0', bg:'rgba(105,201,208,0.08)', short:'TIK', autoSync:true },
 }
 
@@ -44,7 +44,7 @@ const INSTRUCTIONS: Record<Platform, {title:string; steps:{icon:string;title:str
     tokenPlaceholder: 'ya29.xxxxxxxx...',
     steps: [
       { icon:'1', title:'Знайди Customer ID', desc:'Зайди в Google Ads → у верхньому правому куті побачиш ID у форматі XXX-XXX-XXXX', link:'https://ads.google.com', linkText:'Відкрити Google Ads' },
-      { icon:'2', title:'Отримай токен (опційно)', desc:'Для автосинхронізації потрібен OAuth токен. Зайди в Google Cloud Console та створи credentials', link:'https://console.cloud.google.com', linkText:'Google Cloud Console' },
+      { icon:'2', title:'Натисни "Підключити через Google OAuth"', desc:'Ти будеш перенаправлений на Google для авторизації. Після підтвердження дані синхронізуються автоматично.' },
       { icon:'3', title:'Вставте дані нижче', desc:'ID кабінету обовязковий. Токен опційний — без нього статистику треба завантажувати вручну через CSV' },
     ]
   },
@@ -270,9 +270,10 @@ export default function ConnectPage() {
                   <button onClick={()=>{ 
                     if(selectedPlatform==='FACEBOOK'){ window.location.href='/api/auth/meta' }
                     else if(selectedPlatform==='TIKTOK'){ window.location.href='/api/auth/tiktok' }
+                    else if(selectedPlatform==='GOOGLE'){ window.location.href='/api/auth/google' }
                     else { setStep('form') } 
                   }} style={{ width:'100%', padding:'14px', background:selectedPlatform==='TIKTOK' ? '#000' : pInfo.color, color:'#fff', fontSize:'14px', fontWeight:700, borderRadius:'10px', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', transition:'all 0.15s' }}>
-                    {selectedPlatform==='FACEBOOK' ? '🔗 Підключити через Meta OAuth' : selectedPlatform==='TIKTOK' ? '🎵 Підключити через TikTok OAuth' : 'Я готовий — ввести дані →'}
+                    {selectedPlatform==='FACEBOOK' ? '🔗 Підключити через Meta OAuth' : selectedPlatform==='TIKTOK' ? '🎵 Підключити через TikTok OAuth' : selectedPlatform==='GOOGLE' ? '🔍 Підключити через Google OAuth' : 'Я готовий — ввести дані →'}
                   </button>
                 </div>
               </div>
