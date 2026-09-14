@@ -10,9 +10,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   const account = await prisma.adAccount.findFirst({ where: { id: params.id, clientId } })
   if (!account) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  const { accessToken } = await request.json()
+  const body = await request.json()
+  const accessToken: string | undefined = body.accessToken
+  const newAccountId: string | undefined = body.accountId
+  const newName: string | undefined = body.name
 
-  let tokenStatus = 'no_token'
+  let tokenStatus = account.tokenStatus ?? 'no_token'
   if (accessToken && account.platform === 'FACEBOOK') {
     try {
       const res = await fetch(`https://graph.facebook.com/v19.0/act_${account.accountId.replace('act_','')}?fields=id,name&access_token=${accessToken}`)
@@ -23,7 +26,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
   const updated = await prisma.adAccount.update({
     where: { id: params.id },
-    data: { accessToken, tokenStatus }
+    data: {
+      ...(accessToken !== undefined ? { accessToken, tokenStatus } : {}),
+      ...(newAccountId ? { accountId: newAccountId } : {}),
+      ...(newName ? { name: newName } : {}),
+    }
   })
   return NextResponse.json({ ...updated, accessToken: undefined, tokenStatus: updated.tokenStatus })
 }
