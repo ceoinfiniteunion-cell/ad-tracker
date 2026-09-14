@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { saveToken } from '@/lib/token-store'
+import { saveToken, getToken } from '@/lib/token-store'
 
 export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXTAUTH_URL!
@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
   const cookieState = request.cookies.get('google_oauth_state')?.value
 
   if (!state || !cookieState || state !== cookieState) {
-    console.error('[GOOGLE OAUTH] State mismatch')
     return NextResponse.redirect(`${baseUrl}/connect?error=invalid_state`)
   }
   if (!code) return NextResponse.redirect(`${baseUrl}/connect?error=no_code`)
@@ -46,55 +45,75 @@ export async function GET(request: NextRequest) {
     const clientId2 = (session.user as any).clientId
     if (!clientId2) return NextResponse.redirect(`${baseUrl}/connect?error=no_client`)
 
-    // 2. Шукаємо існуючий Google акаунт
+    // 2. Шукаємо або створюємо adAccount
     let adAccount = await prisma.adAccount.findFirst({
       where: { clientId: clientId2, platform: 'GOOGLE' },
     })
 
-    // 3. Якщо немає — створюємо новий
     if (!adAccount) {
-      // Спробуємо отримати Customer ID через Google Ads API
-      let customerId = 'unknown'
-      let accountName = 'Google Ads'
-      try {
-        const loginCustomerId = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID
-        const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
-        const listRes = await fetch(
-          `https://googleads.googleapis.com/v18/customers:listAccessibleCustomers`,
-          {
-            headers: {
-              'Authorization': `Bearer ${tokens.access_token}`,
-              'developer-token': devToken!,
-              ...(loginCustomerId ? { 'login-customer-id': loginCustomerId } : {}),
-            },
-          }
-        )
-        const listData = await listRes.json()
-        if (listData.resourceNames && listData.resourceNames.length > 0) {
-          // Беремо перший доступний акаунт
-          customerId = listData.resourceNames[0].replace('customers/', '')
-          accountName = `Google Ads ${customerId}`
-        }
-      } catch (e) {
-        console.error('[GOOGLE OAUTH] Could not fetch customer list:', e)
-      }
-
       adAccount = await prisma.adAccount.create({
         data: {
           clientId: clientId2,
-          name: accountName,
-          accountId: customerId,
+          name: 'Google Ads',
+          accountId: 'pending',
           platform: 'GOOGLE',
           isActive: true,
         },
       })
-      console.log('[GOOGLE OAUTH] Created new adAccount:', adAccount.id)
     }
 
-    // 4. Зберігаємо токен
-    if (tokens.access_token) {
-      await saveToken(adAccount.id, tokens.access_token, tokens.refresh_token)
-      console.log('[GOOGLE OAUTH] Token saved for account:', adAccount.id)
+    // 3. Зберігаємо токен
+    await saveToken(adAccount.id, tokens.access_token, tokens.refresh_token)
+    console.log('[GOOGLE OAUTH] Token saved for:', adAccount.id)
+
+    // 4. Отримуємо Customer ID через refresh token (свіжий access token)
+    try {
+      const refreshRes = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: gClientId,
+          client_secret: gClientSecret,
+          refresh_token: tokens.refresh_token,
+          grant_type: 'refresh_token',
+        }),
+      })
+      const refreshData = await refreshRes.json()
+      const freshAccessToken = refreshData.access_token
+
+      if (freshAccessToken) {
+        const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN!
+        const loginCustomerId = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID
+
+        const listRes = await fetch(
+          'https://googleads.googleapis.com/v18/customers:listAccessibleCustomers',
+          {
+            headers: {
+              'Authorization': `Bearer ${freshAccessToken}`,
+              'developer-token': devToken,
+              ...(loginCustomerId ? { 'login-customer-id': loginCustomerId } : {}),
+            },
+          }
+        )
+
+        const listText = await listRes.text()
+        console.log('[GOOGLE OAUTH] Customer list response:', listText.slice(0, 200))
+
+        const listData = JSON.parse(listText)
+        if (listData.resourceNames && listData.resourceNames.length > 0) {
+          const customerId = listData.resourceNames[0].replace('customers/', '')
+          await prisma.adAccount.update({
+            where: { id: adAccount.id },
+            data: {
+              accountId: customerId,
+              name: `Google Ads ${customerId}`,
+            },
+          })
+          console.log('[GOOGLE OAUTH] Customer ID set:', customerId)
+        }
+      }
+    } catch (e) {
+      console.error('[GOOGLE OAUTH] Could not fetch customer ID:', e)
     }
 
     const response = NextResponse.redirect(`${baseUrl}/connect?success=google`)
