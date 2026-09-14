@@ -16,17 +16,27 @@ export async function refreshAccessToken(refreshToken: string): Promise<string> 
 }
 
 export async function getGoogleAdsAccounts(accessToken: string): Promise<any[]> {
-  const res = await fetch(
-    'https://googleads.googleapis.com/v17/customers:listAccessibleCustomers',
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN ?? '',
-      },
-    }
-  )
-  const data = await res.json()
-  if (data.error) throw new Error(data.error.message)
+  const url = 'https://googleads.googleapis.com/v17/customers:listAccessibleCustomers'
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${accessToken}`,
+    'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN ?? '',
+    ...(process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID
+      ? { 'login-customer-id': process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID }
+      : {}),
+  }
+  console.log('[GoogleAds] listAccessibleCustomers URL:', url)
+  console.log('[GoogleAds] headers sent:', {
+    Authorization: 'Bearer [REDACTED]',
+    'developer-token': headers['developer-token'] ? '[SET]' : '[MISSING]',
+    ...(headers['login-customer-id'] ? { 'login-customer-id': headers['login-customer-id'] } : {}),
+  })
+  const res = await fetch(url, { headers })
+  const text = await res.text()
+  console.log('[GoogleAds] listAccessibleCustomers status:', res.status)
+  console.log('[GoogleAds] listAccessibleCustomers response:', text)
+  let data: any
+  try { data = JSON.parse(text) } catch (e) { throw new Error('Google API non-JSON: ' + text) }
+  if (data.error) throw new Error(JSON.stringify(data.error))
   return data.resourceNames ?? []
 }
 
@@ -37,6 +47,22 @@ export async function getGoogleAdsCampaignMetrics(
   to: string
 ): Promise<any[]> {
   const cleanId = customerId.replace('customers/', '').replace(/-/g, '')
+  const url = `https://googleads.googleapis.com/v17/customers/${cleanId}/googleAds:search`
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${accessToken}`,
+    'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN ?? '',
+    'Content-Type': 'application/json',
+    ...(process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID
+      ? { 'login-customer-id': process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID }
+      : {}),
+  }
+  console.log('[GoogleAds] search URL:', url)
+  console.log('[GoogleAds] headers sent:', {
+    Authorization: 'Bearer [REDACTED]',
+    'developer-token': headers['developer-token'] ? '[SET]' : '[MISSING]',
+    'Content-Type': headers['Content-Type'],
+    ...(headers['login-customer-id'] ? { 'login-customer-id': headers['login-customer-id'] } : { 'login-customer-id': '[NOT SET]' }),
+  })
   const query = `
     SELECT
       segments.date,
@@ -56,25 +82,16 @@ export async function getGoogleAdsCampaignMetrics(
       AND campaign.status != 'REMOVED'
     ORDER BY segments.date ASC
   `
-  const res = await fetch(
-    `https://googleads.googleapis.com/v17/customers/${cleanId}/googleAds:search`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN ?? '',
-        'Content-Type': 'application/json',
-        ...(process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID
-          ? { 'login-customer-id': process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID }
-          : {}),
-      },
-      body: JSON.stringify({ query }),
-    }
-  )
+  const res = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ query }),
+  })
   const text = await res.text()
-  console.log('Google Ads raw response:', text.slice(0, 300))
+  console.log('[GoogleAds] search status:', res.status)
+  console.log('[GoogleAds] search response:', text)
   let data: any
-  try { data = JSON.parse(text) } catch(e) { throw new Error('Google API non-JSON: ' + text.slice(0, 200)) }
+  try { data = JSON.parse(text) } catch (e) { throw new Error('Google API non-JSON: ' + text) }
   if (data.error) throw new Error(JSON.stringify(data.error))
   return data.results ?? []
 }
