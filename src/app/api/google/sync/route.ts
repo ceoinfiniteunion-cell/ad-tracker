@@ -15,9 +15,13 @@ interface DayData {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session || (session.user as any).role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const authHeader = request.headers.get('authorization')
+  const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`
+  if (!isCron) {
+    const session = await getServerSession(authOptions)
+    if (!session || (session.user as any).role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
   }
 
   const { adAccountId, customerId, from, to } = await request.json()
