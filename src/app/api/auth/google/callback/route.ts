@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
 
     // 3. Зберігаємо токен
     await saveToken(adAccount.id, tokens.access_token, tokens.refresh_token)
+    await prisma.adAccount.update({ where: { id: adAccount.id }, data: { tokenStatus: 'valid' } })
     console.log('[GOOGLE OAUTH] Token saved for:', adAccount.id)
 
     // 4. Отримуємо Customer ID через refresh token (свіжий access token)
@@ -107,6 +108,7 @@ export async function GET(request: NextRequest) {
             data: {
               accountId: customerId,
               name: `Google Ads ${customerId}`,
+              tokenStatus: 'valid',
             },
           })
           console.log('[GOOGLE OAUTH] Customer ID set:', customerId)
