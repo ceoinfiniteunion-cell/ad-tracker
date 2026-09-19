@@ -52,16 +52,12 @@ export async function getGoogleAdsCampaignMetrics(
     Authorization: `Bearer ${accessToken}`,
     'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN ?? '',
     'Content-Type': 'application/json',
-    ...(process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID
-      ? { 'login-customer-id': process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID }
-      : {}),
   }
   console.log('[GoogleAds] search URL:', url)
   console.log('[GoogleAds] headers sent:', {
     Authorization: 'Bearer [REDACTED]',
     'developer-token': headers['developer-token'] ? '[SET]' : '[MISSING]',
     'Content-Type': headers['Content-Type'],
-    ...(headers['login-customer-id'] ? { 'login-customer-id': headers['login-customer-id'] } : { 'login-customer-id': '[NOT SET]' }),
   })
   const query = `
     SELECT
