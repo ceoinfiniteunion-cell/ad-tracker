@@ -16,7 +16,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<string> 
 }
 
 export async function getGoogleAdsAccounts(accessToken: string): Promise<any[]> {
-  const url = 'https://googleads.googleapis.com/v17/customers:listAccessibleCustomers'
+  const url = 'https://googleads.googleapis.com/v19/customers:listAccessibleCustomers'
   const headers: Record<string, string> = {
     Authorization: `Bearer ${accessToken}`,
     'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN ?? '',
@@ -47,7 +47,7 @@ export async function getGoogleAdsCampaignMetrics(
   to: string
 ): Promise<any[]> {
   const cleanId = customerId.replace('customers/', '').replace(/-/g, '')
-  const url = `https://googleads.googleapis.com/v17/customers/${cleanId}/googleAds:search`
+  const url = `https://googleads.googleapis.com/v19/customers/${cleanId}/googleAds:search`
   const headers: Record<string, string> = {
     Authorization: `Bearer ${accessToken}`,
     'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN ?? '',

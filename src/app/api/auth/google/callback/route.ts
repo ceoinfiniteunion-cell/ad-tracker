@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
         const loginCustomerId = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID
 
         const listRes = await fetch(
-          'https://googleads.googleapis.com/v17/customers:listAccessibleCustomers',
+          'https://googleads.googleapis.com/v19/customers:listAccessibleCustomers',
           {
             headers: {
               'Authorization': `Bearer ${freshAccessToken}`,
