@@ -73,17 +73,13 @@ export default function StatsPage() {
 
   useEffect(() => {
     fetch('/api/profile').then(r=>r.json()).then(async d => {
-      const cur = d.client?.currency ?? 'USD'
+      const cur = d.client?.currency ?? 'UAH'
       setCurrency(cur)
       const cv = d.client?.conversionValue ?? null
       setConversionValue(cv && cv > 0 ? cv : null)
-      if (cur !== 'USD') {
-        try {
-          const rr = await fetch('/api/currency?to=' + cur)
-          const rd = await rr.json()
-          setExchangeRate(rd.rate ?? 1)
-        } catch {}
-      }
+      // Spend is stored in the account's native currency (UAH for Ukrainian accounts).
+      // Do not apply a USD→currency exchange rate — it would double-convert UAH values.
+      setExchangeRate(1)
     }).catch(() => {})
   }, [])
 
