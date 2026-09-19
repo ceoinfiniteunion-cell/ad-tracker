@@ -70,7 +70,6 @@ export async function getGoogleAdsCampaignMetrics(
       metrics.ctr,
       metrics.average_cpc,
       metrics.average_cpm,
-      metrics.video_views,
       campaign.name,
       campaign.status
     FROM campaign
