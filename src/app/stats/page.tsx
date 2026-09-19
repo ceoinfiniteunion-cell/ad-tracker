@@ -40,7 +40,6 @@ export default function StatsPage() {
   const [data, setData] = useState<ClientDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [currency, setCurrency] = useState('USD')
-  const [exchangeRate, setExchangeRate] = useState(1)
   const [conversionValue, setConversionValue] = useState<number | null>(null)
 
   const [period, setPeriod] = useState<number | null>(30)
@@ -72,23 +71,20 @@ export default function StatsPage() {
   }, [])
 
   useEffect(() => {
-    fetch('/api/profile').then(r=>r.json()).then(async d => {
-      const cur = d.client?.currency ?? 'UAH'
+    fetch('/api/profile').then(r=>r.json()).then(d => {
+      const cur = d.client?.currency ?? 'USD'
       setCurrency(cur)
       const cv = d.client?.conversionValue ?? null
       setConversionValue(cv && cv > 0 ? cv : null)
-      // Spend is stored in the account's native currency (UAH for Ukrainian accounts).
-      // Do not apply a USD→currency exchange rate — it would double-convert UAH values.
-      setExchangeRate(1)
     }).catch(() => {})
   }, [])
 
   useEffect(() => {
     if (!dateFrom || !dateTo) return
     setLoading(true)
-    fetch(`/api/metrics?from=${dateFrom}&to=${dateTo}`)
+    fetch(`/api/metrics?from=${dateFrom}&to=${dateTo}&currency=${currency}`)
       .then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
-  }, [dateFrom, dateTo])
+  }, [dateFrom, dateTo, currency])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -253,7 +249,7 @@ export default function StatsPage() {
             <div style={{ background:'rgba(0,200,100,0.06)', border:'1px solid rgba(0,200,100,0.2)', borderRadius:'10px', padding:'10px 16px', marginBottom:'16px', display:'flex', alignItems:'center', gap:'10px' }}>
               <span style={{ fontSize:'15px' }}>💰</span>
               <p style={{ margin:0, fontSize:'12px', color:'var(--text3)' }}>
-                Дохід = Конверсії × <span style={{ color:'#00c864', fontWeight:700, fontFamily:'monospace' }}>{formatCurrency(conversionValue * exchangeRate, currency)}/конверсія</span> · ROAS показує реальну окупність
+                Дохід = Конверсії × <span style={{ color:'#00c864', fontWeight:700, fontFamily:'monospace' }}>{formatCurrency(conversionValue , currency)}/конверсія</span> · ROAS показує реальну окупність
               </p>
             </div>
           )}
@@ -331,12 +327,12 @@ export default function StatsPage() {
                 const revA = calcRevenue(sA.totalConversions??0,sA.totalRevenue??0)
                 const revB = calcRevenue(sB.totalConversions??0,sB.totalRevenue??0)
                 const rows = [
-                  {label:'Витрати',vA:sA.totalSpend,vB:sB.totalSpend,fmt:(v:number)=>formatCurrency(v*exchangeRate,currency),better:'lower'},
-                  {label:'Дохід',vA:revA,vB:revB,fmt:(v:number)=>formatCurrency(v*exchangeRate,currency),better:'higher'},
+                  {label:'Витрати',vA:sA.totalSpend,vB:sB.totalSpend,fmt:(v:number)=>formatCurrency(v,currency),better:'lower'},
+                  {label:'Дохід',vA:revA,vB:revB,fmt:(v:number)=>formatCurrency(v,currency),better:'higher'},
                   {label:'Покази',vA:sA.totalImpressions,vB:sB.totalImpressions,fmt:formatNumber,better:'higher'},
                   {label:'Кліки',vA:sA.totalClicks,vB:sB.totalClicks,fmt:formatNumber,better:'higher'},
                   {label:'CTR',vA:sA.ctr,vB:sB.ctr,fmt:formatPercent,better:'higher'},
-                  {label:'CPC',vA:sA.cpc,vB:sB.cpc,fmt:(v:number)=>formatCurrency(v*exchangeRate,currency),better:'lower'},
+                  {label:'CPC',vA:sA.cpc,vB:sB.cpc,fmt:(v:number)=>formatCurrency(v,currency),better:'lower'},
                   {label:'ROAS',vA:sA.totalSpend>0?revA/sA.totalSpend:0,vB:sB.totalSpend>0?revB/sB.totalSpend:0,fmt:(v:number)=>`${v.toFixed(2)}×`,better:'higher'},
                   {label:'Конверсії',vA:sA.totalConversions,vB:sB.totalConversions,fmt:formatNumber,better:'higher'},
                 ]
@@ -385,11 +381,11 @@ export default function StatsPage() {
                   </tr></thead>
                   <tbody>
                     {[
-                      {metric:'Витрати',value:formatCurrency(summary.totalSpend*exchangeRate,currency),detail:`Дохід: ${formatCurrency(summary.effectiveRevenue*exchangeRate,currency)}`,color:'#e60000'},
+                      {metric:'Витрати',value:formatCurrency(summary.totalSpend,currency),detail:`Дохід: ${formatCurrency(summary.effectiveRevenue,currency)}`,color:'#e60000'},
                       {metric:'Покази',value:formatNumber(summary.totalImpressions),detail:'Унікальні покази оголошень',color:'var(--text2)'},
                       {metric:'Кліки',value:formatNumber(summary.totalClicks),detail:`CTR: ${formatPercent(summary.ctr)}`,color:'var(--text2)'},
-                      {metric:'Конверсії',value:formatNumber(summary.totalConversions),detail:`Ціна: ${formatCurrency(summary.costPerConversion*exchangeRate,currency)}${conversionValue?` · $${conversionValue}/конв.`:''}`,color:'#00c864'},
-                      {metric:'CPC',value:formatCurrency(summary.cpc*exchangeRate,currency),detail:'Середня вартість кліку',color:'var(--text2)'},
+                      {metric:'Конверсії',value:formatNumber(summary.totalConversions),detail:`Ціна: ${formatCurrency(summary.costPerConversion,currency)}${conversionValue?` · $${conversionValue}/конв.`:''}`,color:'#00c864'},
+                      {metric:'CPC',value:formatCurrency(summary.cpc,currency),detail:'Середня вартість кліку',color:'var(--text2)'},
                       {metric:'ROAS',value:`${summary.roas.toFixed(2)}×`,detail:`$1 → $${summary.roas.toFixed(2)} доходу${conversionValue?' (кастомна)':''} `,color:summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444'},
                     ].map(row=>(
                       <tr key={row.metric} style={{borderBottom:'1px solid rgba(255,255,255,0.03)',transition:'background 0.15s'}}
@@ -428,11 +424,11 @@ export default function StatsPage() {
                                 <span style={{width:'6px',height:'6px',borderRadius:'50%',background:c,flexShrink:0}}/>
                                 <div><p style={{fontSize:'13px',fontWeight:600,color:'var(--text)',margin:0}}>{p.accountName}</p><p style={{fontFamily:'monospace',fontSize:'10px',color:'var(--text3)',margin:'2px 0 0'}}>{PLABEL[p.platform]}</p></div>
                               </div></td>
-                              <td style={{padding:'14px 16px',fontFamily:'monospace',fontSize:'13px',color:'#e60000',fontWeight:700}}>{formatCurrency(p.summary.totalSpend*exchangeRate,currency)}</td>
+                              <td style={{padding:'14px 16px',fontFamily:'monospace',fontSize:'13px',color:'#e60000',fontWeight:700}}>{formatCurrency(p.summary.totalSpend,currency)}</td>
                               <td style={{padding:'14px 16px',fontFamily:'monospace',fontSize:'13px',color:'var(--text2)'}}>{formatNumber(p.summary.totalImpressions)}</td>
                               <td style={{padding:'14px 16px',fontFamily:'monospace',fontSize:'13px',color:'var(--text2)'}}>{formatNumber(p.summary.totalClicks)}</td>
                               <td style={{padding:'14px 16px',fontFamily:'monospace',fontSize:'13px',color:'var(--text2)'}}>{formatPercent(p.summary.ctr)}</td>
-                              <td style={{padding:'14px 16px',fontFamily:'monospace',fontSize:'13px',color:'var(--text2)'}}>{formatCurrency(p.summary.cpc*exchangeRate,currency)}</td>
+                              <td style={{padding:'14px 16px',fontFamily:'monospace',fontSize:'13px',color:'var(--text2)'}}>{formatCurrency(p.summary.cpc,currency)}</td>
                               <td style={{padding:'14px 16px',fontFamily:'monospace',fontSize:'13px',fontWeight:700,color:pRoas>=2?'#00c864':pRoas>=1?'#fbbf24':'#ff4444'}}>{pRoas.toFixed(2)}×</td>
                               <td style={{padding:'14px 16px',fontFamily:'monospace',fontSize:'13px',color:'var(--text2)'}}>{formatNumber(p.summary.totalConversions)}</td>
                             </tr>

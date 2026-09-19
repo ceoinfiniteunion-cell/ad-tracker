@@ -90,7 +90,6 @@ export default function DashboardPage() {
   const [data, setData] = useState<ClientDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [currency, setCurrency] = useState('USD')
-  const [exchangeRate, setExchangeRate] = useState(1)
   const [activeTab, setActiveTab] = useState<'all'|Platform>('all')
   const [customize, setCustomize] = useState(false)
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(DEFAULT_METRICS)
@@ -106,17 +105,11 @@ export default function DashboardPage() {
     const saved = localStorage.getItem('dashboard_metrics')
     if (saved) setSelectedMetrics(JSON.parse(saved))
     // Завантажити валюту спочатку, потім дані
-    fetch('/api/profile').then(r=>r.json()).then(async d => {
+    fetch('/api/profile').then(r=>r.json()).then(d => {
       const cur = d.client?.currency ?? 'USD'
       setCurrency(cur)
-      if (cur !== 'USD') {
-        try {
-          const rateRes = await fetch('/api/currency?to=' + cur)
-          const rateData = await rateRes.json()
-          setExchangeRate(rateData.rate ?? 1)
-        } catch {}
-      }
-    }).catch(() => {}).finally(() => {
+      fetch(`/api/metrics?currency=${cur}`).then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
+    }).catch(() => {
       fetch('/api/metrics').then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
     })
   }, [])
@@ -233,7 +226,7 @@ export default function DashboardPage() {
               <div style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(200px, 1fr))', gap:'10px', marginBottom:'24px' }}>
                 {commonSelected.map(m => (
                   <div key={m.key} style={{ background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'16px', padding: isMobile ? '14px' : '16px 20px' }}>
-                    <p style={{ fontSize: isMobile ? '16px' : '18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(summary[m.key]>=2?'#00c864':summary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'var(--text)', margin:0 }}>{formatVal(summary[m.key], m.format, currency, exchangeRate)}</p>
+                    <p style={{ fontSize: isMobile ? '16px' : '18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(summary[m.key]>=2?'#00c864':summary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'var(--text)', margin:0 }}>{formatVal(summary[m.key], m.format, currency, 1)}</p>
                     <p style={{ fontSize:'10px', color:'var(--text3)', marginTop:'5px', textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600 }}>{m.label}</p>
                   </div>
                 ))}
@@ -271,7 +264,7 @@ export default function DashboardPage() {
                 <div style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(180px, 1fr))', gap:'10px' }}>
                   {metricsToShow.map(m => (
                     <div key={m.key} style={{ background:'var(--bg2)', border:`1px solid ${color}15`, borderRadius:'10px', padding: isMobile ? '12px 14px' : '14px 18px' }}>
-                      <p style={{ fontSize: isMobile ? '15px' : '18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(platformSummary[m.key]>=2?'#00c864':platformSummary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'var(--text)', margin:0 }}>{formatVal(platformSummary[m.key], m.format, currency, exchangeRate)}</p>
+                      <p style={{ fontSize: isMobile ? '15px' : '18px', fontWeight:800, fontFamily:'monospace', color: m.key==='roas'?(platformSummary[m.key]>=2?'#00c864':platformSummary[m.key]>=1?'#fbbf24':'#ff4444'): m.key==='totalSpend'?'#e60000':'var(--text)', margin:0 }}>{formatVal(platformSummary[m.key], m.format, currency, 1)}</p>
                       <p style={{ fontSize:'10px', color:'var(--text3)', marginTop:'4px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>{m.label}</p>
                     </div>
                   ))}

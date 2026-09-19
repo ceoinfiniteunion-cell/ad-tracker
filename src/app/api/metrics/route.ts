@@ -3,6 +3,27 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+async function getUsdRates(): Promise<Record<string, number>> {
+  try {
+    const res = await fetch('https://open.er-api.com/v6/latest/USD', { next: { revalidate: 3600 } })
+    const data = await res.json()
+    return data.rates ?? {}
+  } catch {
+    return {}
+  }
+}
+
+function conversionRate(from: string, to: string, usdRates: Record<string, number>): number {
+  if (from === to) return 1
+  const rateFrom = from === 'USD' ? 1 : (usdRates[from] ?? 1)
+  const rateTo = to === 'USD' ? 1 : (usdRates[to] ?? 1)
+  return rateTo / rateFrom
+}
+
+function applyRate(value: number, rate: number) {
+  return value * rate
+}
+
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -11,6 +32,8 @@ export async function GET(request: NextRequest) {
   const clientId = searchParams.get('clientId')
   const from = searchParams.get('from') ?? getDefaultFrom()
   const to = searchParams.get('to') ?? new Date().toISOString().split('T')[0]
+  // Display currency requested by the frontend (e.g. 'UAH', 'USD')
+  const displayCurrency = searchParams.get('currency') ?? null
 
   const sessionClientId = (session.user as any).clientId
   const role = (session.user as any).role
@@ -33,15 +56,25 @@ export async function GET(request: NextRequest) {
   })
   if (!client) return NextResponse.json({ error: 'Client not found' }, { status: 404 })
 
+  // Resolve display currency: use param if given, else client's profile currency, else 'USD'
+  const targetCurrency = displayCurrency ?? (client as any).currency ?? 'USD'
+
+  // Fetch exchange rates once if any conversion is needed
+  const uniqueAccountCurrencies = [...new Set(client.adAccounts.map(a => a.accountCurrency ?? 'USD'))]
+  const needsRates = uniqueAccountCurrencies.some(c => c !== targetCurrency)
+  const usdRates = needsRates ? await getUsdRates() : {}
+
   const platforms = client.adAccounts.map((account) => {
     const metrics = account.metrics
     const pd = (m: any) => (m.platformData as any) ?? {}
+    const accountCurrency = account.accountCurrency ?? 'USD'
+    const rate = conversionRate(accountCurrency, targetCurrency, usdRates)
 
-    const totalSpend = metrics.reduce((s, m) => s + m.spend, 0)
+    const rawSpend = metrics.reduce((s, m) => s + m.spend, 0)
+    const rawRevenue = metrics.reduce((s, m) => s + m.revenue, 0)
     const totalImpressions = metrics.reduce((s, m) => s + m.impressions, 0)
     const totalClicks = metrics.reduce((s, m) => s + m.clicks, 0)
     const totalConversions = metrics.reduce((s, m) => s + m.conversions, 0)
-    const totalRevenue = metrics.reduce((s, m) => s + m.revenue, 0)
     const totalReach = metrics.reduce((s, m) => s + (pd(m).reach ?? 0), 0)
     const totalVideoViews = metrics.reduce((s, m) => s + (pd(m).videoViews ?? 0), 0)
     const totalLeads = metrics.reduce((s, m) => s + (pd(m).leads ?? 0), 0)
@@ -52,10 +85,14 @@ export async function GET(request: NextRequest) {
     const totalShares = metrics.reduce((s, m) => s + (pd(m).shares ?? 0), 0)
     const totalVideoP100 = metrics.reduce((s, m) => s + (pd(m).videoP100 ?? 0), 0)
 
+    const totalSpend = applyRate(rawSpend, rate)
+    const totalRevenue = applyRate(rawRevenue, rate)
+
     return {
       platform: account.platform,
       accountName: account.name,
       accountId: account.accountId,
+      accountCurrency,
       summary: {
         totalSpend,
         totalImpressions,
@@ -71,27 +108,27 @@ export async function GET(request: NextRequest) {
         totalComments,
         totalShares,
         ctr: totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0,
-        cpc: totalClicks > 0 ? totalSpend / totalClicks : 0,
-        cpm: totalImpressions > 0 ? (totalSpend / totalImpressions) * 1000 : 0,
-        cpp: totalReach > 0 ? (totalSpend / totalReach) * 1000 : 0,
+        cpc: totalClicks > 0 ? applyRate(rawSpend / totalClicks, rate) : 0,
+        cpm: totalImpressions > 0 ? applyRate((rawSpend / totalImpressions) * 1000, rate) : 0,
+        cpp: totalReach > 0 ? applyRate((rawSpend / totalReach) * 1000, rate) : 0,
         roas: totalSpend > 0 ? totalRevenue / totalSpend : 0,
-        costPerConversion: totalConversions > 0 ? totalSpend / totalConversions : 0,
-        costPerLead: totalLeads > 0 ? totalSpend / totalLeads : 0,
+        costPerConversion: totalConversions > 0 ? applyRate(rawSpend / totalConversions, rate) : 0,
+        costPerLead: totalLeads > 0 ? applyRate(rawSpend / totalLeads, rate) : 0,
         frequency: totalReach > 0 ? totalImpressions / totalReach : 0,
         videoCompletionRate: totalVideoViews > 0 ? (totalVideoP100 / totalVideoViews) * 100 : 0,
       },
       daily: metrics.map((m) => ({
         date: m.date.toISOString().split('T')[0],
-        spend: m.spend,
+        spend: applyRate(m.spend, rate),
         impressions: m.impressions,
         clicks: m.clicks,
         conversions: m.conversions,
-        revenue: m.revenue,
+        revenue: applyRate(m.revenue, rate),
         reach: pd(m).reach ?? 0,
         frequency: pd(m).frequency ?? 0,
         ctr: pd(m).ctr ?? 0,
-        cpc: pd(m).cpc ?? 0,
-        cpm: pd(m).cpm ?? 0,
+        cpc: applyRate(pd(m).cpc ?? 0, rate),
+        cpm: applyRate(pd(m).cpm ?? 0, rate),
         videoViews: pd(m).videoViews ?? 0,
         leads: pd(m).leads ?? 0,
         postEngagement: pd(m).postEngagement ?? 0,
@@ -103,21 +140,22 @@ export async function GET(request: NextRequest) {
     }
   })
 
-  const allMetrics = platforms.map((p) => p.summary)
-  const totalSpend = allMetrics.reduce((s, m) => s + m.totalSpend, 0)
-  const totalImpressions = allMetrics.reduce((s, m) => s + m.totalImpressions, 0)
-  const totalClicks = allMetrics.reduce((s, m) => s + m.totalClicks, 0)
-  const totalConversions = allMetrics.reduce((s, m) => s + m.totalConversions, 0)
-  const totalRevenue = allMetrics.reduce((s, m) => s + m.totalRevenue, 0)
-  const totalReach = allMetrics.reduce((s, m) => s + m.totalReach, 0)
-  const totalVideoViews = allMetrics.reduce((s, m) => s + m.totalVideoViews, 0)
-  const totalLeads = allMetrics.reduce((s, m) => s + m.totalLeads, 0)
-  const totalPostEngagement = allMetrics.reduce((s, m) => s + m.totalPostEngagement, 0)
-  const totalVideoP100 = allMetrics.reduce((s, m) => s + (m as any).totalVideoP100, 0)
+  const allSummaries = platforms.map((p) => p.summary)
+  const totalSpend = allSummaries.reduce((s, m) => s + m.totalSpend, 0)
+  const totalImpressions = allSummaries.reduce((s, m) => s + m.totalImpressions, 0)
+  const totalClicks = allSummaries.reduce((s, m) => s + m.totalClicks, 0)
+  const totalConversions = allSummaries.reduce((s, m) => s + m.totalConversions, 0)
+  const totalRevenue = allSummaries.reduce((s, m) => s + m.totalRevenue, 0)
+  const totalReach = allSummaries.reduce((s, m) => s + m.totalReach, 0)
+  const totalVideoViews = allSummaries.reduce((s, m) => s + m.totalVideoViews, 0)
+  const totalLeads = allSummaries.reduce((s, m) => s + m.totalLeads, 0)
+  const totalPostEngagement = allSummaries.reduce((s, m) => s + m.totalPostEngagement, 0)
+  const totalVideoP100 = allSummaries.reduce((s, m) => s + (m as any).totalVideoP100, 0)
 
   return NextResponse.json({
     client: { id: client.id, name: client.name, company: client.company },
     dateRange: { from, to },
+    currency: targetCurrency,
     platforms,
     totals: {
       totalSpend,
