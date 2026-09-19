@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { refreshAccessToken, getGoogleAdsCampaignMetrics } from '@/lib/google'
+import { getToken, saveToken } from '@/lib/token-store'
 
 interface DayData {
   spend: number
@@ -10,7 +11,6 @@ interface DayData {
   clicks: number
   conversions: number
   revenue: number
-  videoViews: number
   campaigns: string[]
 }
 
@@ -33,20 +33,25 @@ export async function POST(request: NextRequest) {
   const dateTo = to ?? new Date().toISOString().split('T')[0]
 
   const account = await prisma.adAccount.findUnique({ where: { id: adAccountId } })
-  if (!account?.accessToken) {
-    return NextResponse.json({ error: 'No access token' }, { status: 404 })
+  if (!account) {
+    return NextResponse.json({ error: 'Account not found' }, { status: 404 })
   }
 
   try {
-    let token = account.accessToken
-    if (account.refreshToken) {
+    const { accessToken: storedAccess, refreshToken: storedRefresh } = await getToken(adAccountId)
+    if (!storedAccess && !storedRefresh) {
+      return NextResponse.json({ error: 'No tokens stored for this account' }, { status: 404 })
+    }
+
+    let token = storedAccess!
+    if (storedRefresh) {
       try {
-        token = await refreshAccessToken(account.refreshToken)
-        await prisma.adAccount.update({
-          where: { id: adAccountId },
-          data: { accessToken: token, tokenStatus: 'active' },
-        })
-      } catch {}
+        token = await refreshAccessToken(storedRefresh)
+        await saveToken(adAccountId, token, storedRefresh)
+        await prisma.adAccount.update({ where: { id: adAccountId }, data: { tokenStatus: 'valid' } })
+      } catch (e: any) {
+        console.error('[GoogleSync] Token refresh failed, using stored access token:', e.message)
+      }
     }
 
     const results = await getGoogleAdsCampaignMetrics(token, customerId, dateFrom, dateTo)
@@ -56,7 +61,7 @@ export async function POST(request: NextRequest) {
       const date = row.segments?.date as string | undefined
       if (!date) continue
       if (!byDate[date]) {
-        byDate[date] = { spend: 0, impressions: 0, clicks: 0, conversions: 0, revenue: 0, videoViews: 0, campaigns: [] }
+        byDate[date] = { spend: 0, impressions: 0, clicks: 0, conversions: 0, revenue: 0, campaigns: [] }
       }
       const d = byDate[date]
       d.spend += (Number(row.metrics?.costMicros) || 0) / 1_000_000
@@ -64,7 +69,6 @@ export async function POST(request: NextRequest) {
       d.clicks += Number(row.metrics?.clicks) || 0
       d.conversions += Number(row.metrics?.conversions) || 0
       d.revenue += Number(row.metrics?.conversionsValue) || 0
-      d.videoViews += Number(row.metrics?.videoViews) || 0
       if (row.campaign?.name) d.campaigns.push(String(row.campaign.name))
     }
 
@@ -72,7 +76,6 @@ export async function POST(request: NextRequest) {
     for (const [dateStr, d] of Object.entries(byDate)) {
       const date = new Date(dateStr)
       const platformData = {
-        videoViews: d.videoViews,
         ctr: d.impressions > 0 ? (d.clicks / d.impressions) * 100 : 0,
         cpc: d.clicks > 0 ? d.spend / d.clicks : 0,
         cpm: d.impressions > 0 ? (d.spend / d.impressions) * 1000 : 0,
