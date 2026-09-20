@@ -18,10 +18,8 @@ export const metadata: Metadata = {
   title: "Ad Tracker — Аналітика реклами",
   description: "Платформа для відстеження рекламних кампаній",
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: '32x32 16x16', type: 'image/x-icon' },
-      { url: '/icon', type: 'image/png', sizes: '32x32' },
-    ],
+    icon: '/icon',
+    apple: '/apple-icon',
     shortcut: '/favicon.ico',
   },
 }
