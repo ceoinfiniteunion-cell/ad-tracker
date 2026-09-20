@@ -2,23 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-
-async function getUsdRates(): Promise<Record<string, number>> {
-  try {
-    const res = await fetch('https://open.er-api.com/v6/latest/USD', { next: { revalidate: 3600 } })
-    const data = await res.json()
-    return data.rates ?? {}
-  } catch {
-    return {}
-  }
-}
-
-function conversionRate(from: string, to: string, usdRates: Record<string, number>): number {
-  if (from === to) return 1
-  const rateFrom = from === 'USD' ? 1 : (usdRates[from] ?? 1)
-  const rateTo = to === 'USD' ? 1 : (usdRates[to] ?? 1)
-  return rateTo / rateFrom
-}
+import { getUsdRates, conversionRate } from '@/lib/exchange-rates'
 
 function applyRate(value: number, rate: number) {
   return value * rate

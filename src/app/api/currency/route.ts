@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getUsdRates, conversionRate } from '@/lib/exchange-rates'
 
 export async function GET(request: NextRequest) {
   const from = request.nextUrl.searchParams.get('from') ?? 'USD'
@@ -6,15 +7,6 @@ export async function GET(request: NextRequest) {
 
   if (from === to) return NextResponse.json({ rate: 1, from, to })
 
-  try {
-    const res = await fetch(`https://open.er-api.com/v6/latest/USD`, { next: { revalidate: 3600 } })
-    const data = await res.json()
-    const rates: Record<string, number> = data.rates ?? {}
-    // rates are relative to USD; rates['USD'] = 1 implicitly
-    const rateFrom = from === 'USD' ? 1 : (rates[from] ?? 1)
-    const rateTo = to === 'USD' ? 1 : (rates[to] ?? 1)
-    return NextResponse.json({ rate: rateTo / rateFrom, from, to })
-  } catch {
-    return NextResponse.json({ rate: 1, from, to })
-  }
+  const rates = await getUsdRates()
+  return NextResponse.json({ rate: conversionRate(from, to, rates), from, to })
 }
