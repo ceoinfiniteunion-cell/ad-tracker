@@ -8,113 +8,40 @@ export default function AppleIcon() {
     (
       <div
         style={{
+          width: 180,
+          height: 180,
           background: '#0d0d0d',
-          width: '100%',
-          height: '100%',
+          borderRadius: 40,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: '36px',
-          position: 'relative',
         }}
       >
-        {/* Outer orbital ring */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 38,
-            left: 18,
-            width: 144,
-            height: 78,
-            borderRadius: '50%',
-            border: '2.5px solid #ef4444',
-            opacity: 0.9,
-            display: 'flex',
-          }}
-        />
-
-        {/* Inner subtle ring */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 50,
-            left: 30,
-            width: 120,
-            height: 56,
-            borderRadius: '50%',
-            border: '1px solid rgba(239,68,68,0.3)',
-            display: 'flex',
-          }}
-        />
-
-        {/* Infinity symbol */}
-        <div
-          style={{
-            fontSize: 88,
-            color: 'white',
-            fontWeight: 900,
-            lineHeight: 1,
-            fontFamily: 'Georgia, serif',
-            letterSpacing: '-4px',
-            display: 'flex',
-            textShadow: '0 0 20px rgba(255,255,255,0.15)',
-          }}
-        >
-          ∞
-        </div>
-
-        {/* Red glowing dot at top of orbital ring */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 20,
-            left: '50%',
-            width: 18,
-            height: 18,
-            borderRadius: '50%',
-            background: '#ef4444',
-            boxShadow: '0 0 10px 4px rgba(239,68,68,0.6)',
-            display: 'flex',
-            marginLeft: -9,
-          }}
-        />
-
-        {/* Red cursor arrow overlapping top-right of infinity */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 42,
-            right: 34,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          {/* Arrow triangle body */}
-          <div
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: '9px solid transparent',
-              borderRight: '9px solid transparent',
-              borderBottom: '18px solid #ef4444',
-              display: 'flex',
-              filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.7))',
-            }}
+        {/* SVG scaled from 28x28 viewBox to 160x160 (factor ≈5.71×) */}
+        <svg width="160" height="160" viewBox="0 0 28 28">
+          {/* White infinity symbol — two interlocking lobes */}
+          <path
+            d="M14 14c-0.6-1.8-2.2-3.2-4-3.2C7.6 10.8 6 12.2 6 14s1.6 3.2 4 3.2c1.8 0 3.4-1.4 4-3.2z M14 14c0.6 1.8 2.2 3.2 4 3.2 2.4 0 4-1.4 4-3.2s-1.6-3.2-4-3.2c-1.8 0-3.4 1.4-4 3.2z"
+            fill="white"
           />
-          {/* Arrow stem */}
-          <div
-            style={{
-              width: 6,
-              height: 10,
-              background: '#ef4444',
-              marginTop: -1,
-              display: 'flex',
-            }}
+          {/* Red orbital ellipse */}
+          <ellipse
+            cx="14"
+            cy="14"
+            rx="11"
+            ry="6.5"
+            fill="none"
+            stroke="#ef4444"
+            strokeWidth="1"
+            opacity="0.85"
           />
-        </div>
+          {/* Red cursor arrow — top right */}
+          <polygon points="21,3 24,6 22.5,6 22.5,10 19.5,10 19.5,6 18,6" fill="#ef4444" />
+          {/* Red glowing dot at top of orbital ring */}
+          <circle cx="14" cy="7.5" r="1.8" fill="#ef4444" />
+        </svg>
       </div>
     ),
-    { ...size },
+    { width: 180, height: 180 },
   )
 }
