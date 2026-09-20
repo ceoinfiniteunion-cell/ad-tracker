@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { SpendChart } from '@/components/charts/SpendChart'
@@ -12,6 +12,7 @@ import { CommentsSection } from '@/components/ui/CommentsSection'
 import { useMode } from '@/contexts/ModeContext'
 import { ModeToggle } from '@/components/ModeToggle'
 import { BeginnerMetricCard } from '@/components/BeginnerMetricCard'
+import { CurrencySwitcher } from '@/components/CurrencySwitcher'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#fff' }
@@ -101,6 +102,7 @@ export default function DashboardPage() {
   const [customize, setCustomize] = useState(false)
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>(DEFAULT_METRICS)
   const [isMobile, setIsMobile] = useState(false)
+  const currencyMountedRef = useRef(false)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -115,11 +117,19 @@ export default function DashboardPage() {
     fetch('/api/profile').then(r=>r.json()).then(d => {
       const cur = d.client?.currency ?? 'USD'
       setCurrency(cur)
-      fetch(`/api/metrics?currency=${cur}`).then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
+      fetch(`/api/metrics?currency=${cur}`).then(r=>r.json()).then(d=>{ setData(d); setLoading(false); currencyMountedRef.current = true })
     }).catch(() => {
-      fetch('/api/metrics').then(r=>r.json()).then(d=>{ setData(d); setLoading(false) })
+      fetch('/api/metrics').then(r=>r.json()).then(d=>{ setData(d); setLoading(false); currencyMountedRef.current = true })
     })
   }, [])
+
+  // Silent re-fetch when currency changes (skip initial mount)
+  useEffect(() => {
+    if (!currencyMountedRef.current) return
+    fetch(`/api/metrics?currency=${currency}`)
+      .then(r => r.json())
+      .then(d => setData(d))
+  }, [currency])
 
   const toggleMetric = (key: string) => {
     const next = selectedMetrics.includes(key) ? selectedMetrics.filter(k=>k!==key) : [...selectedMetrics, key]
@@ -194,6 +204,7 @@ export default function DashboardPage() {
               {!isMobile && <p style={{ fontSize:'15px', color:'var(--text3)', marginTop:'6px' }}>{data.client.company} · Дані за останні 90 днів</p>}
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', flexShrink:0 }}>
+              <CurrencySwitcher currency={currency} onChange={setCurrency} />
               <ModeToggle />
               {!isBeginner && (
                 <button onClick={()=>setCustomize(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding: isMobile ? '8px 12px' : '10px 20px', borderRadius:'12px', border:'1px solid var(--border2)', background:'var(--bg2)', color:'var(--text2)', fontSize: isMobile ? '13px' : '15px', fontWeight:500, cursor:'pointer' }}>

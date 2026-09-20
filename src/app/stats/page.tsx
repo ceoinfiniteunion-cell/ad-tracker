@@ -11,6 +11,7 @@ import { ChevronDown, Check, Calendar, X } from 'lucide-react'
 import { useMode } from '@/contexts/ModeContext'
 import { ModeToggle } from '@/components/ModeToggle'
 import { BeginnerMetricCard } from '@/components/BeginnerMetricCard'
+import { CurrencySwitcher } from '@/components/CurrencySwitcher'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#555' }
@@ -252,6 +253,7 @@ export default function StatsPage() {
                   ⇄ Порівняти
                 </button>
               )}
+              <CurrencySwitcher currency={currency} onChange={setCurrency} />
               <ModeToggle />
             </div>
           </div>
