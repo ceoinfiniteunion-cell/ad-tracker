@@ -8,6 +8,9 @@ import { ClicksChart } from '@/components/charts/ClicksChart'
 import { ClientDashboardData, Platform } from '@/types'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
 import { ChevronDown, Check, Calendar, X } from 'lucide-react'
+import { useMode } from '@/contexts/ModeContext'
+import { ModeToggle } from '@/components/ModeToggle'
+import { BeginnerMetricCard } from '@/components/BeginnerMetricCard'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#555' }
@@ -35,8 +38,19 @@ function merge(metrics: any[]) {
 
 const gridBg = { position:'fixed' as const, inset:0, pointerEvents:'none' as const, zIndex:0 }
 
+const BEGINNER_STATS_METRICS: { key: string; label: string; format: 'currency'|'number'|'percent'|'x' }[] = [
+  { key:'totalSpend',       label:'Витрати',    format:'currency' },
+  { key:'totalImpressions', label:'Покази',     format:'number'   },
+  { key:'totalClicks',      label:'Кліки',      format:'number'   },
+  { key:'totalConversions', label:'Конверсії',  format:'number'   },
+  { key:'ctr',              label:'CTR',        format:'percent'  },
+  { key:'roas',             label:'ROAS',       format:'x'        },
+]
+
 export default function StatsPage() {
   const { data: session } = useSession()
+  const { mode } = useMode()
+  const isBeginner = mode === 'beginner'
   const [data, setData] = useState<ClientDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [currency, setCurrency] = useState('USD')
@@ -232,10 +246,13 @@ export default function StatsPage() {
                 , document.body)}
               </div>
 
-              <button onClick={()=>{ setCompareMode(!compareMode); setCompareAccount('') }}
-                style={{ ...tabStyle(compareMode), display:'flex', alignItems:'center', gap:'6px' }}>
-                ⇄ Порівняти
-              </button>
+              {!isBeginner && (
+                <button onClick={()=>{ setCompareMode(!compareMode); setCompareAccount('') }}
+                  style={{ ...tabStyle(compareMode), display:'flex', alignItems:'center', gap:'6px' }}>
+                  ⇄ Порівняти
+                </button>
+              )}
+              <ModeToggle />
             </div>
           </div>
 
@@ -366,41 +383,74 @@ export default function StatsPage() {
             </div>
           ) : summary && (
             <>
-              <div className="anim-up-2" style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'12px',overflow:'hidden',marginBottom:'16px'}}>
-                <div style={{padding:'16px 20px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                  <p style={{fontSize:'12px',fontWeight:700,color:'var(--text2)',textTransform:'uppercase',letterSpacing:'0.08em',margin:0}}>
-                    Зведені метрики{selectedAccountName&&<span style={{color:'var(--text3)',fontWeight:400}}> · {selectedAccountName}</span>}
-                  </p>
-                  <p style={{fontFamily:'monospace',fontSize:'11px',color:'var(--text3)',margin:0}}>{dateFrom} → {dateTo}</p>
-                </div>
-                <table style={{width:'100%',borderCollapse:'collapse'}}>
-                  <thead><tr style={{borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
-                    {(isMobile?['Метрика','Значення']:['Метрика','Значення','Деталі']).map(h=>(
-                      <th key={h} style={{padding:'12px 20px',textAlign:'left' as const,fontSize:'10px',fontWeight:600,color:'var(--text3)',textTransform:'uppercase' as const,letterSpacing:'0.08em',fontFamily:'monospace'}}>{h}</th>
-                    ))}
-                  </tr></thead>
-                  <tbody>
-                    {[
-                      {metric:'Витрати',value:formatCurrency(summary.totalSpend,currency),detail:`Дохід: ${formatCurrency(summary.effectiveRevenue,currency)}`,color:'#e60000'},
-                      {metric:'Покази',value:formatNumber(summary.totalImpressions),detail:'Унікальні покази оголошень',color:'var(--text2)'},
-                      {metric:'Кліки',value:formatNumber(summary.totalClicks),detail:`CTR: ${formatPercent(summary.ctr)}`,color:'var(--text2)'},
-                      {metric:'Конверсії',value:formatNumber(summary.totalConversions),detail:`Ціна: ${formatCurrency(summary.costPerConversion,currency)}${conversionValue?` · $${conversionValue}/конв.`:''}`,color:'#00c864'},
-                      {metric:'CPC',value:formatCurrency(summary.cpc,currency),detail:'Середня вартість кліку',color:'var(--text2)'},
-                      {metric:'ROAS',value:`${summary.roas.toFixed(2)}×`,detail:`$1 → $${summary.roas.toFixed(2)} доходу${conversionValue?' (кастомна)':''} `,color:summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444'},
-                    ].map(row=>(
-                      <tr key={row.metric} style={{borderBottom:'1px solid rgba(255,255,255,0.03)',transition:'background 0.15s'}}
-                        onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,0.02)'}}
-                        onMouseLeave={e=>{e.currentTarget.style.background='transparent'}}>
-                        <td style={{padding:'14px 20px',fontSize:'13px',color:'var(--text2)',fontWeight:500}}>{row.metric}</td>
-                        <td style={{padding:'14px 20px',fontSize:'15px',fontWeight:800,color:row.color,fontFamily:'monospace'}}>{row.value}</td>
-                        {!isMobile&&<td style={{padding:'14px 20px',fontSize:'13px',fontWeight:500,color:'var(--text3)',fontFamily:'monospace'}}>{row.detail}</td>}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {/* Beginner mode: metric cards */}
+              {isBeginner && (
+                <>
+                  <p style={{fontFamily:'monospace',fontSize:'10px',letterSpacing:'0.12em',color:'var(--text4)',marginBottom:'16px'}}>// ОСНОВНІ ПОКАЗНИКИ</p>
+                  <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(auto-fill, minmax(280px, 1fr))',gap:'14px',marginBottom:'28px'}}>
+                    {BEGINNER_STATS_METRICS.map((m, i) => {
+                      const rawVal = summary[m.key] ?? 0
+                      const fmtVal = m.format === 'currency'
+                        ? formatCurrency(rawVal, currency)
+                        : m.format === 'number'
+                        ? formatNumber(rawVal)
+                        : m.format === 'percent'
+                        ? formatPercent(rawVal)
+                        : `${Number(rawVal).toFixed(2)}×`
+                      return (
+                        <BeginnerMetricCard
+                          key={m.key}
+                          metricKey={m.key}
+                          label={m.label}
+                          value={fmtVal}
+                          numericValue={Number(rawVal)}
+                          delay={i * 40}
+                        />
+                      )
+                    })}
+                  </div>
+                </>
+              )}
 
-              {activePlatform==='all' && data && data.platforms.length>1 && (
+              {/* Advanced mode: summary table */}
+              {!isBeginner && (
+                <div className="anim-up-2" style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'12px',overflow:'hidden',marginBottom:'16px'}}>
+                  <div style={{padding:'16px 20px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <p style={{fontSize:'12px',fontWeight:700,color:'var(--text2)',textTransform:'uppercase',letterSpacing:'0.08em',margin:0}}>
+                      Зведені метрики{selectedAccountName&&<span style={{color:'var(--text3)',fontWeight:400}}> · {selectedAccountName}</span>}
+                    </p>
+                    <p style={{fontFamily:'monospace',fontSize:'11px',color:'var(--text3)',margin:0}}>{dateFrom} → {dateTo}</p>
+                  </div>
+                  <table style={{width:'100%',borderCollapse:'collapse'}}>
+                    <thead><tr style={{borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                      {(isMobile?['Метрика','Значення']:['Метрика','Значення','Деталі']).map(h=>(
+                        <th key={h} style={{padding:'12px 20px',textAlign:'left' as const,fontSize:'10px',fontWeight:600,color:'var(--text3)',textTransform:'uppercase' as const,letterSpacing:'0.08em',fontFamily:'monospace'}}>{h}</th>
+                      ))}
+                    </tr></thead>
+                    <tbody>
+                      {[
+                        {metric:'Витрати',value:formatCurrency(summary.totalSpend,currency),detail:`Дохід: ${formatCurrency(summary.effectiveRevenue,currency)}`,color:'#e60000'},
+                        {metric:'Покази',value:formatNumber(summary.totalImpressions),detail:'Унікальні покази оголошень',color:'var(--text2)'},
+                        {metric:'Кліки',value:formatNumber(summary.totalClicks),detail:`CTR: ${formatPercent(summary.ctr)}`,color:'var(--text2)'},
+                        {metric:'Конверсії',value:formatNumber(summary.totalConversions),detail:`Ціна: ${formatCurrency(summary.costPerConversion,currency)}${conversionValue?` · $${conversionValue}/конв.`:''}`,color:'#00c864'},
+                        {metric:'CPC',value:formatCurrency(summary.cpc,currency),detail:'Середня вартість кліку',color:'var(--text2)'},
+                        {metric:'ROAS',value:`${summary.roas.toFixed(2)}×`,detail:`$1 → $${summary.roas.toFixed(2)} доходу${conversionValue?' (кастомна)':''} `,color:summary.roas>=2?'#00c864':summary.roas>=1?'#fbbf24':'#ff4444'},
+                      ].map(row=>(
+                        <tr key={row.metric} style={{borderBottom:'1px solid rgba(255,255,255,0.03)',transition:'background 0.15s'}}
+                          onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,0.02)'}}
+                          onMouseLeave={e=>{e.currentTarget.style.background='transparent'}}>
+                          <td style={{padding:'14px 20px',fontSize:'13px',color:'var(--text2)',fontWeight:500}}>{row.metric}</td>
+                          <td style={{padding:'14px 20px',fontSize:'15px',fontWeight:800,color:row.color,fontFamily:'monospace'}}>{row.value}</td>
+                          {!isMobile&&<td style={{padding:'14px 20px',fontSize:'13px',fontWeight:500,color:'var(--text3)',fontFamily:'monospace'}}>{row.detail}</td>}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Advanced mode: platform breakdown */}
+              {!isBeginner && activePlatform==='all' && data && data.platforms.length>1 && (
                 <div className="anim-up-3" style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'12px',overflow:'hidden',marginBottom:'16px'}}>
                   <div style={{padding:'14px 20px',borderBottom:'1px solid var(--border)'}}><p style={{fontSize:'12px',fontWeight:700,color:'var(--text2)',textTransform:'uppercase',letterSpacing:'0.08em',margin:0}}>Розбивка по платформах</p></div>
                   <div style={{overflowX:'auto'}}>

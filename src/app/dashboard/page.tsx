@@ -9,6 +9,9 @@ import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
 import { Settings2, X, Check } from 'lucide-react'
 import { GoalsSection } from '@/components/ui/GoalsSection'
 import { CommentsSection } from '@/components/ui/CommentsSection'
+import { useMode } from '@/contexts/ModeContext'
+import { ModeToggle } from '@/components/ModeToggle'
+import { BeginnerMetricCard } from '@/components/BeginnerMetricCard'
 
 const PLABEL: Record<Platform,string> = { FACEBOOK:'Meta / Facebook', GOOGLE:'Google Ads', TIKTOK:'TikTok Ads' }
 const PCOLOR: Record<Platform,string> = { FACEBOOK:'#1877f2', GOOGLE:'#e60000', TIKTOK:'#fff' }
@@ -85,8 +88,12 @@ function merge(metrics: any[]) {
   return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date))
 }
 
+const BEGINNER_METRICS = ['totalSpend', 'totalImpressions', 'totalClicks', 'totalConversions', 'ctr', 'roas']
+
 export default function DashboardPage() {
   const { data: session } = useSession()
+  const { mode } = useMode()
+  const isBeginner = mode === 'beginner'
   const [data, setData] = useState<ClientDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [currency, setCurrency] = useState('USD')
@@ -187,9 +194,12 @@ export default function DashboardPage() {
               {!isMobile && <p style={{ fontSize:'15px', color:'var(--text3)', marginTop:'6px' }}>{data.client.company} · Дані за останні 90 днів</p>}
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', flexShrink:0 }}>
-              <button onClick={()=>setCustomize(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding: isMobile ? '8px 12px' : '10px 20px', borderRadius:'12px', border:'1px solid var(--border2)', background:'var(--bg2)', color:'var(--text2)', fontSize: isMobile ? '13px' : '15px', fontWeight:500, cursor:'pointer' }}>
-                <Settings2 size={14}/>{!isMobile && ' Customize'}
-              </button>
+              <ModeToggle />
+              {!isBeginner && (
+                <button onClick={()=>setCustomize(true)} style={{ display:'flex', alignItems:'center', gap:'6px', padding: isMobile ? '8px 12px' : '10px 20px', borderRadius:'12px', border:'1px solid var(--border2)', background:'var(--bg2)', color:'var(--text2)', fontSize: isMobile ? '13px' : '15px', fontWeight:500, cursor:'pointer' }}>
+                  <Settings2 size={14}/>{!isMobile && ' Customize'}
+                </button>
+              )}
               {!isMobile && (
                 <div style={{ textAlign:'right' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:'6px', justifyContent:'flex-end', marginBottom:'4px' }}>
@@ -209,18 +219,55 @@ export default function DashboardPage() {
           <CommentsSection clientId={(session?.user as any)?.clientId ?? ''} isAdmin={false} />
 
           {/* Tabs */}
-          <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'20px', flexWrap:'wrap' }}>
-            <button onClick={()=>setActiveTab('all')} className="btn-ripple" style={tabStyle(activeTab==='all')}>Всі платформи</button>
-            {uniquePlatforms.map(p=>(
-              <button key={p.platform} onClick={()=>setActiveTab(p.platform)} className="btn-ripple" style={{ ...tabStyle(activeTab===p.platform), display:'flex', alignItems:'center', gap:'7px' }}>
-                <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:PCOLOR[p.platform], display:'inline-block' }}/>
-                {isMobile ? (p.platform === 'FACEBOOK' ? 'Meta' : p.platform === 'GOOGLE' ? 'Google' : 'TikTok') : PLABEL[p.platform]}
-              </button>
-            ))}
-          </div>
+          {isBeginner ? (
+            <div className="anim-up-1" style={{ display:'flex', gap:'10px', marginBottom:'24px', flexWrap:'wrap' }}>
+              <button onClick={()=>setActiveTab('all')} className="btn-ripple" style={{ ...tabStyle(activeTab==='all'), padding:'10px 20px', fontSize:'14px' }}>🌐 Всі платформи</button>
+              {uniquePlatforms.map(p=>{
+                const PEMOJI: Record<Platform,string> = { FACEBOOK:'📘', GOOGLE:'🔍', TIKTOK:'🎵' }
+                return (
+                  <button key={p.platform} onClick={()=>setActiveTab(p.platform)} className="btn-ripple" style={{ ...tabStyle(activeTab===p.platform), padding:'10px 20px', fontSize:'14px', display:'flex', alignItems:'center', gap:'7px' }}>
+                    <span>{PEMOJI[p.platform]}</span>
+                    {p.platform === 'FACEBOOK' ? 'Meta' : p.platform === 'GOOGLE' ? 'Google' : 'TikTok'}
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="anim-up-1" style={{ display:'flex', gap:'8px', marginBottom:'20px', flexWrap:'wrap' }}>
+              <button onClick={()=>setActiveTab('all')} className="btn-ripple" style={tabStyle(activeTab==='all')}>Всі платформи</button>
+              {uniquePlatforms.map(p=>(
+                <button key={p.platform} onClick={()=>setActiveTab(p.platform)} className="btn-ripple" style={{ ...tabStyle(activeTab===p.platform), display:'flex', alignItems:'center', gap:'7px' }}>
+                  <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:PCOLOR[p.platform], display:'inline-block' }}/>
+                  {isMobile ? (p.platform === 'FACEBOOK' ? 'Meta' : p.platform === 'GOOGLE' ? 'Google' : 'TikTok') : PLABEL[p.platform]}
+                </button>
+              ))}
+            </div>
+          )}
 
-          {/* Загальні метрики */}
-          {activeTab === 'all' && commonSelected.length > 0 && (
+          {/* Beginner mode metrics */}
+          {isBeginner && (() => {
+            const beginnerCommon = PLATFORM_METRICS.common.filter(m => BEGINNER_METRICS.includes(m.key))
+            return (
+              <>
+                <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text4)', marginBottom:'16px' }}>// ОСНОВНІ ПОКАЗНИКИ</p>
+                <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap:'14px', marginBottom:'28px' }}>
+                  {beginnerCommon.map((m, i) => (
+                    <BeginnerMetricCard
+                      key={m.key}
+                      metricKey={m.key}
+                      label={m.label}
+                      value={formatVal(summary[m.key], m.format, currency, 1)}
+                      numericValue={Number(summary[m.key] ?? 0)}
+                      delay={i * 40}
+                    />
+                  ))}
+                </div>
+              </>
+            )
+          })()}
+
+          {/* Advanced mode: Загальні метрики */}
+          {!isBeginner && activeTab === 'all' && commonSelected.length > 0 && (
             <>
               <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.12em', color:'var(--text4)', marginBottom:'12px' }}>// ЗАГАЛЬНІ ПОКАЗНИКИ</p>
               <div style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill, minmax(200px, 1fr))', gap:'10px', marginBottom:'24px' }}>
@@ -234,8 +281,8 @@ export default function DashboardPage() {
             </>
           )}
 
-          {/* Секції по платформах */}
-          {platformGroups.map(p => {
+          {/* Advanced mode: Секції по платформах */}
+          {!isBeginner && platformGroups.map(p => {
             const metricsToShow = getMetricsForPlatform(p.platform)
             if (metricsToShow.length === 0) return null
             const color = PCOLOR[p.platform]
