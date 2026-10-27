@@ -1,56 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { sendTwoFactorCode } from '@/lib/email'
+import { issueTwoFactorCode } from '@/lib/two-factor'
 
-function generateCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
-}
-
-export async function POST(request: NextRequest) {
+// Тільки для профілю (увімкнення/вимкнення 2FA). При логіні код шле authorize().
+export async function POST() {
   try {
     const session = await getServerSession(authOptions)
-    
-    // Для профілю — авторизований юзер
-    if (session) {
-      const userId = (session.user as any).id
-      const user = await prisma.user.findUnique({ where: { id: userId } })
-      if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-      const code = generateCode()
-      const expiry = new Date(Date.now() + 10 * 60 * 1000)
+    const userId = (session.user as any).id
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, name: true } })
+    if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-      await prisma.user.update({
-        where: { id: userId },
-        data: { twoFactorCode: code, twoFactorExpiry: expiry },
-      })
+    const { ok } = await issueTwoFactorCode(user)
+    if (!ok) return NextResponse.json({ error: 'Забагато запитів коду. Спробуйте через 10 хвилин.' }, { status: 429 })
 
-      await sendTwoFactorCode(user.email, code, user.name)
-      return NextResponse.json({ ok: true, email: user.email })
-    }
-
-    // Для логіну — email передається в body
-    const body = await request.json().catch(() => ({}))
-    const { email } = body
-    if (!email) return NextResponse.json({ error: 'Email required' }, { status: 400 })
-
-    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } })
-    if (!user) return NextResponse.json({ ok: true }) // не розкриваємо чи існує юзер
-
-    const code = generateCode()
-    const expiry = new Date(Date.now() + 10 * 60 * 1000)
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { twoFactorCode: code, twoFactorExpiry: expiry },
-    })
-
-    await sendTwoFactorCode(user.email, code, user.name)
-    return NextResponse.json({ ok: true, email: user.email })
-
+    return NextResponse.json({ ok: true })
   } catch (e: any) {
     console.error('[2FA SEND ERROR]', e)
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    return NextResponse.json({ error: 'Помилка відправки коду' }, { status: 500 })
   }
 }

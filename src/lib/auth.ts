@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 import { loginAttempts } from './login-attempts'
 import { isTokenBlacklisted } from './jwt-blacklist'
 import { randomUUID } from 'crypto'
-import { consumeTwoFactorCode, TWO_FACTOR_ERRORS } from './two-factor'
+import { consumeTwoFactorCode, issueTwoFactorCode, TWO_FACTOR_ERRORS } from './two-factor'
 import { rateLimit } from './rate-limit'
 
 export const authOptions: NextAuthOptions = {
@@ -51,7 +51,12 @@ export const authOptions: NextAuthOptions = {
         // 2FA — перевіряється на сервері, обійти з клієнта не можна
         if (user.twoFactorEnabled) {
           const code = credentials.code?.trim()
-          if (!code) throw new Error('2FA_REQUIRED')
+          if (!code) {
+            // Пароль вірний — тільки тепер шлемо код
+            const sent = await issueTwoFactorCode(user)
+            if (!sent.ok) throw new Error('Забагато запитів коду. Спробуйте через 10 хвилин.')
+            throw new Error('2FA_REQUIRED')
+          }
 
           const { ok } = await rateLimit(`2fa:login:${user.id}`, 5, 15 * 60 * 1000)
           if (!ok) throw new Error('Забагато спроб. Спробуйте через 15 хвилин.')

@@ -21,40 +21,15 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true); setError('')
 
-    // Перевіряємо чи потрібен 2FA
-    const checkRes = await fetch('/api/auth/2fa/status-by-email', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email, password })
-    })
-    const checkData = await checkRes.json()
-
-    if (checkData.requires2FA) {
-      // Відправляємо код
-      setSendingCode(true)
-      await fetch('/api/auth/2fa/send', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ email })
-      })
-      setSendingCode(false)
-      setStep('2fa')
-      setLoading(false)
-      return
-    }
-
-    if (checkData.error) {
-      setError(checkData.error)
-      setLoading(false)
-      return
-    }
-
-    // Звичайний вхід без 2FA
+    // Якщо 2FA увімкнено, authorize() шле код і повертає 2FA_REQUIRED
     const result = await signIn('credentials', { email, password, redirect: false })
     setLoading(false)
 
-    if (result?.error) {
-      if (result.error.includes('заблоковано')) setError(result.error)
+    if (result?.error === '2FA_REQUIRED') {
+      setCode(''); setCodeError('')
+      setStep('2fa')
+    } else if (result?.error) {
+      if (result.error.includes('заблоковано') || result.error.includes('Забагато')) setError(result.error)
       else if (result.error.includes('підтвердження')) setError('Ваша заявка ще на розгляді.')
       else if (result.error.includes('відхилено')) setError('Ваш акаунт відхилено.')
       else setError('Невірний email або пароль')
@@ -83,6 +58,13 @@ export default function LoginPage() {
       router.push('/dashboard')
       router.refresh()
     }
+  }
+
+  const resendCode = async () => {
+    setSendingCode(true); setCodeError('')
+    const result = await signIn('credentials', { email, password, redirect: false })
+    if (result?.error && result.error !== '2FA_REQUIRED') setCodeError(result.error)
+    setSendingCode(false)
   }
 
   const inp = { width:'100%', padding:'13px 16px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', color:'var(--text)', fontSize:'15px', outline:'none', boxSizing:'border-box' as const }
@@ -180,7 +162,7 @@ export default function LoginPage() {
                   <button type="button" onClick={()=>setStep('credentials')} style={{ background:'none', border:'none', color:'var(--text3)', fontSize:'13px', cursor:'pointer' }}>
                     ← Назад
                   </button>
-                  <button type="button" onClick={async()=>{ setSendingCode(true); await fetch('/api/auth/2fa/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}); setSendingCode(false) }} disabled={sendingCode} style={{ background:'none', border:'none', color:'#e60000', fontSize:'13px', cursor:'pointer', fontWeight:600 }}>
+                  <button type="button" onClick={resendCode} disabled={sendingCode} style={{ background:'none', border:'none', color:'#e60000', fontSize:'13px', cursor:'pointer', fontWeight:600 }}>
                     {sendingCode ? 'Відправляємо...' : 'Відправити знову'}
                   </button>
                 </div>
