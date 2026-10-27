@@ -5,6 +5,8 @@ import bcrypt from 'bcryptjs'
 import { loginAttempts } from './login-attempts'
 import { isTokenBlacklisted } from './jwt-blacklist'
 import { randomUUID } from 'crypto'
+import { consumeTwoFactorCode, TWO_FACTOR_ERRORS } from './two-factor'
+import { rateLimit } from './rate-limit'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,6 +15,7 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        code: { label: '2FA code', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
@@ -43,6 +46,18 @@ export const authOptions: NextAuthOptions = {
         if (!isValid) {
           await loginAttempts.recordFail(email)
           return null
+        }
+
+        // 2FA — перевіряється на сервері, обійти з клієнта не можна
+        if (user.twoFactorEnabled) {
+          const code = credentials.code?.trim()
+          if (!code) throw new Error('2FA_REQUIRED')
+
+          const { ok } = await rateLimit(`2fa:login:${user.id}`, 5, 15 * 60 * 1000)
+          if (!ok) throw new Error('Забагато спроб. Спробуйте через 15 хвилин.')
+
+          const check = await consumeTwoFactorCode(user.id, code)
+          if (check !== 'ok') throw new Error(TWO_FACTOR_ERRORS[check])
         }
 
         // Успішний вхід

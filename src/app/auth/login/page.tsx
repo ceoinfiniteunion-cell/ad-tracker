@@ -68,26 +68,17 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true); setCodeError('')
 
-    const verifyRes = await fetch('/api/auth/2fa/verify', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email, code })
-    })
-    const verifyData = await verifyRes.json()
-
-    if (!verifyData.ok) {
-      setCodeError(verifyData.error || 'Невірний код')
-      setLoading(false)
-      return
-    }
-
-    // Код вірний — входимо
-    const result = await signIn('credentials', { email, password, redirect: false })
+    // Код перевіряється в authorize() разом з паролем
+    const result = await signIn('credentials', { email, password, code, redirect: false })
     setLoading(false)
 
     if (result?.error) {
-      setError(result.error)
-      setStep('credentials')
+      if (result.error.includes('код') || result.error.includes('Код') || result.error.includes('Забагато')) {
+        setCodeError(result.error)
+      } else {
+        setError(result.error === 'CredentialsSignin' ? 'Невірний email або пароль' : result.error)
+        setStep('credentials')
+      }
     } else {
       router.push('/dashboard')
       router.refresh()
