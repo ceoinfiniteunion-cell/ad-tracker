@@ -1,3 +1,4 @@
+import { createHmac, randomInt, timingSafeEqual } from 'crypto'
 import { prisma } from './prisma'
 import { rateLimit } from './rate-limit'
 import { sendTwoFactorCode } from './email'
@@ -13,7 +14,14 @@ export const TWO_FACTOR_ERRORS: Record<Exclude<TwoFactorCheck, 'ok'>, string> = 
 const CODE_TTL_MS = 10 * 60 * 1000
 
 function generateCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
+  return randomInt(100000, 1000000).toString()
+}
+
+// У БД зберігається лише HMAC коду, не сам код
+function hashCode(userId: string, code: string): string {
+  const secret = process.env.NEXTAUTH_SECRET
+  if (!secret) throw new Error('NEXTAUTH_SECRET is not set')
+  return createHmac('sha256', secret).update(`${userId}:${code}`).digest('hex')
 }
 
 // Генерує новий код, зберігає і шле на email. Не частіше 3 разів за 10 хв на юзера.
@@ -24,7 +32,7 @@ export async function issueTwoFactorCode(user: { id: string; email: string; name
   const code = generateCode()
   await prisma.user.update({
     where: { id: user.id },
-    data: { twoFactorCode: code, twoFactorExpiry: new Date(Date.now() + CODE_TTL_MS) },
+    data: { twoFactorCode: hashCode(user.id, code), twoFactorExpiry: new Date(Date.now() + CODE_TTL_MS) },
   })
   await sendTwoFactorCode(user.email, code, user.name)
   return { ok: true }
@@ -43,7 +51,9 @@ export async function consumeTwoFactorCode(userId: string, code: string): Promis
     return 'expired'
   }
 
-  if (user.twoFactorCode !== code.trim()) return 'invalid'
+  const expected = Buffer.from(user.twoFactorCode, 'hex')
+  const received = Buffer.from(hashCode(userId, code.trim()), 'hex')
+  if (expected.length !== received.length || !timingSafeEqual(expected, received)) return 'invalid'
 
   await prisma.user.update({ where: { id: userId }, data: { twoFactorCode: null, twoFactorExpiry: null } })
   return 'ok'
