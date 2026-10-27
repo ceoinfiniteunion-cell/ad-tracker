@@ -1,17 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { redirectWithOAuthState } from '@/lib/oauth-state'
 
-export async function GET(request: NextRequest) {
-  const clientId = process.env.GOOGLE_CLIENT_ID
-  const redirectUri = process.env.NEXTAUTH_URL + '/api/auth/google/callback'
+export async function GET() {
+  const baseUrl = process.env.NEXTAUTH_URL!
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.redirect(`${baseUrl}/auth/login`)
 
-  const state = crypto.randomBytes(32).toString('hex')
-
-  const response = NextResponse.redirect(
+  return redirectWithOAuthState('google', (state) =>
     'https://accounts.google.com/o/oauth2/v2/auth?' +
     new URLSearchParams({
-      client_id: clientId!,
-      redirect_uri: redirectUri,
+      client_id: process.env.GOOGLE_CLIENT_ID!,
+      redirect_uri: baseUrl + '/api/auth/google/callback',
       response_type: 'code',
       scope: 'https://www.googleapis.com/auth/adwords',
       access_type: 'offline',
@@ -19,14 +20,4 @@ export async function GET(request: NextRequest) {
       state,
     }).toString()
   )
-
-  response.cookies.set('google_oauth_state', state, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    maxAge: 60 * 10,
-    path: '/',
-  })
-
-  return response
 }

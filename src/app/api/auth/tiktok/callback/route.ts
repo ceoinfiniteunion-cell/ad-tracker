@@ -1,15 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isValidOAuthState, oauthCallbackRedirect } from '@/lib/oauth-state'
 
 export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXTAUTH_URL!
   const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.redirect(`${baseUrl}/auth/login`)
+  if (!session) return oauthCallbackRedirect('tiktok', `${baseUrl}/auth/login`)
+
+  if (!isValidOAuthState(request, 'tiktok')) {
+    return oauthCallbackRedirect('tiktok', `${baseUrl}/connect?error=invalid_state`)
+  }
 
   const authCode = request.nextUrl.searchParams.get('auth_code')
-  if (!authCode) return NextResponse.redirect(`${baseUrl}/connect?error=no_code&platform=tiktok`)
+  if (!authCode) return oauthCallbackRedirect('tiktok', `${baseUrl}/connect?error=no_code&platform=tiktok`)
 
   const appId = process.env.TIKTOK_APP_ID!
   const appSecret = process.env.TIKTOK_APP_SECRET!
@@ -22,21 +27,21 @@ export async function GET(request: NextRequest) {
       body: JSON.stringify({ app_id: appId, secret: appSecret, auth_code: authCode }),
     })
     const tokenData = await tokenRes.json()
-    console.log('TikTok token response:', JSON.stringify(tokenData))
+    if (tokenData.code !== 0) console.error('[TIKTOK OAUTH] Token error:', tokenData.code, tokenData.message)
 
     if (tokenData.code !== 0) {
-      return NextResponse.redirect(`${baseUrl}/connect?error=token_failed&msg=${encodeURIComponent(tokenData.message)}&platform=tiktok`)
+      return oauthCallbackRedirect('tiktok', `${baseUrl}/connect?error=token_failed&msg=${encodeURIComponent(tokenData.message)}&platform=tiktok`)
     }
 
     const accessToken = tokenData.data?.access_token
     const advertiserIds: string[] = tokenData.data?.advertiser_ids ?? []
 
     if (!accessToken) {
-      return NextResponse.redirect(`${baseUrl}/connect?error=no_token&platform=tiktok`)
+      return oauthCallbackRedirect('tiktok', `${baseUrl}/connect?error=no_token&platform=tiktok`)
     }
 
     const clientId = (session.user as any).clientId
-    if (!clientId) return NextResponse.redirect(`${baseUrl}/connect?error=no_client_id`)
+    if (!clientId) return oauthCallbackRedirect('tiktok', `${baseUrl}/connect?error=no_client_id`)
 
     // Отримуємо інфо про кожен advertiser
     let savedCount = 0
@@ -79,9 +84,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.redirect(`${baseUrl}/connect?success=tiktok&accounts=${savedCount}`)
+    return oauthCallbackRedirect('tiktok', `${baseUrl}/connect?success=tiktok&accounts=${savedCount}`)
   } catch (e: any) {
     console.error('TikTok callback error:', e)
-    return NextResponse.redirect(`${baseUrl}/connect?error=failed&msg=${encodeURIComponent(e.message)}&platform=tiktok`)
+    return oauthCallbackRedirect('tiktok', `${baseUrl}/connect?error=failed&msg=${encodeURIComponent(e.message)}&platform=tiktok`)
   }
 }

@@ -1,17 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { redirectWithOAuthState } from '@/lib/oauth-state'
 
-export async function GET(request: NextRequest) {
-  const appId = process.env.META_APP_ID
-  const redirectUri = process.env.NEXTAUTH_URL + '/api/auth/meta/callback'
+export async function GET() {
+  const baseUrl = process.env.NEXTAUTH_URL!
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.redirect(`${baseUrl}/auth/login`)
 
-  const params = new URLSearchParams({
-    client_id: appId!,
-    redirect_uri: redirectUri,
-    scope: 'ads_read,ads_management,business_management',
-    response_type: 'code',
+  return redirectWithOAuthState('meta', (state) => {
+    const params = new URLSearchParams({
+      client_id: process.env.META_APP_ID!,
+      redirect_uri: baseUrl + '/api/auth/meta/callback',
+      scope: 'ads_read,ads_management,business_management',
+      response_type: 'code',
+      state,
+    })
+    return `https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`
   })
-
-  return NextResponse.redirect(
-    `https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`
-  )
 }

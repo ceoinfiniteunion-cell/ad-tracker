@@ -1,22 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isValidOAuthState, oauthCallbackRedirect } from '@/lib/oauth-state'
 import { saveToken, getToken } from '@/lib/token-store'
 
 export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXTAUTH_URL!
   const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.redirect(`${baseUrl}/auth/login`)
+  if (!session) return oauthCallbackRedirect('google', `${baseUrl}/auth/login`)
+
+  if (!isValidOAuthState(request, 'google')) {
+    return oauthCallbackRedirect('google', `${baseUrl}/connect?error=invalid_state`)
+  }
 
   const code = request.nextUrl.searchParams.get('code')
-  const state = request.nextUrl.searchParams.get('state')
-  const cookieState = request.cookies.get('google_oauth_state')?.value
-
-  if (!state || !cookieState || state !== cookieState) {
-    return NextResponse.redirect(`${baseUrl}/connect?error=invalid_state`)
-  }
-  if (!code) return NextResponse.redirect(`${baseUrl}/connect?error=no_code`)
+  if (!code) return oauthCallbackRedirect('google', `${baseUrl}/connect?error=no_code`)
 
   const gClientId = process.env.GOOGLE_CLIENT_ID!
   const gClientSecret = process.env.GOOGLE_CLIENT_SECRET!
@@ -39,11 +38,11 @@ export async function GET(request: NextRequest) {
     const tokens = await tokenRes.json()
     if (tokens.error) {
       console.error('[GOOGLE OAUTH] Token error:', tokens.error)
-      return NextResponse.redirect(`${baseUrl}/connect?error=token_failed`)
+      return oauthCallbackRedirect('google', `${baseUrl}/connect?error=token_failed`)
     }
 
     const clientId2 = (session.user as any).clientId
-    if (!clientId2) return NextResponse.redirect(`${baseUrl}/connect?error=no_client`)
+    if (!clientId2) return oauthCallbackRedirect('google', `${baseUrl}/connect?error=no_client`)
 
     // 2. Шукаємо або створюємо adAccount
     let adAccount = await prisma.adAccount.findFirst({
@@ -118,11 +117,9 @@ export async function GET(request: NextRequest) {
       console.error('[GOOGLE OAUTH] Could not fetch customer ID:', e)
     }
 
-    const response = NextResponse.redirect(`${baseUrl}/connect?success=google`)
-    response.cookies.delete('google_oauth_state')
-    return response
+    return oauthCallbackRedirect('google', `${baseUrl}/connect?success=google`)
   } catch (e) {
     console.error('[GOOGLE OAUTH] Error:', e)
-    return NextResponse.redirect(`${baseUrl}/connect?error=server_error`)
+    return oauthCallbackRedirect('google', `${baseUrl}/connect?error=server_error`)
   }
 }

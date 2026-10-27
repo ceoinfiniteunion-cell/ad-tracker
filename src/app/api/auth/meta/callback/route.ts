@@ -1,15 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isValidOAuthState, oauthCallbackRedirect } from '@/lib/oauth-state'
 
 export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXTAUTH_URL!
   const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.redirect(`${baseUrl}/auth/login`)
+  if (!session) return oauthCallbackRedirect('meta', `${baseUrl}/auth/login`)
+
+  if (!isValidOAuthState(request, 'meta')) {
+    return oauthCallbackRedirect('meta', `${baseUrl}/connect?error=invalid_state`)
+  }
 
   const code = request.nextUrl.searchParams.get('code')
-  if (!code) return NextResponse.redirect(`${baseUrl}/connect?error=no_code`)
+  if (!code) return oauthCallbackRedirect('meta', `${baseUrl}/connect?error=no_code`)
 
   const appId = process.env.META_APP_ID!
   const appSecret = process.env.META_APP_SECRET!
@@ -22,8 +27,7 @@ export async function GET(request: NextRequest) {
       new URLSearchParams({ client_id: appId, client_secret: appSecret, redirect_uri: redirectUri, code })
     )
     const tokens = await tokenRes.json()
-    console.log('Meta tokens:', JSON.stringify(tokens))
-    if (!tokens.access_token) return NextResponse.redirect(`${baseUrl}/connect?error=no_token&msg=${encodeURIComponent(tokens.error?.message ?? 'no_access_token')}`)
+    if (!tokens.access_token) return oauthCallbackRedirect('meta', `${baseUrl}/connect?error=no_token&msg=${encodeURIComponent(tokens.error?.message ?? 'no_access_token')}`)
 
     // Отримуємо довгостроковий токен (60 днів)
     const longTokenRes = await fetch(
@@ -31,7 +35,6 @@ export async function GET(request: NextRequest) {
       new URLSearchParams({ grant_type: 'fb_exchange_token', client_id: appId, client_secret: appSecret, fb_exchange_token: tokens.access_token })
     )
     const longToken = await longTokenRes.json()
-    console.log('Meta long token:', JSON.stringify(longToken))
     const accessToken = longToken.access_token ?? tokens.access_token
 
     // Отримуємо список рекламних акаунтів
@@ -39,11 +42,10 @@ export async function GET(request: NextRequest) {
       `https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name,account_id&access_token=${accessToken}`
     )
     const accountsData = await accountsRes.json()
-    console.log('Meta ad accounts:', JSON.stringify(accountsData))
     const adAccounts = accountsData.data ?? []
 
     const clientId = (session.user as any).clientId
-    if (!clientId) return NextResponse.redirect(`${baseUrl}/connect?error=no_client_id`)
+    if (!clientId) return oauthCallbackRedirect('meta', `${baseUrl}/connect?error=no_client_id`)
 
     // Зберігаємо кожен акаунт
     for (const acc of adAccounts) {
@@ -74,9 +76,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.redirect(`${baseUrl}/connect?success=meta&accounts=${adAccounts.length}`)
+    return oauthCallbackRedirect('meta', `${baseUrl}/connect?success=meta&accounts=${adAccounts.length}`)
   } catch (e: any) {
     console.error('Meta callback error:', e)
-    return NextResponse.redirect(`${baseUrl}/connect?error=failed&msg=${encodeURIComponent(e.message)}`)
+    return oauthCallbackRedirect('meta', `${baseUrl}/connect?error=failed&msg=${encodeURIComponent(e.message)}`)
   }
 }
