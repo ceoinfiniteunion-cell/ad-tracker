@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { stripTokens } from '@/lib/token-store'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -16,5 +17,5 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     },
   })
   if (!client) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  return NextResponse.json(client)
+  return NextResponse.json({ ...client, adAccounts: client.adAccounts.map(stripTokens) })
 }

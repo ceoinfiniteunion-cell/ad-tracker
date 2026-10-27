@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { stripTokens } from '@/lib/token-store'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -12,7 +13,7 @@ export async function GET() {
     where: { clientId },
     orderBy: { createdAt: 'desc' }
   })
-  return NextResponse.json(accounts)
+  return NextResponse.json(accounts.map(stripTokens))
 }
 
 export async function POST(request: NextRequest) {
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
     const account = await prisma.adAccount.create({
       data: { clientId, name, accountId, platform, accessToken: accessToken || null, tokenStatus }
     })
-    return NextResponse.json(account, { status: 201 })
+    return NextResponse.json(stripTokens(account), { status: 201 })
   } catch (e: any) {
     if (e.code === 'P2002') return NextResponse.json({ error: 'Кабінет з таким ID вже існує' }, { status: 409 })
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

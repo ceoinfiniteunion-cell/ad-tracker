@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isCronRequest } from '@/lib/cron-auth'
 import { refreshAccessToken, getGoogleAdsCampaignMetrics } from '@/lib/google'
 import { getToken, saveToken } from '@/lib/token-store'
 
@@ -15,9 +16,7 @@ interface DayData {
 }
 
 export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`
-  if (!isCron) {
+  if (!isCronRequest(request)) {
     const session = await getServerSession(authOptions)
     if (!session || (session.user as any).role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

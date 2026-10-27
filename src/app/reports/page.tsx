@@ -443,7 +443,7 @@ export default function ReportsPage() {
                     onClick={async()=>{
                       if(!emailTo || !data) return
                       setEmailSending(true)
-                      const res = await fetch('/api/send-report', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ to:emailTo, clientName:data.client?.name??'Клієнт', company:data.client?.company??'', dateRange:`${from} → ${to}`, totals:data.totals, platforms:data.platforms }) })
+                      const res = await fetch('/api/send-report', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ to:emailTo, clientId:data.client?.id, dateRange:`${from} → ${to}`, totals:data.totals, platforms:data.platforms, currency, rate:exchangeRate }) })
                       setEmailSending(false)
                       if(res.ok) setEmailSent(true)
                     }}

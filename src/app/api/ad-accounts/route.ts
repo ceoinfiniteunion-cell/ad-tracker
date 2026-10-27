@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { stripTokens } from '@/lib/token-store'
 
 // POST /api/ad-accounts — додати кабінет
 export async function POST(request: NextRequest) {
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
     const account = await prisma.adAccount.create({
       data: { clientId, name, accountId, platform }
     })
-    return NextResponse.json(account, { status: 201 })
+    return NextResponse.json(stripTokens(account), { status: 201 })
   } catch (e: any) {
     if (e.code === 'P2002') return NextResponse.json({ error: 'Кабінет з таким ID вже існує для цієї платформи' }, { status: 409 })
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
@@ -46,5 +47,5 @@ export async function PATCH(request: NextRequest) {
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
   const { isActive } = await request.json()
   const account = await prisma.adAccount.update({ where: { id }, data: { isActive } })
-  return NextResponse.json(account)
+  return NextResponse.json(stripTokens(account))
 }

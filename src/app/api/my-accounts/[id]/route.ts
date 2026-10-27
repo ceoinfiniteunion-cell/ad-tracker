@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { stripTokens } from '@/lib/token-store'
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const clientId = (session.user as any).clientId
+  if (!clientId) return NextResponse.json({ error: 'Not a client' }, { status: 403 })
   const account = await prisma.adAccount.findFirst({ where: { id: params.id, clientId } })
   if (!account) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
@@ -32,7 +34,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       ...(newName ? { name: newName } : {}),
     }
   })
-  return NextResponse.json({ ...updated, accessToken: undefined, tokenStatus: updated.tokenStatus })
+  return NextResponse.json(stripTokens(updated))
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
@@ -40,6 +42,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const clientId = (session.user as any).clientId
   const isAdmin = (session.user as any).role === 'ADMIN'
+  if (!isAdmin && !clientId) return NextResponse.json({ error: 'Not a client' }, { status: 403 })
   const account = await prisma.adAccount.findFirst({ where: { id: params.id, ...(isAdmin ? {} : { clientId }) } })
   if (!account) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   await prisma.adAccount.delete({ where: { id: params.id } })

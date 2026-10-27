@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { stripTokens } from '@/lib/token-store'
 import bcrypt from 'bcryptjs'
 
 // GET /api/clients — список клиентов (только для admin)
@@ -19,7 +20,7 @@ export async function GET() {
     orderBy: { createdAt: 'desc' },
   })
 
-  return NextResponse.json(clients)
+  return NextResponse.json(clients.map(c => ({ ...c, adAccounts: c.adAccounts.map(stripTokens) })))
 }
 
 // POST /api/clients — создать клиента (только для admin)
@@ -61,5 +62,9 @@ export async function POST(request: NextRequest) {
     include: { client: { include: { adAccounts: true } } },
   })
 
-  return NextResponse.json(client, { status: 201 })
+  const { password: _password, ...safeUser } = client
+  return NextResponse.json({
+    ...safeUser,
+    client: safeUser.client && { ...safeUser.client, adAccounts: safeUser.client.adAccounts.map(stripTokens) },
+  }, { status: 201 })
 }

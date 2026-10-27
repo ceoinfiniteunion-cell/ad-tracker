@@ -33,3 +33,9 @@ export async function getToken(adAccountId: string): Promise<{ accessToken: stri
       : null,
   }
 }
+
+// Токени ніколи не віддаються в API-відповідях
+export function stripTokens<T extends { accessToken?: string | null; refreshToken?: string | null }>(account: T) {
+  const { accessToken, refreshToken, ...rest } = account
+  return { ...rest, hasToken: !!accessToken }
+}
