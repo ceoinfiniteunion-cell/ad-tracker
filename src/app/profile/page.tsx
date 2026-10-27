@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [twoFALoading, setTwoFALoading] = useState(false)
   const [showVerifyForm, setShowVerifyForm] = useState(false)
   const [verifyCode, setVerifyCode] = useState('')
+  const [twoFAAction, setTwoFAAction] = useState<'enable'|'disable'>('enable')
   const [verifying, setVerifying] = useState(false)
   const [twoFAMsg, setTwoFAMsg] = useState<{text:string;ok:boolean}|null>(null)
 
@@ -99,42 +100,30 @@ export default function ProfilePage() {
   const confirm2FA = async () => {
     if (verifyCode.length !== 6) return
     setVerifying(true)
-    const verRes = await fetch('/api/auth/2fa/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: profile?.email, code: verifyCode }) })
+    const verRes = await fetch('/api/auth/2fa/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ code: verifyCode, action: twoFAAction }) })
     const verData = await verRes.json()
     if (verData.ok) {
-      const res = await fetch('/api/auth/2fa/toggle', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ enabled: true }) })
-      if (res.ok) { setTwoFAEnabled(true); setShowVerifyForm(false); setVerifyCode(''); setTwoFAMsg({ text: '✓ Двофакторна автентифікація увімкнена', ok: true }) }
+      setTwoFAEnabled(verData.twoFactorEnabled); setShowVerifyForm(false); setVerifyCode('')
+      setTwoFAMsg({ text: verData.twoFactorEnabled ? '✓ Двофакторна автентифікація увімкнена' : '✓ Двофакторна автентифікація вимкнена', ok: true })
     } else {
       setTwoFAMsg({ text: verData.error || 'Невірний код', ok: false })
     }
     setVerifying(false)
   }
 
+  // І увімкнення, і вимкнення підтверджуються кодом з листа
   const toggle2FA = async () => {
-    if (!twoFAEnabled) {
-      // Увімкнення — спочатку відправляємо код
-      setTwoFALoading(true); setTwoFAMsg(null)
-      const res = await fetch('/api/auth/2fa/send', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ email: session?.user?.email || profile?.email })
-      })
-      setTwoFALoading(false)
-      if (res.ok) {
-        setShowVerifyForm(true)
-        setTwoFAMsg({ text: 'Код відправлено на ' + profile?.email + '. Введіть його нижче.', ok: true })
-      } else {
-        setTwoFAMsg({ text: 'Помилка відправки коду', ok: false })
-      }
+    setTwoFALoading(true); setTwoFAMsg(null)
+    const res = await fetch('/api/auth/2fa/send', { method:'POST' })
+    setTwoFALoading(false)
+    if (res.ok) {
+      setTwoFAAction(twoFAEnabled ? 'disable' : 'enable')
+      setVerifyCode('')
+      setShowVerifyForm(true)
+      setTwoFAMsg({ text: 'Код відправлено на ' + profile?.email + '. Введіть його нижче.', ok: true })
     } else {
-      // Вимкнення
-      setTwoFALoading(true); setTwoFAMsg(null)
-      const res = await fetch('/api/auth/2fa/toggle', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ enabled: false })
-      })
-      if (res.ok) { setTwoFAEnabled(false); setShowVerifyForm(false); setTwoFAMsg({ text: '✓ Двофакторна автентифікація вимкнена', ok: true }) }
-      else setTwoFAMsg({ text: 'Помилка', ok: false })
-      setTwoFALoading(false)
+      const data = await res.json().catch(() => ({}))
+      setTwoFAMsg({ text: data.error || 'Помилка відправки коду', ok: false })
     }
   }
 
@@ -310,7 +299,7 @@ export default function ProfilePage() {
                         style={{ padding:'10px 14px', background:'var(--bg2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'20px', fontWeight:800, letterSpacing:'8px', fontFamily:'monospace', textAlign:'center', outline:'none' }}/>
                       <button onClick={confirm2FA} disabled={verifying||verifyCode.length!==6}
                         style={{ padding:'10px', background:(verifying||verifyCode.length!==6)?'rgba(0,200,100,0.3)':'#00c864', color:'#fff', fontWeight:700, fontSize:'13px', borderRadius:'8px', border:'none', cursor:(verifying||verifyCode.length!==6)?'not-allowed':'pointer' }}>
-                        {verifying ? 'Перевіряємо...' : '✓ Підтвердити і увімкнути'}
+                        {verifying ? 'Перевіряємо...' : twoFAAction === 'enable' ? '✓ Підтвердити і увімкнути' : '✓ Підтвердити і вимкнути'}
                       </button>
                     </div>
                   )}

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { rateLimit, getIp } from '@/lib/rate-limit'
+import { consumeTwoFactorCode, TWO_FACTOR_ERRORS } from '@/lib/two-factor'
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -23,24 +24,15 @@ export async function POST(request: NextRequest) {
 
   if (!code || typeof code !== 'string') return NextResponse.json({ error: 'Код обовязковий' }, { status: 400 })
 
-  const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (action !== 'enable' && action !== 'disable') return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
 
-  if (!user.twoFactorCode || !user.twoFactorExpiry) return NextResponse.json({ error: 'Код не було відправлено. Спробуйте знову.' }, { status: 400 })
+  const check = await consumeTwoFactorCode(userId, code)
+  if (check !== 'ok') return NextResponse.json({ error: TWO_FACTOR_ERRORS[check] }, { status: 400 })
 
-  if (new Date() > user.twoFactorExpiry) {
-    await prisma.user.update({ where: { id: userId }, data: { twoFactorCode: null, twoFactorExpiry: null } })
-    return NextResponse.json({ error: 'Код протермінований. Запросіть новий.' }, { status: 400 })
-  }
-
-  const expected = user.twoFactorCode
-  const received = code.trim()
-  if (expected !== received) return NextResponse.json({ error: 'Невірний код' }, { status: 400 })
-
-  const updateData: any = { twoFactorCode: null, twoFactorExpiry: null }
-  if (action === 'enable') updateData.twoFactorEnabled = true
-  if (action === 'disable') updateData.twoFactorEnabled = false
-
-  const updated = await prisma.user.update({ where: { id: userId }, data: updateData, select: { twoFactorEnabled: true } })
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { twoFactorEnabled: action === 'enable' },
+    select: { twoFactorEnabled: true },
+  })
   return NextResponse.json({ ok: true, twoFactorEnabled: updated.twoFactorEnabled })
 }
