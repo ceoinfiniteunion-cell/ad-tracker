@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { openToken } from '@/lib/token-store'
 import { getAccountInsights, parseConversions, parseRevenue, parseLeads } from '@/lib/meta'
 
 export async function POST(request: NextRequest) {
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const dbAccount = await prisma.adAccount.findUnique({ where: { id: accountId } })
-    const accessToken = dbAccount?.accessToken ?? process.env.META_ACCESS_TOKEN
+    const accessToken = openToken(dbAccount?.accessToken) ?? process.env.META_ACCESS_TOKEN
     if (!accessToken) return NextResponse.json({ error: 'No META_ACCESS_TOKEN' }, { status: 400 })
     const normalizedId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
     const insights = await getAccountInsights(normalizedId, dateFrom, dateTo, accessToken)

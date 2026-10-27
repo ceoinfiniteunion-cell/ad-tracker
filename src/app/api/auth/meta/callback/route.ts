@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sealToken } from '@/lib/token-store'
 import { isValidOAuthState, oauthCallbackRedirect } from '@/lib/oauth-state'
 
 export async function GET(request: NextRequest) {
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
     )
     const longToken = await longTokenRes.json()
     const accessToken = longToken.access_token ?? tokens.access_token
+    const sealedToken = sealToken(accessToken)
 
     // Отримуємо список рекламних акаунтів
     const accountsRes = await fetch(
@@ -56,7 +58,7 @@ export async function GET(request: NextRequest) {
         if (existing) {
           await prisma.adAccount.update({
             where: { id: existing.id },
-            data: { accessToken, tokenStatus: 'active', isActive: true }
+            data: { accessToken: sealedToken, tokenStatus: 'active', isActive: true }
           })
         } else {
           await prisma.adAccount.create({
@@ -65,7 +67,7 @@ export async function GET(request: NextRequest) {
               platform: 'FACEBOOK',
               accountId: acc.id,
               name: acc.name ?? 'Meta Ads',
-              accessToken,
+              accessToken: sealedToken,
               tokenStatus: 'active',
               isActive: true,
             }

@@ -17,21 +17,19 @@ export async function getToken(adAccountId: string): Promise<{ accessToken: stri
     where: { id: adAccountId },
     select: { accessToken: true, refreshToken: true },
   })
-
   if (!account) return { accessToken: null, refreshToken: null }
+  return { accessToken: openToken(account.accessToken), refreshToken: openToken(account.refreshToken) }
+}
 
-  return {
-    accessToken: account.accessToken
-      ? isEncrypted(account.accessToken)
-        ? decrypt(account.accessToken)
-        : account.accessToken
-      : null,
-    refreshToken: account.refreshToken
-      ? isEncrypted(account.refreshToken)
-        ? decrypt(account.refreshToken)
-        : account.refreshToken
-      : null,
-  }
+// Для запису в БД: шифрує токен (порожній → null)
+export function sealToken(token: string | null | undefined): string | null {
+  return token ? encrypt(token) : null
+}
+
+// Для читання з БД: розшифровує; старі відкриті значення повертає як є
+export function openToken(value: string | null | undefined): string | null {
+  if (!value) return null
+  return isEncrypted(value) ? decrypt(value) : value
 }
 
 // Токени ніколи не віддаються в API-відповідях

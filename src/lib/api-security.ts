@@ -76,8 +76,8 @@ export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 }
 
-export function isValidPassword(password: string): boolean {
-  return password.length >= 8
+export function isValidPassword(password: unknown): boolean {
+  return typeof password === 'string' && password.length >= 8 && password.length <= 128
 }
 
 export function sanitizeString(str: string, maxLen = 1000): string {

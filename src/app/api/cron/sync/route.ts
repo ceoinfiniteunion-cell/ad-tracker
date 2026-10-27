@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { isCronRequest } from '@/lib/cron-auth'
 import { getAccountInsights, parseConversions, parseRevenue, parseLeads } from '@/lib/meta'
 import { refreshAccessToken, getGoogleAdsCampaignMetrics } from '@/lib/google'
-import { getToken } from '@/lib/token-store'
+import { getToken, openToken } from '@/lib/token-store'
 
 export async function GET(request: NextRequest) {
   if (!isCronRequest(request)) {
@@ -23,7 +23,9 @@ export async function GET(request: NextRequest) {
   for (const account of accounts) {
     try {
       const adAccountId = account.accountId.startsWith('act_') ? account.accountId : `act_${account.accountId}`
-      const insights = await getAccountInsights(adAccountId, from, to, account.accessToken!)
+      const accessToken = openToken(account.accessToken)
+      if (!accessToken) { errors.push(`${account.name}: no token`); continue }
+      const insights = await getAccountInsights(adAccountId, from, to, accessToken)
 
       for (const day of insights) {
         const actions = day.actions ?? []

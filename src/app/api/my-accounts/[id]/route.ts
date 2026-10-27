@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { stripTokens } from '@/lib/token-store'
+import { sealToken, stripTokens } from '@/lib/token-store'
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -29,7 +29,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   const updated = await prisma.adAccount.update({
     where: { id: params.id },
     data: {
-      ...(accessToken !== undefined ? { accessToken, tokenStatus } : {}),
+      ...(accessToken !== undefined ? { accessToken: sealToken(accessToken), tokenStatus } : {}),
       ...(newAccountId ? { accountId: newAccountId } : {}),
       ...(newName ? { name: newName } : {}),
     }

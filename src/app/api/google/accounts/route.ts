@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { openToken } from '@/lib/token-store'
 import { getGoogleAdsAccounts, refreshAccessToken } from '@/lib/google'
 
 export async function GET(request: NextRequest) {
@@ -16,14 +17,16 @@ export async function GET(request: NextRequest) {
   const account = await prisma.adAccount.findFirst({
     where: { clientId, platform: 'GOOGLE', isActive: true },
   })
-  if (!account?.accessToken) {
+  const accessToken = openToken(account?.accessToken)
+  const refreshToken = openToken(account?.refreshToken)
+  if (!accessToken) {
     return NextResponse.json({ error: 'Google not connected' }, { status: 404 })
   }
 
   try {
-    let token = account.accessToken
-    if (account.refreshToken) {
-      try { token = await refreshAccessToken(account.refreshToken) } catch {}
+    let token = accessToken
+    if (refreshToken) {
+      try { token = await refreshAccessToken(refreshToken) } catch {}
     }
     const resourceNames = await getGoogleAdsAccounts(token)
     return NextResponse.json({ accounts: resourceNames })

@@ -14,6 +14,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (form.password.length < 8) { setError('Пароль — мінімум 8 символів'); return }
     setLoading(true)
     setError('')
     try {

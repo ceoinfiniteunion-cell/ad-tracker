@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Невірний формат email' }, { status: 400 })
     }
     if (!isValidPassword(password)) {
-      return NextResponse.json({ error: 'Пароль має бути від 6 до 128 символів' }, { status: 400 })
+      return NextResponse.json({ error: 'Пароль має бути від 8 до 128 символів' }, { status: 400 })
     }
 
     const cleanName = sanitizeString(name, 100)
