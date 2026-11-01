@@ -57,6 +57,7 @@ model AdAccount {
   accessToken  String?
   tokenStatus  String?
   refreshToken String?
+  loginCustomerId String? // Google Ads: MCC, через який є доступ до кабінету
   client       Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
   metrics      CampaignMetric[]
 
@@ -156,4 +157,18 @@ model LoginAttempt {
   lastAt       DateTime  @default(now())
   blockedUntil DateTime?
   @@map("login_attempts")
+}
+
+// Кабінети, знайдені після OAuth, які чекають вибору користувача (payload зашифрований, містить токени)
+model PendingAdConnection {
+  id        String   @id @default(cuid())
+  userId    String
+  clientId  String
+  platform  Platform
+  payload   String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("pending_ad_connections")
 }

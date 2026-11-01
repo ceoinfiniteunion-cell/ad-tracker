@@ -1,125 +1,53 @@
 import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
 import { isValidOAuthState, oauthCallbackRedirect } from '@/lib/oauth-state'
-import { saveToken, getToken } from '@/lib/token-store'
+import { discoverGoogleAccounts, GoogleAdsError } from '@/lib/google'
+import { handleDiscovered } from '@/lib/ad-connect'
 
 export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXTAUTH_URL!
-  const session = await getServerSession(authOptions)
-  if (!session) return oauthCallbackRedirect('google', `${baseUrl}/auth/login`)
+  const redirect = (url: string) => oauthCallbackRedirect('google', url)
+  const fail = (error: string, msg?: string) =>
+    redirect(`${baseUrl}/connect?error=${error}&platform=google${msg ? `&msg=${encodeURIComponent(msg)}` : ''}`)
 
-  if (!isValidOAuthState(request, 'google')) {
-    return oauthCallbackRedirect('google', `${baseUrl}/connect?error=invalid_state`)
-  }
+  const session = await getServerSession(authOptions)
+  if (!session) return redirect(`${baseUrl}/auth/login`)
+  if (!isValidOAuthState(request, 'google')) return fail('invalid_state')
 
   const code = request.nextUrl.searchParams.get('code')
-  if (!code) return oauthCallbackRedirect('google', `${baseUrl}/connect?error=no_code`)
+  if (!code) return fail('no_code')
 
-  const gClientId = process.env.GOOGLE_CLIENT_ID!
-  const gClientSecret = process.env.GOOGLE_CLIENT_SECRET!
-  const redirectUri = baseUrl + '/api/auth/google/callback'
+  const clientId = (session.user as any).clientId
+  if (!clientId) return fail('no_client')
 
   try {
-    // 1. Отримуємо токени
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code,
-        client_id: gClientId,
-        client_secret: gClientSecret,
-        redirect_uri: redirectUri,
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+        redirect_uri: baseUrl + '/api/auth/google/callback',
         grant_type: 'authorization_code',
       }),
       signal: AbortSignal.timeout(10000),
     })
     const tokens = await tokenRes.json()
-    if (tokens.error) {
+    if (tokens.error || !tokens.access_token) {
       console.error('[GOOGLE OAUTH] Token error:', tokens.error)
-      return oauthCallbackRedirect('google', `${baseUrl}/connect?error=token_failed`)
+      return fail('token_failed')
     }
 
-    const clientId2 = (session.user as any).clientId
-    if (!clientId2) return oauthCallbackRedirect('google', `${baseUrl}/connect?error=no_client`)
+    const { accounts, warnings } = await discoverGoogleAccounts(tokens.access_token)
+    if (accounts.length === 0 && warnings.length) return fail('no_accounts', warnings.join('\n'))
 
-    // 2. Шукаємо або створюємо adAccount
-    let adAccount = await prisma.adAccount.findFirst({
-      where: { clientId: clientId2, platform: 'GOOGLE' },
-    })
-
-    if (!adAccount) {
-      adAccount = await prisma.adAccount.create({
-        data: {
-          clientId: clientId2,
-          name: 'Google Ads',
-          accountId: 'pending',
-          platform: 'GOOGLE',
-          isActive: true,
-        },
-      })
-    }
-
-    // 3. Зберігаємо токен
-    await saveToken(adAccount.id, tokens.access_token, tokens.refresh_token)
-    await prisma.adAccount.update({ where: { id: adAccount.id }, data: { tokenStatus: 'valid' } })
-    console.log('[GOOGLE OAUTH] Token saved for:', adAccount.id)
-
-    // 4. Отримуємо Customer ID через refresh token (свіжий access token)
-    try {
-      const refreshRes = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          client_id: gClientId,
-          client_secret: gClientSecret,
-          refresh_token: tokens.refresh_token,
-          grant_type: 'refresh_token',
-        }),
-      })
-      const refreshData = await refreshRes.json()
-      const freshAccessToken = refreshData.access_token
-
-      if (freshAccessToken) {
-        const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN!
-        const loginCustomerId = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID
-
-        const listRes = await fetch(
-          'https://googleads.googleapis.com/v22/customers:listAccessibleCustomers',
-          {
-            headers: {
-              'Authorization': `Bearer ${freshAccessToken}`,
-              'developer-token': devToken,
-              ...(loginCustomerId ? { 'login-customer-id': loginCustomerId } : {}),
-            },
-          }
-        )
-
-        const listText = await listRes.text()
-        console.log('[GOOGLE OAUTH] Customer list response:', listText.slice(0, 200))
-
-        const listData = JSON.parse(listText)
-        if (listData.resourceNames && listData.resourceNames.length > 0) {
-          const customerId = listData.resourceNames[0].replace('customers/', '')
-          await prisma.adAccount.update({
-            where: { id: adAccount.id },
-            data: {
-              accountId: customerId,
-              name: `Google Ads ${customerId}`,
-              tokenStatus: 'valid',
-            },
-          })
-          console.log('[GOOGLE OAUTH] Customer ID set:', customerId)
-        }
-      }
-    } catch (e) {
-      console.error('[GOOGLE OAUTH] Could not fetch customer ID:', e)
-    }
-
-    return oauthCallbackRedirect('google', `${baseUrl}/connect?success=google`)
+    const url = await handleDiscovered(baseUrl, (session.user as any).id, clientId, 'GOOGLE',
+      { accessToken: tokens.access_token, refreshToken: tokens.refresh_token }, accounts)
+    return redirect(url)
   } catch (e) {
     console.error('[GOOGLE OAUTH] Error:', e)
-    return oauthCallbackRedirect('google', `${baseUrl}/connect?error=server_error`)
+    return fail('failed', e instanceof GoogleAdsError ? e.message : 'Не вдалося отримати кабінети Google Ads')
   }
 }

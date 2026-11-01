@@ -3,17 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isCronRequest } from '@/lib/cron-auth'
-import { refreshAccessToken, getGoogleAdsCampaignMetrics } from '@/lib/google'
-import { getToken, saveToken } from '@/lib/token-store'
-
-interface DayData {
-  spend: number
-  impressions: number
-  clicks: number
-  conversions: number
-  revenue: number
-  campaigns: string[]
-}
+import { syncAdAccount, defaultRange } from '@/lib/ad-sync'
 
 export async function POST(request: NextRequest) {
   if (!isCronRequest(request)) {
@@ -24,83 +14,15 @@ export async function POST(request: NextRequest) {
   }
 
   const { adAccountId, customerId, from, to } = await request.json()
-  if (!adAccountId || !customerId) {
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
-  }
-
-  const dateFrom = from ?? new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0]
-  const dateTo = to ?? new Date().toISOString().split('T')[0]
+  if (!adAccountId) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
   const account = await prisma.adAccount.findUnique({ where: { id: adAccountId } })
-  if (!account) {
-    return NextResponse.json({ error: 'Account not found' }, { status: 404 })
-  }
+  if (!account) return NextResponse.json({ error: 'Account not found' }, { status: 404 })
 
+  const range = { ...defaultRange(), ...(from ? { from } : {}), ...(to ? { to } : {}) }
   try {
-    const { accessToken: storedAccess, refreshToken: storedRefresh } = await getToken(adAccountId)
-    if (!storedAccess && !storedRefresh) {
-      return NextResponse.json({ error: 'No tokens stored for this account' }, { status: 404 })
-    }
-
-    let token = storedAccess!
-    if (storedRefresh) {
-      try {
-        token = await refreshAccessToken(storedRefresh)
-        await saveToken(adAccountId, token, storedRefresh)
-        await prisma.adAccount.update({ where: { id: adAccountId }, data: { tokenStatus: 'valid' } })
-      } catch (e: any) {
-        console.error('[GoogleSync] Token refresh failed, using stored access token:', e.message)
-      }
-    }
-
-    const results = await getGoogleAdsCampaignMetrics(token, customerId, dateFrom, dateTo)
-
-    const byDate: Record<string, DayData> = {}
-    for (const row of results) {
-      const date = row.segments?.date as string | undefined
-      if (!date) continue
-      if (!byDate[date]) {
-        byDate[date] = { spend: 0, impressions: 0, clicks: 0, conversions: 0, revenue: 0, campaigns: [] }
-      }
-      const d = byDate[date]
-      d.spend += (Number(row.metrics?.costMicros) || 0) / 1_000_000
-      d.impressions += Number(row.metrics?.impressions) || 0
-      d.clicks += Number(row.metrics?.clicks) || 0
-      d.conversions += Number(row.metrics?.conversions) || 0
-      d.revenue += Number(row.metrics?.conversionsValue) || 0
-      if (row.campaign?.name) d.campaigns.push(String(row.campaign.name))
-    }
-
-    let synced = 0
-    for (const [dateStr, d] of Object.entries(byDate)) {
-      const date = new Date(dateStr)
-      const platformData = {
-        ctr: d.impressions > 0 ? (d.clicks / d.impressions) * 100 : 0,
-        cpc: d.clicks > 0 ? d.spend / d.clicks : 0,
-        cpm: d.impressions > 0 ? (d.spend / d.impressions) * 1000 : 0,
-        roas: d.spend > 0 ? d.revenue / d.spend : 0,
-        costPerConversion: d.conversions > 0 ? d.spend / d.conversions : 0,
-        campaigns: Array.from(new Set(d.campaigns)) as string[],
-      }
-
-      const existing = await prisma.campaignMetric.findFirst({
-        where: { adAccountId, date },
-      })
-
-      if (existing) {
-        await prisma.campaignMetric.update({
-          where: { id: existing.id },
-          data: { spend: d.spend, impressions: d.impressions, clicks: d.clicks, conversions: d.conversions, revenue: d.revenue, campaignName: 'Google Ads Import', platformData },
-        })
-      } else {
-        await prisma.campaignMetric.create({
-          data: { adAccountId, date, spend: d.spend, impressions: d.impressions, clicks: d.clicks, conversions: d.conversions, revenue: d.revenue, campaignName: 'Google Ads Import', platformData },
-        })
-      }
-      synced++
-    }
-
-    return NextResponse.json({ ok: true, synced, from: dateFrom, to: dateTo })
+    const synced = await syncAdAccount({ ...account, accountId: customerId ?? account.accountId }, range)
+    return NextResponse.json({ ok: true, synced, ...range })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

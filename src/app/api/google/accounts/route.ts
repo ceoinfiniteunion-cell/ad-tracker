@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { openToken } from '@/lib/token-store'
-import { getGoogleAdsAccounts, refreshAccessToken } from '@/lib/google'
+import { discoverGoogleAccounts, refreshAccessToken } from '@/lib/google'
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
     if (refreshToken) {
       try { token = await refreshAccessToken(refreshToken) } catch {}
     }
-    const resourceNames = await getGoogleAdsAccounts(token)
-    return NextResponse.json({ accounts: resourceNames })
+    const { accounts, warnings } = await discoverGoogleAccounts(token)
+    return NextResponse.json({ accounts, warnings })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

@@ -46,3 +46,24 @@ export async function getTikTokInsights(
   }, accessToken)
   return data.list ?? []
 }
+
+export interface TikTokDiscoveredAccount { externalId: string; name: string; currency?: string }
+
+// Назви кабінетів для advertiser_ids з OAuth-відповіді (API приймає до 100 id за запит)
+export async function discoverTikTokAccounts(advertiserIds: string[], accessToken: string): Promise<TikTokDiscoveredAccount[]> {
+  const accounts: TikTokDiscoveredAccount[] = []
+  for (let i = 0; i < advertiserIds.length; i += 100) {
+    const batch = advertiserIds.slice(i, i + 100)
+    const data = await tiktokFetch('/advertiser/info/', {
+      advertiser_ids: JSON.stringify(batch),
+      fields: JSON.stringify(['advertiser_id', 'name', 'currency', 'status']),
+    }, accessToken)
+    const byId = new Map<string, any>((data.list ?? []).map((a: any) => [String(a.advertiser_id), a]))
+    for (const id of batch) {
+      const info = byId.get(id)
+      if (info?.status === 'STATUS_DISABLE') continue
+      accounts.push({ externalId: id, name: info?.name || `TikTok Ads ${id}`, currency: info?.currency })
+    }
+  }
+  return accounts
+}

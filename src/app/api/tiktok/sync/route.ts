@@ -2,26 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getTikTokInsights } from '@/lib/tiktok'
-import { getToken } from '@/lib/token-store'
-
-function getChunks(from: string, to: string, chunkDays = 30): Array<{from:string,to:string}> {
-  const chunks = []
-  let start = new Date(from)
-  const end = new Date(to)
-  while (start < end) {
-    const chunkEnd = new Date(start)
-    chunkEnd.setDate(chunkEnd.getDate() + chunkDays - 1)
-    if (chunkEnd > end) chunkEnd.setTime(end.getTime())
-    chunks.push({
-      from: start.toISOString().split('T')[0],
-      to: chunkEnd.toISOString().split('T')[0]
-    })
-    start = new Date(chunkEnd)
-    start.setDate(start.getDate() + 1)
-  }
-  return chunks
-}
+import { syncAdAccount, defaultRange } from '@/lib/ad-sync'
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -30,80 +11,15 @@ export async function POST(request: NextRequest) {
   }
 
   const { adAccountId, advertiserId, from, to } = await request.json()
-  if (!adAccountId || !advertiserId) {
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
-  }
-
-  const dateFrom = from ?? new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0]
-  const dateTo = to ?? new Date().toISOString().split('T')[0]
+  if (!adAccountId) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
   const account = await prisma.adAccount.findUnique({ where: { id: adAccountId } })
   if (!account) return NextResponse.json({ error: 'Account not found' }, { status: 404 })
 
-  const { accessToken } = await getToken(adAccountId)
-  if (!accessToken) return NextResponse.json({ error: 'No access token' }, { status: 404 })
-
-  // Отримати курс UAH→USD для конвертації
-  let uahToUsd = 1
+  const range = { ...defaultRange(), ...(from ? { from } : {}), ...(to ? { to } : {}) }
   try {
-    const rateRes = await fetch('https://open.er-api.com/v6/latest/UAH')
-    const rateData = await rateRes.json()
-    uahToUsd = rateData.rates?.USD ?? (1/41)
-  } catch { uahToUsd = 1/41 }
-
-  try {
-    const chunks = getChunks(dateFrom, dateTo)
-    let synced = 0
-
-    for (const chunk of chunks) {
-      const rows = await getTikTokInsights(advertiserId, chunk.from, chunk.to, accessToken)
-
-      for (const row of rows) {
-        const m = row.metrics ?? {}
-        const d = row.dimensions ?? {}
-        const dateStr = d.stat_time_day?.split(' ')[0]
-        if (!dateStr) continue
-
-        const date = new Date(dateStr)
-        const spend = parseFloat(m.spend ?? '0') * uahToUsd // конвертуємо UAH→USD
-        const impressions = parseInt(m.impressions ?? '0')
-        const clicks = parseInt(m.clicks ?? '0')
-        const conversions = parseInt(m.real_time_conversion ?? m.result ?? '0')
-        const reach = parseInt(m.reach ?? '0')
-        const videoViews = parseInt(m.video_play_actions ?? '0')
-
-        const platformData = {
-          reach,
-          frequency: parseFloat(m.frequency ?? '0'),
-          ctr: parseFloat(m.ctr ?? '0'),
-          cpc: parseFloat(m.cpc ?? '0'),
-          cpm: parseFloat(m.cpm ?? '0'),
-          videoViews,
-          videoWatched2s: parseInt(m.video_watched_2s ?? '0'),
-          videoWatched6s: parseInt(m.video_watched_6s ?? '0'),
-          videoP25: parseInt(m.video_views_p25 ?? '0'),
-          videoP50: parseInt(m.video_views_p50 ?? '0'),
-          videoP75: parseInt(m.video_views_p75 ?? '0'),
-          videoP100: parseInt(m.video_views_p100 ?? '0'),
-          videoCompletionRate: videoViews > 0 ? (parseInt(m.video_views_p100 ?? '0') / videoViews) * 100 : 0,
-          likes: parseInt(m.likes ?? '0'),
-          comments: parseInt(m.comments ?? '0'),
-          shares: parseInt(m.shares ?? '0'),
-          follows: parseInt(m.follows ?? '0'),
-          profileVisits: parseInt(m.profile_visits ?? '0'),
-          conversionRate: parseFloat(m.conversion_rate ?? '0'),
-        }
-
-        await prisma.campaignMetric.upsert({
-          where: { adAccountId_date: { adAccountId, date } },
-          update: { spend, impressions, clicks, conversions, revenue: 0, campaignName: 'TikTok Import', platformData },
-          create: { adAccountId, date, spend, impressions, clicks, conversions, revenue: 0, campaignName: 'TikTok Import', platformData },
-        })
-        synced++
-      }
-    }
-
-    return NextResponse.json({ ok: true, synced, from: dateFrom, to: dateTo, chunks: chunks.length })
+    const synced = await syncAdAccount({ ...account, accountId: advertiserId ?? account.accountId }, range)
+    return NextResponse.json({ ok: true, synced, ...range })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

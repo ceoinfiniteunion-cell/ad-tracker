@@ -5,6 +5,13 @@ import { Plus, Trash2, CheckCircle, AlertCircle, X, Eye, EyeOff, RefreshCw, Cloc
 
 type Platform = 'FACEBOOK' | 'GOOGLE' | 'TIKTOK'
 
+interface PendingAccount {
+  externalId: string; name: string; currency: string | null; viaManager: string | null
+  status: 'new' | 'connected' | 'taken'
+}
+
+const PLATFORM_LABEL: Record<string, string> = { meta: 'Meta', google: 'Google Ads', tiktok: 'TikTok Ads' }
+
 interface AdAccount {
   id: string; name: string; accountId: string; platform: Platform
   isActive: boolean; tokenStatus: string | null; createdAt: string; updatedAt: string
@@ -21,6 +28,7 @@ const PLATFORMS = {
 
 const TOKEN_STATUS: Record<string, {label:string;color:string;bg:string}> = {
   valid: { label:'✓ Активний', color:'#00c864', bg:'rgba(0,200,100,0.1)' },
+  active: { label:'✓ Активний', color:'#00c864', bg:'rgba(0,200,100,0.1)' },
   invalid: { label:'✗ Недійсний', color:'#ff4444', bg:'rgba(230,0,0,0.1)' },
   no_token: { label:'— Без токена', color:'var(--text3)', bg:'var(--border)' },
 }
@@ -32,10 +40,9 @@ const INSTRUCTIONS: Record<Platform, {title:string; steps:{icon:string;title:str
     idPlaceholder: 'act_1234567890',
     tokenPlaceholder: 'EAAxxxxxxxxxx...',
     steps: [
-      { icon:'1', title:'Знайди ID кабінету', desc:'Зайди в Meta Ads Manager → вгорі побачиш назву акаунту і поряд ID у форматі act_XXXXXXXXXX', link:'https://adsmanager.facebook.com', linkText:'Відкрити Ads Manager' },
-      { icon:'2', title:'Відкрий Graph API Explorer', desc:'Натисни кнопку нижче щоб відкрити Graph API Explorer', link:'https://developers.facebook.com/tools/explorer', linkText:'Відкрити Graph API Explorer' },
-      { icon:'3', title:'Згенеруй токен', desc:'У Graph API Explorer: 1) Вибери додаток "Infinite Union Ad Tracker" 2) Натисни "Generate Access Token" 3) Дозволь доступ до рекламних даних' },
-      { icon:'4', title:'Скопіюй токен', desc:'Скопіюй довгий рядок що починається на EAA... і встав нижче. Токен дійсний 60 днів — потім треба оновити' },
+      { icon:'1', title:'Натисни "Підключити через Meta OAuth"', desc:'Увійди у Facebook-акаунт, який має доступ до рекламних кабінетів, і дозволь доступ до рекламних даних.' },
+      { icon:'2', title:'Кабінети знайдуться самі', desc:'Якщо кабінет один — він додасться одразу. Якщо кілька — вибери потрібні у списку. ID вводити не треба.' },
+      { icon:'3', title:'Статистика підтягнеться автоматично', desc:'Одразу після підключення синхронізуються останні 30 днів, далі — щодня.' },
     ]
   },
   GOOGLE: {
@@ -43,9 +50,9 @@ const INSTRUCTIONS: Record<Platform, {title:string; steps:{icon:string;title:str
     idPlaceholder: '123-456-7890',
     tokenPlaceholder: 'ya29.xxxxxxxx...',
     steps: [
-      { icon:'1', title:'Знайди Customer ID', desc:'Зайди в Google Ads → у верхньому правому куті побачиш ID у форматі XXX-XXX-XXXX', link:'https://ads.google.com', linkText:'Відкрити Google Ads' },
-      { icon:'2', title:'Натисни "Підключити через Google OAuth"', desc:'Ти будеш перенаправлений на Google для авторизації. Після підтвердження дані синхронізуються автоматично.' },
-      { icon:'3', title:'Вставте дані нижче', desc:'ID кабінету обовязковий. Токен опційний — без нього статистику треба завантажувати вручну через CSV' },
+      { icon:'1', title:'Натисни "Підключити через Google OAuth"', desc:'Увійди в Google-акаунт, який має доступ до Google Ads, і дозволь доступ.' },
+      { icon:'2', title:'Кабінети знайдуться самі', desc:'Customer ID вводити не треба. Кабінети під MCC теж знайдуться. Якщо кабінетів кілька — вибери потрібні у списку.' },
+      { icon:'3', title:'Статистика підтягнеться автоматично', desc:'Одразу після підключення синхронізуються останні 30 днів, далі — щодня.' },
     ]
   },
   TIKTOK: {
@@ -53,9 +60,9 @@ const INSTRUCTIONS: Record<Platform, {title:string; steps:{icon:string;title:str
     idPlaceholder: '7890123456789',
     tokenPlaceholder: 'xxxxxxxxxxxxxxx...',
     steps: [
-      { icon:'1', title:'Знайди Advertiser ID', desc:'Зайди в TikTok Ads Manager → Налаштування акаунту → скопіюй Advertiser ID', link:'https://ads.tiktok.com', linkText:'Відкрити TikTok Ads Manager' },
-      { icon:'2', title:'Отримай токен (опційно)', desc:'Зайди на TikTok Business API Portal, створи додаток і отримай Access Token', link:'https://business-api.tiktok.com', linkText:'TikTok Business API' },
-      { icon:'3', title:'Вставте дані нижче', desc:'ID кабінету обовязковий. З токеном статистика синхронізується автоматично' },
+      { icon:'1', title:'Натисни "Підключити через TikTok OAuth"', desc:'Увійди в TikTok For Business і дозволь доступ до рекламних кабінетів.' },
+      { icon:'2', title:'Кабінети знайдуться самі', desc:'Advertiser ID вводити не треба. Якщо кабінетів кілька — вибери потрібні у списку.' },
+      { icon:'3', title:'Статистика підтягнеться автоматично', desc:'Одразу після підключення синхронізуються останні 30 днів, далі — щодня.' },
     ]
   }
 }
@@ -63,9 +70,9 @@ const INSTRUCTIONS: Record<Platform, {title:string; steps:{icon:string;title:str
 export default function ConnectPage() {
   const [accounts, setAccounts] = useState<AdAccount[]>([])
   const [isMobile, setIsMobile] = useState(false)
-  const [googleSetup, setGoogleSetup] = useState(false)
-  const [googleCustomerId, setGoogleCustomerId] = useState('')
-  const [googleSaving, setGoogleSaving] = useState(false)
+  const [pending, setPending] = useState<{ id: string; platform: Platform; accounts: PendingAccount[] } | null>(null)
+  const [pendingSelected, setPendingSelected] = useState<Set<string>>(new Set())
+  const [pendingSaving, setPendingSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null)
   const [showTokenModal, setShowTokenModal] = useState<AdAccount|null>(null)
@@ -90,22 +97,88 @@ export default function ConnectPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+    if (params.toString() === '') return
+    // Прибираємо параметри одразу, щоб reload не показував повідомлення/модалку повторно
+    window.history.replaceState(null, '', '/connect')
+
+    const label = PLATFORM_LABEL[params.get('platform') ?? params.get('success') ?? ''] ?? 'Платформа'
+    const msg = params.get('msg')
     const success = params.get('success')
     const error = params.get('error')
-    if (success === 'google') setGoogleSetup(true)
-    if (success === 'meta') showToast('✓ Meta / Facebook підключено успішно!', 'ok')
-    if (success === 'tiktok') showToast('✓ TikTok Ads підключено успішно!', 'ok')
-    if (error === 'failed' && !params.get('platform')) showToast('Помилка підключення Meta', 'err')
-    if (error === 'failed' && params.get('platform') === 'tiktok') showToast('Помилка підключення TikTok', 'err')
-    if (error === 'token_failed') showToast('TikTok: помилка отримання токену', 'err')
-    if (error === 'no_token') showToast('Помилка: не вдалось отримати токен', 'err')
-    if (error === 'failed') showToast('Помилка підключення Google', 'err')
-  }, [])
-  const showToast = (msg:string, type:'ok'|'err') => { setToast({msg,type}); setTimeout(()=>setToast(null),4000) }
+    const pendingId = params.get('pending')
 
-  useEffect(() => {
-    fetch('/api/my-accounts').then(r=>r.json()).then(d=>{ setAccounts(Array.isArray(d)?d:[]); setLoading(false) })
+    if (pendingId) { openPending(pendingId); return }
+
+    if (success) {
+      const n = Number(params.get('accounts') ?? 0)
+      const synced = Number(params.get('synced') ?? 0)
+      if (n === 0) showToast(`${label}: жоден кабінет не підключено${msg ? `\n${msg}` : ''}`, 'err', 10000)
+      else if (msg) showToast(`${label}: підключено ${n}, синхронізовано ${synced}.\n${msg}`, 'err', 10000)
+      else showToast(`✓ ${label}: підключено кабінетів — ${n}, статистику завантажено`, 'ok')
+      return
+    }
+
+    const ERRORS: Record<string, string> = {
+      invalid_state: 'сесія підключення застаріла, спробуйте ще раз',
+      no_code: 'авторизацію скасовано',
+      token_failed: 'не вдалося отримати токен',
+      no_client: 'акаунт не привʼязаний до клієнта',
+      no_accounts: 'у цьому акаунті не знайдено жодного активного рекламного кабінету',
+      failed: 'помилка підключення',
+    }
+    if (error) showToast(`${label}: ${msg || ERRORS[error] || 'помилка підключення'}`, 'err', 10000)
   }, [])
+  const showToast = (msg:string, type:'ok'|'err', ms = 4000) => { setToast({msg,type}); setTimeout(()=>setToast(null), ms) }
+
+  const reloadAccounts = () =>
+    fetch('/api/my-accounts').then(r=>r.json()).then(d=>{ setAccounts(Array.isArray(d)?d:[]); setLoading(false) })
+
+  const openPending = async (id: string) => {
+    const res = await fetch(`/api/connect/pending/${id}`)
+    const d = await res.json()
+    if (!res.ok) { showToast(d.error ?? 'Помилка', 'err', 8000); return }
+    const PL: Record<string, Platform> = { FACEBOOK:'FACEBOOK', GOOGLE:'GOOGLE', TIKTOK:'TIKTOK' }
+    setPending({ id, platform: PL[d.platform], accounts: d.accounts })
+    setPendingSelected(new Set(d.accounts.filter((a: PendingAccount) => a.status !== 'taken').map((a: PendingAccount) => a.externalId)))
+  }
+
+  const togglePending = (externalId: string) => setPendingSelected(prev => {
+    const next = new Set(prev)
+    if (next.has(externalId)) next.delete(externalId); else next.add(externalId)
+    return next
+  })
+
+  const cancelPending = async () => {
+    if (!pending) return
+    const id = pending.id
+    setPending(null)
+    await fetch(`/api/connect/pending/${id}`, { method:'DELETE' })
+  }
+
+  const confirmPending = async () => {
+    if (!pending || pendingSelected.size === 0) return
+    setPendingSaving(true)
+    const label = PLATFORMS[pending.platform].label
+    try {
+      const res = await fetch(`/api/connect/pending/${pending.id}`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ selected: Array.from(pendingSelected) }),
+      })
+      const d = await res.json()
+      if (!res.ok) { showToast(d.error ?? 'Помилка', 'err', 8000); if (res.status === 404) setPending(null); return }
+      setPending(null)
+      await reloadAccounts()
+      const problems = [...(d.skipped ?? []), ...(d.errors ?? [])]
+      if (problems.length) showToast(`${label}: підключено ${d.connected}, синхронізовано ${d.synced}.\n${problems.join('\n')}`, 'err', 10000)
+      else showToast(`✓ ${label}: підключено кабінетів — ${d.connected}, статистику завантажено`, 'ok')
+    } catch {
+      showToast('Помилка мережі', 'err')
+    } finally {
+      setPendingSaving(false)
+    }
+  }
+
+  useEffect(() => { reloadAccounts() }, [])
 
   const currentForm = selectedPlatform ? forms[selectedPlatform] : defaultForm
   const setCurrentForm = (updates: Partial<typeof defaultForm>) => {
@@ -125,7 +198,7 @@ export default function ConnectPage() {
       setForms(prev => ({ ...prev, [selectedPlatform!]: { ...defaultForm } }))
       setSelectedPlatform(null); setStep('platform')
       showToast('Кабінет підключено! Дані синхронізуються...', 'ok')
-      if (acc.platform === 'FACEBOOK' && acc.tokenStatus === 'valid') {
+      if (acc.tokenStatus === 'valid') {
         setTimeout(() => handleSync(acc), 1000)
       }
     } else {
@@ -136,15 +209,10 @@ export default function ConnectPage() {
 
   const handleSync = async (acc: AdAccount) => {
     setSyncing(acc.id)
-    const from = new Date(Date.now()-30*24*60*60*1000).toISOString().split('T')[0]
-    const to = new Date().toISOString().split('T')[0]
-    const res = await fetch('/api/meta/sync', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ accountId: acc.id, adAccountId: acc.accountId, from, to })
-    })
+    const res = await fetch(`/api/my-accounts/${acc.id}/sync`, { method:'POST' })
     const data = await res.json()
     if (res.ok) showToast(`Синхронізовано ${data.synced} днів ✓`, 'ok')
-    else showToast(data.error??'Помилка синхронізації', 'err')
+    else showToast(data.error??'Помилка синхронізації', 'err', 8000)
     setSyncing(null)
   }
 
@@ -164,28 +232,6 @@ export default function ConnectPage() {
       const d = await res.json(); showToast(d.error??'Помилка', 'err')
     }
     setTokenSaving(false)
-  }
-
-  const saveGoogleCustomerId = async () => {
-    if (!googleCustomerId.trim()) return
-    setGoogleSaving(true)
-    const cleanId = googleCustomerId.replace(/-/g, '').trim()
-    try {
-      const res = await fetch('/api/my-accounts')
-      const accs = await res.json()
-      const googleAcc = Array.isArray(accs) ? accs.find((a: any) => a.platform === 'GOOGLE') : null
-      if (googleAcc) {
-        await fetch(`/api/my-accounts/${googleAcc.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accountId: cleanId, name: `Google Ads ${cleanId}` })
-        })
-      }
-      setGoogleSetup(false)
-      showToast('✓ Google Ads підключено успішно!', 'ok')
-      window.location.reload()
-    } catch { showToast('Помилка збереження', 'err') }
-    setGoogleSaving(false)
   }
 
   const handleDelete = async (id: string) => {
@@ -208,8 +254,8 @@ export default function ConnectPage() {
         <div style={gridBg}/>
 
         {toast && (
-          <div style={{ position:'fixed', top:'24px', right:'24px', zIndex:100, display:'flex', alignItems:'center', gap:'10px', padding:'14px 20px', borderRadius:'10px', fontSize:'13px', fontWeight:600, background:toast.type==='ok'?'rgba(0,200,100,0.12)':'rgba(230,0,0,0.12)', border:`1px solid ${toast.type==='ok'?'rgba(0,200,100,0.25)':'rgba(230,0,0,0.25)'}`, color:toast.type==='ok'?'#00c864':'#ff6b6b', boxShadow:'0 8px 32px rgba(0,0,0,0.5)' }}>
-            {toast.type==='ok'?<CheckCircle size={15}/>:<AlertCircle size={15}/>}{toast.msg}
+          <div style={{ position:'fixed', top:'24px', right:'24px', zIndex:100, display:'flex', alignItems:'center', gap:'10px', padding:'14px 20px', borderRadius:'10px', fontSize:'13px', fontWeight:600, background:toast.type==='ok'?'rgba(0,200,100,0.12)':'rgba(230,0,0,0.12)', border:`1px solid ${toast.type==='ok'?'rgba(0,200,100,0.25)':'rgba(230,0,0,0.25)'}`, color:toast.type==='ok'?'#00c864':'#ff6b6b', boxShadow:'0 8px 32px rgba(0,0,0,0.5)', maxWidth:'min(440px, calc(100vw - 48px))', whiteSpace:'pre-line', lineHeight:1.5 }}>
+            {toast.type==='ok'?<CheckCircle size={15} style={{flexShrink:0}}/>:<AlertCircle size={15} style={{flexShrink:0}}/>}<span>{toast.msg}</span>
           </div>
         )}
 
@@ -390,7 +436,7 @@ export default function ConnectPage() {
                           </div>
                         </div>
                         <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                          {acc.platform === 'FACEBOOK' && acc.tokenStatus === 'valid' && (
+                          {(acc.tokenStatus === 'valid' || acc.tokenStatus === 'active') && (
                             <button onClick={()=>handleSync(acc)} disabled={syncing===acc.id} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', background:'rgba(0,200,100,0.08)', border:'1px solid rgba(0,200,100,0.2)', borderRadius:'7px', color:'#00c864', fontSize:'12px', fontWeight:600, cursor:'pointer', opacity:syncing===acc.id?0.6:1 }} onMouseEnter={e=>{e.currentTarget.style.background='rgba(0,200,100,0.15)'}} onMouseLeave={e=>{e.currentTarget.style.background='rgba(0,200,100,0.08)'}}>
                               <RefreshCw size={13} style={{animation:syncing===acc.id?'spin 0.8s linear infinite':'none'}}/>
                               {syncing===acc.id?'Синк...':'Оновити'}
@@ -456,35 +502,43 @@ export default function ConnectPage() {
         </div>
       )}
 
-      {/* Google Setup Modal */}
-      {googleSetup && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
-          <div style={{ background:'var(--bg2)', border:'1px solid rgba(230,0,0,0.3)', borderRadius:'16px', padding:'32px', maxWidth:'440px', width:'100%' }}>
-            <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', marginBottom:'8px' }}>// GOOGLE ADS</p>
-            <h2 style={{ fontSize:'20px', fontWeight:800, color:'var(--text)', margin:'0 0 8px' }}>Вкажи Customer ID</h2>
-            <p style={{ fontSize:'13px', color:'var(--text3)', margin:'0 0 24px', lineHeight:1.6 }}>
-              Авторизація пройшла успішно! Тепер вкажи ID свого рекламного кабінету Google Ads.<br/>
-              Знайди його у верхньому правому куті <a href="https://ads.google.com" target="_blank" style={{color:'#e60000'}}>ads.google.com</a> — формат: <code style={{fontFamily:'monospace', background:'var(--bg3)', padding:'2px 6px', borderRadius:'4px'}}>XXX-XXX-XXXX</code>
-            </p>
-            <div style={{ marginBottom:'20px' }}>
-              <label style={{ display:'block', fontSize:'10px', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--text3)', marginBottom:'8px' }}>CUSTOMER ID</label>
-              <input
-                value={googleCustomerId}
-                onChange={e=>setGoogleCustomerId(e.target.value)}
-                onKeyDown={e=>e.key==='Enter'&&saveGoogleCustomerId()}
-                placeholder="235-580-2813"
-                style={{ width:'100%', padding:'12px 16px', background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text)', fontSize:'16px', fontFamily:'monospace', fontWeight:700, outline:'none', boxSizing:'border-box' as const }}
-                autoFocus
-              />
+      {/* Вибір кабінетів після OAuth */}
+      {pending && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', backdropFilter:'blur(4px)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}
+          onClick={e=>{ if(e.target===e.currentTarget && !pendingSaving) cancelPending() }}>
+          <div style={{ background:'var(--bg2)', border:`1px solid ${PLATFORMS[pending.platform].color}55`, borderRadius:'16px', padding: isMobile ? '20px' : '28px', maxWidth:'480px', width:'100%', maxHeight:'calc(100vh - 32px)', display:'flex', flexDirection:'column' }}>
+            <p style={{ fontFamily:'monospace', fontSize:'10px', letterSpacing:'0.15em', color:'var(--text3)', margin:'0 0 8px' }}>// {PLATFORMS[pending.platform].label.toUpperCase()}</p>
+            <h2 style={{ fontSize:'20px', fontWeight:800, color:'var(--text)', margin:'0 0 6px' }}>Знайдено кабінетів: {pending.accounts.length}</h2>
+            <p style={{ fontSize:'13px', color:'var(--text3)', margin:'0 0 18px', lineHeight:1.5 }}>Зніми галочки з кабінетів, які не треба підключати.</p>
+
+            <div style={{ display:'flex', flexDirection:'column', gap:'8px', overflowY:'auto', marginBottom:'18px' }}>
+              {pending.accounts.map(a => {
+                const taken = a.status === 'taken'
+                const checked = pendingSelected.has(a.externalId)
+                return (
+                  <label key={a.externalId} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', background:'var(--bg3)', border:`1px solid ${checked ? PLATFORMS[pending.platform].color + '66' : 'var(--border)'}`, borderRadius:'10px', cursor: taken ? 'not-allowed' : 'pointer', opacity: taken ? 0.5 : 1 }}>
+                    <input type="checkbox" checked={checked} disabled={taken || pendingSaving} onChange={()=>togglePending(a.externalId)}
+                      style={{ width:'18px', height:'18px', accentColor: PLATFORMS[pending.platform].color, flexShrink:0 }}/>
+                    <div style={{ minWidth:0, flex:1 }}>
+                      <p style={{ fontSize:'14px', fontWeight:700, color:'var(--text)', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{a.name}</p>
+                      <p style={{ fontFamily:'monospace', fontSize:'11px', color:'var(--text3)', margin:'2px 0 0' }}>
+                        {a.externalId}{a.currency ? ` · ${a.currency}` : ''}{a.viaManager ? ` · через MCC ${a.viaManager}` : ''}
+                        {a.status === 'connected' ? ' · вже підключено' : ''}{taken ? ' · підключено іншим клієнтом' : ''}
+                      </p>
+                    </div>
+                  </label>
+                )
+              })}
             </div>
+
             <div style={{ display:'grid', gridTemplateColumns:'1fr 2fr', gap:'10px' }}>
-              <button onClick={()=>{ setGoogleSetup(false); showToast('Додай Customer ID пізніше через кнопку "+ Додати токен"', 'ok') }}
-                style={{ padding:'12px', background:'transparent', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text3)', fontSize:'13px', fontWeight:600, cursor:'pointer' }}>
-                Пізніше
+              <button onClick={cancelPending} disabled={pendingSaving}
+                style={{ padding:'12px', background:'transparent', border:'1px solid var(--border)', borderRadius:'10px', color:'var(--text3)', fontSize:'13px', fontWeight:600, cursor: pendingSaving ? 'not-allowed' : 'pointer' }}>
+                Скасувати
               </button>
-              <button onClick={saveGoogleCustomerId} disabled={googleSaving||!googleCustomerId.trim()}
-                style={{ padding:'12px', background:(googleSaving||!googleCustomerId.trim())?'rgba(230,0,0,0.3)':'#e60000', color:'#fff', border:'none', borderRadius:'10px', fontSize:'13px', fontWeight:700, cursor:(googleSaving||!googleCustomerId.trim())?'not-allowed':'pointer' }}>
-                {googleSaving ? 'Зберігаємо...' : '✓ Підключити'}
+              <button onClick={confirmPending} disabled={pendingSaving || pendingSelected.size === 0}
+                style={{ padding:'12px', background:(pendingSaving||pendingSelected.size===0)?'rgba(230,0,0,0.3)':'#e60000', color:'#fff', border:'none', borderRadius:'10px', fontSize:'13px', fontWeight:700, cursor:(pendingSaving||pendingSelected.size===0)?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
+                {pendingSaving ? <><RefreshCw size={14} style={{animation:'spin 0.8s linear infinite'}}/>Підключаємо і синхронізуємо...</> : `Підключити (${pendingSelected.size})`}
               </button>
             </div>
           </div>

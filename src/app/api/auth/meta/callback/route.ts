@@ -1,86 +1,48 @@
 import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { sealToken } from '@/lib/token-store'
 import { isValidOAuthState, oauthCallbackRedirect } from '@/lib/oauth-state'
+import { discoverMetaAccounts } from '@/lib/meta'
+import { handleDiscovered } from '@/lib/ad-connect'
 
 export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXTAUTH_URL!
-  const session = await getServerSession(authOptions)
-  if (!session) return oauthCallbackRedirect('meta', `${baseUrl}/auth/login`)
+  const redirect = (url: string) => oauthCallbackRedirect('meta', url)
+  const fail = (error: string, msg?: string) =>
+    redirect(`${baseUrl}/connect?error=${error}&platform=meta${msg ? `&msg=${encodeURIComponent(msg)}` : ''}`)
 
-  if (!isValidOAuthState(request, 'meta')) {
-    return oauthCallbackRedirect('meta', `${baseUrl}/connect?error=invalid_state`)
-  }
+  const session = await getServerSession(authOptions)
+  if (!session) return redirect(`${baseUrl}/auth/login`)
+  if (!isValidOAuthState(request, 'meta')) return fail('invalid_state')
 
   const code = request.nextUrl.searchParams.get('code')
-  if (!code) return oauthCallbackRedirect('meta', `${baseUrl}/connect?error=no_code`)
+  if (!code) return fail('no_code')
+
+  const clientId = (session.user as any).clientId
+  if (!clientId) return fail('no_client')
 
   const appId = process.env.META_APP_ID!
   const appSecret = process.env.META_APP_SECRET!
-  const redirectUri = baseUrl + '/api/auth/meta/callback'
 
   try {
-    // Міняємо code на токен
-    const tokenRes = await fetch(
-      `https://graph.facebook.com/v19.0/oauth/access_token?` +
-      new URLSearchParams({ client_id: appId, client_secret: appSecret, redirect_uri: redirectUri, code })
-    )
-    const tokens = await tokenRes.json()
-    if (!tokens.access_token) return oauthCallbackRedirect('meta', `${baseUrl}/connect?error=no_token&msg=${encodeURIComponent(tokens.error?.message ?? 'no_access_token')}`)
+    const tokens = await (await fetch(
+      'https://graph.facebook.com/v19.0/oauth/access_token?' +
+      new URLSearchParams({ client_id: appId, client_secret: appSecret, redirect_uri: baseUrl + '/api/auth/meta/callback', code })
+    )).json()
+    if (!tokens.access_token) return fail('token_failed', tokens.error?.message)
 
-    // Отримуємо довгостроковий токен (60 днів)
-    const longTokenRes = await fetch(
-      `https://graph.facebook.com/v19.0/oauth/access_token?` +
+    // Довгостроковий токен (60 днів)
+    const longToken = await (await fetch(
+      'https://graph.facebook.com/v19.0/oauth/access_token?' +
       new URLSearchParams({ grant_type: 'fb_exchange_token', client_id: appId, client_secret: appSecret, fb_exchange_token: tokens.access_token })
-    )
-    const longToken = await longTokenRes.json()
-    const accessToken = longToken.access_token ?? tokens.access_token
-    const sealedToken = sealToken(accessToken)
+    )).json()
+    const accessToken: string = longToken.access_token ?? tokens.access_token
 
-    // Отримуємо список рекламних акаунтів
-    const accountsRes = await fetch(
-      `https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name,account_id&access_token=${accessToken}`
-    )
-    const accountsData = await accountsRes.json()
-    const adAccounts = accountsData.data ?? []
-
-    const clientId = (session.user as any).clientId
-    if (!clientId) return oauthCallbackRedirect('meta', `${baseUrl}/connect?error=no_client_id`)
-
-    // Зберігаємо кожен акаунт
-    for (const acc of adAccounts) {
-      try {
-        const existing = await prisma.adAccount.findFirst({
-          where: { clientId, platform: 'FACEBOOK', accountId: acc.id }
-        })
-        if (existing) {
-          await prisma.adAccount.update({
-            where: { id: existing.id },
-            data: { accessToken: sealedToken, tokenStatus: 'active', isActive: true }
-          })
-        } else {
-          await prisma.adAccount.create({
-            data: {
-              clientId,
-              platform: 'FACEBOOK',
-              accountId: acc.id,
-              name: acc.name ?? 'Meta Ads',
-              accessToken: sealedToken,
-              tokenStatus: 'active',
-              isActive: true,
-            }
-          })
-        }
-      } catch (dbErr: any) {
-        console.error('DB error for account', acc.id, dbErr.message)
-      }
-    }
-
-    return oauthCallbackRedirect('meta', `${baseUrl}/connect?success=meta&accounts=${adAccounts.length}`)
-  } catch (e: any) {
-    console.error('Meta callback error:', e)
-    return oauthCallbackRedirect('meta', `${baseUrl}/connect?error=failed&msg=${encodeURIComponent(e.message)}`)
+    const accounts = await discoverMetaAccounts(accessToken)
+    const url = await handleDiscovered(baseUrl, (session.user as any).id, clientId, 'FACEBOOK', { accessToken }, accounts)
+    return redirect(url)
+  } catch (e) {
+    console.error('[META OAUTH] Error:', e)
+    return fail('failed', (e as Error).message)
   }
 }

@@ -93,3 +93,27 @@ export function parseLeads(actions: any[]): number {
     .filter(a => a.action_type==='lead'||a.action_type==='offsite_conversion.fb_pixel_lead')
     .reduce((s, a) => s + Number(a.value), 0)
 }
+
+// Статуси кабінетів Meta, які не можна підключити: 2 — disabled, 100 — pending closure, 101 — closed
+const META_SKIP_STATUSES = new Set([2, 100, 101])
+
+export interface MetaDiscoveredAccount { externalId: string; name: string; currency?: string }
+
+export async function discoverMetaAccounts(token: string): Promise<MetaDiscoveredAccount[]> {
+  const accounts: MetaDiscoveredAccount[] = []
+  let after: string | undefined
+  for (let page = 0; page < 20; page++) {
+    const data = await metaFetch('/me/adaccounts', {
+      fields: 'id,name,account_status,currency',
+      limit: '100',
+      ...(after ? { after } : {}),
+    }, token)
+    for (const a of data.data ?? []) {
+      if (META_SKIP_STATUSES.has(Number(a.account_status))) continue
+      accounts.push({ externalId: a.id, name: a.name || `Meta Ads ${a.id}`, currency: a.currency })
+    }
+    after = data.paging?.next ? data.paging?.cursors?.after : undefined
+    if (!after) break
+  }
+  return accounts
+}
