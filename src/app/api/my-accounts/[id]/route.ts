@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { META_GRAPH_URL } from '@/lib/meta'
 import { sealToken, stripTokens } from '@/lib/token-store'
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -20,7 +21,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   let tokenStatus = account.tokenStatus ?? 'no_token'
   if (accessToken && account.platform === 'FACEBOOK') {
     try {
-      const res = await fetch(`https://graph.facebook.com/v19.0/act_${account.accountId.replace('act_','')}?fields=id,name&access_token=${accessToken}`)
+      const res = await fetch(`${META_GRAPH_URL}/act_${account.accountId.replace('act_','')}?fields=id,name&access_token=${accessToken}`)
       const d = await res.json()
       tokenStatus = d.error ? 'invalid' : 'valid'
     } catch { tokenStatus = 'invalid' }

@@ -1,5 +1,6 @@
-const META_API_VERSION = 'v19.0'
-const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
+export const META_API_VERSION = 'v27.0'
+export const META_GRAPH_URL = `https://graph.facebook.com/${META_API_VERSION}`
+const BASE_URL = META_GRAPH_URL
 
 async function metaFetch(path: string, params: Record<string, string> = {}, token?: string) {
   const accessToken = token ?? process.env.META_ACCESS_TOKEN
@@ -99,11 +100,11 @@ const META_SKIP_STATUSES = new Set([2, 100, 101])
 
 export interface MetaDiscoveredAccount { externalId: string; name: string; currency?: string }
 
-export async function discoverMetaAccounts(token: string): Promise<MetaDiscoveredAccount[]> {
+async function listAdAccounts(path: string, token: string): Promise<MetaDiscoveredAccount[]> {
   const accounts: MetaDiscoveredAccount[] = []
   let after: string | undefined
   for (let page = 0; page < 20; page++) {
-    const data = await metaFetch('/me/adaccounts', {
+    const data = await metaFetch(path, {
       fields: 'id,name,account_status,currency',
       limit: '100',
       ...(after ? { after } : {}),
@@ -116,4 +117,28 @@ export async function discoverMetaAccounts(token: string): Promise<MetaDiscovere
     if (!after) break
   }
   return accounts
+}
+
+export async function discoverMetaAccounts(token: string): Promise<MetaDiscoveredAccount[]> {
+  const direct = await listAdAccounts('/me/adaccounts', token)
+  if (direct.length > 0) return direct
+
+  // Токен system user з Login for Business: кабінети бізнесу клієнта, видані під час авторизації
+  let businessId: string | undefined
+  try {
+    businessId = (await metaFetch('/me', { fields: 'client_business_id' }, token)).client_business_id
+  } catch {
+    return direct
+  }
+  if (!businessId) return direct
+
+  const found = new Map<string, MetaDiscoveredAccount>()
+  for (const edge of ['owned_ad_accounts', 'client_ad_accounts']) {
+    try {
+      for (const a of await listAdAccounts(`/${businessId}/${edge}`, token)) found.set(a.externalId, a)
+    } catch (e) {
+      console.error(`[META] ${edge} failed:`, (e as Error).message)
+    }
+  }
+  return Array.from(found.values())
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { META_GRAPH_URL } from '@/lib/meta'
 import { sealToken, stripTokens } from '@/lib/token-store'
 
 export async function GET() {
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
   let tokenStatus = 'no_token'
   if (accessToken && platform === 'FACEBOOK') {
     try {
-      const res = await fetch(`https://graph.facebook.com/v19.0/act_${accountId.replace('act_','')}?fields=id,name&access_token=${accessToken}`)
+      const res = await fetch(`${META_GRAPH_URL}/act_${accountId.replace('act_','')}?fields=id,name&access_token=${accessToken}`)
       const d = await res.json()
       tokenStatus = d.error ? 'invalid' : 'valid'
     } catch { tokenStatus = 'invalid' }
