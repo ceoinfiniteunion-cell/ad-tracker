@@ -12,7 +12,7 @@ export default function DataDeletionPage() {
 
       <h2 style={h2Style}>Option 1 — Remove a connected ad account (immediate)</h2>
       <ol>
-        <li>Log in to the App and open <strong>Connections</strong> (Підключення).</li>
+        <li>Log in to the App and open <strong>My ad accounts</strong> (Мої кабінети) in the sidebar.</li>
         <li>Click the trash icon next to the ad account and confirm.</li>
       </ol>
       <p>The account, its access token and all stored metrics are deleted immediately.</p>

@@ -30,7 +30,7 @@ export default function PrivacyPage() {
       <p>Your advertising metrics are stored in our database hosted on Railway.app. Access tokens are encrypted (AES-256-GCM) and are never shown in the interface or sent to the browser.</p>
 
       <h2 style={h2Style}>5. Data Retention and Deletion</h2>
-      <p>We retain your advertising data for as long as your account is active. You can remove a connected ad account at any time on the Connections page — its token and all stored metrics are deleted immediately. Other deletion options are described on the <a href="/data-deletion" style={linkStyle}>Data Deletion</a> page. Deletion requests are completed within 30 days.</p>
+      <p>We retain your advertising data for as long as your account is active. You can remove a connected ad account at any time on the My ad accounts (Мої кабінети) page — its token and all stored metrics are deleted immediately. Other deletion options are described on the <a href="/data-deletion" style={linkStyle}>Data Deletion</a> page. Deletion requests are completed within 30 days.</p>
 
       <h2 style={h2Style}>6. Your Rights</h2>
       <ul>
