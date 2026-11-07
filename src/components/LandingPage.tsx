@@ -81,8 +81,10 @@ export default function LandingPage() {
       </section>
       <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '40px 48px', textAlign: 'center', color: '#4b5563', fontSize: 13 }}>
         <div style={{ marginBottom: 16 }}><span style={{ fontWeight: 700, color: '#6b7280' }}>Infinite Union Ad Tracker</span> — Advertising analytics portal for Infinite Union agency clients</div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, flexWrap: 'wrap' }}>
           <a href="/privacy" style={{ color: '#4b5563', textDecoration: 'none' }}>Privacy Policy</a>
+          <a href="/terms" style={{ color: '#4b5563', textDecoration: 'none' }}>Terms of Service</a>
+          <a href="/data-deletion" style={{ color: '#4b5563', textDecoration: 'none' }}>Data Deletion</a>
           <a href="/auth/login" style={{ color: '#4b5563', textDecoration: 'none' }}>Client Login</a>
           <span>contact: ceoinfiniteunion@gmail.com</span>
         </div>

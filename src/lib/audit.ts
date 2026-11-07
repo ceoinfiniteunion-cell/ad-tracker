@@ -11,6 +11,7 @@ type AuditAction =
   | 'SYNC_STARTED'
   | 'SYNC_COMPLETED'
   | 'SYNC_FAILED'
+  | 'META_DATA_DELETION_REQUEST'
 
 export async function audit(action: AuditAction, userId: string | null, meta?: Record<string, any>) {
   try {

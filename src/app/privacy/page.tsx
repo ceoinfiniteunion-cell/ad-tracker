@@ -1,24 +1,24 @@
+import { LegalPage, h2Style, linkStyle, CONTACT_EMAIL } from '@/components/LegalPage'
+
+export const metadata = { title: 'Privacy Policy — Infinite Union Ad Tracker' }
+
 export default function PrivacyPage() {
   return (
-    <div style={{ position:'fixed', inset:0, background:'#fff', overflowY:'auto', zIndex:9999 }}>
-    <div style={{ maxWidth:'800px', margin:'0 auto', padding:'60px 40px', fontFamily:'system-ui, sans-serif', color:'#333', lineHeight:1.7 }}>
-      <h1 style={{ fontSize:'32px', fontWeight:800, marginBottom:'8px' }}>Privacy Policy</h1>
-      <p style={{ color:'#666', marginBottom:'40px' }}>Last updated: August 9, 2026</p>
-
-      <h2 style={{ fontSize:'20px', fontWeight:700, marginTop:'32px' }}>1. About This App</h2>
+    <LegalPage title="Privacy Policy" updated="November 7, 2026">
+      <h2 style={h2Style}>1. About This App</h2>
       <p>Infinite Union Ad Tracker (&quot;the App&quot;) is an advertising analytics platform developed by Infinite Union agency. The App allows clients to connect their advertising accounts (Meta/Facebook, Google Ads, TikTok) and view performance metrics in one dashboard.</p>
 
-      <h2 style={{ fontSize:'20px', fontWeight:700, marginTop:'32px' }}>2. Data We Access</h2>
-      <p>When you connect your Meta/Facebook advertising account, the App requests access to:</p>
+      <h2 style={h2Style}>2. Data We Access</h2>
+      <p>When you connect your Meta advertising account through Facebook Login for Business, the App requests access to:</p>
       <ul>
-        <li><strong>ads_read</strong> — to read your ad campaign performance data (impressions, clicks, spend, conversions)</li>
-        <li><strong>ads_management</strong> — to access your ad account information</li>
-        <li><strong>business_management</strong> — to access your Business Manager account information</li>
+        <li><strong>ads_read</strong> — to read the list of your ad accounts and their performance data (spend, impressions, clicks, reach, conversions, video and engagement metrics)</li>
+        <li><strong>business_management</strong> — to find the ad accounts owned by or shared with the Business Manager you authorize</li>
       </ul>
-      <p>We only access advertising performance data. We do not access personal posts, messages, friends lists, or any personal Facebook profile data.</p>
+      <p>The App only reads advertising data. It does not create, edit, pause or delete ads, campaigns or ad accounts. It does not access personal posts, messages, friends lists or personal profile data.</p>
+      <p>For Google Ads and TikTok Ads the App reads the same kind of advertising performance data through their official APIs.</p>
 
-      <h2 style={{ fontSize:'20px', fontWeight:700, marginTop:'32px' }}>3. How We Use Your Data</h2>
-      <p>The advertising data we access is used exclusively to:</p>
+      <h2 style={h2Style}>3. How We Use Your Data</h2>
+      <p>The advertising data is used exclusively to:</p>
       <ul>
         <li>Display your ad performance metrics in your personal dashboard</li>
         <li>Generate reports for your advertising campaigns</li>
@@ -26,25 +26,21 @@ export default function PrivacyPage() {
       </ul>
       <p>We do not sell, share, or transfer your data to third parties.</p>
 
-      <h2 style={{ fontSize:'20px', fontWeight:700, marginTop:'32px' }}>4. Data Storage</h2>
-      <p>Your advertising metrics are stored securely in our database hosted on Railway.app. Access tokens are encrypted and stored securely. You can disconnect your account at any time by contacting us.</p>
+      <h2 style={h2Style}>4. Data Storage</h2>
+      <p>Your advertising metrics are stored in our database hosted on Railway.app. Access tokens are encrypted (AES-256-GCM) and are never shown in the interface or sent to the browser.</p>
 
-      <h2 style={{ fontSize:'20px', fontWeight:700, marginTop:'32px' }}>5. Data Retention</h2>
-      <p>We retain your advertising data for as long as your account is active. Upon request, we will delete all your data within 30 days.</p>
+      <h2 style={h2Style}>5. Data Retention and Deletion</h2>
+      <p>We retain your advertising data for as long as your account is active. You can remove a connected ad account at any time on the Connections page — its token and all stored metrics are deleted immediately. Other deletion options are described on the <a href="/data-deletion" style={linkStyle}>Data Deletion</a> page. Deletion requests are completed within 30 days.</p>
 
-      <h2 style={{ fontSize:'20px', fontWeight:700, marginTop:'32px' }}>6. Your Rights</h2>
-      <p>You have the right to:</p>
+      <h2 style={h2Style}>6. Your Rights</h2>
       <ul>
         <li>Access your data stored in our system</li>
         <li>Request deletion of your data</li>
-        <li>Disconnect your Meta account at any time via Facebook Settings → Apps and Websites</li>
+        <li>Revoke the App&apos;s access to Meta at any time via Facebook Settings → Business Integrations (or Apps and Websites)</li>
       </ul>
 
-      <h2 style={{ fontSize:'20px', fontWeight:700, marginTop:'32px' }}>7. Contact</h2>
-      <p>For any privacy-related questions, contact us at: <a href="mailto:ceo@infiniteunion.com.ua" style={{ color:'#e60000' }}>ceo@infiniteunion.com.ua</a></p>
-
-      <p style={{ marginTop:'40px', color:'#999', fontSize:'14px' }}>© 2026 Infinite Union. All rights reserved.</p>
-    </div>
-    </div>
+      <h2 style={h2Style}>7. Contact</h2>
+      <p>For any privacy-related questions, contact us at: <a href={`mailto:${CONTACT_EMAIL}`} style={linkStyle}>{CONTACT_EMAIL}</a></p>
+    </LegalPage>
   )
 }

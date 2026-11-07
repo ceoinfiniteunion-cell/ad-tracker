@@ -64,6 +64,7 @@ export default withAuth(
         if (pathname.startsWith('/api/cron/')) return true
         if (pathname === '/api/google/sync') return true
         if (pathname === '/api/health') return true
+        if (pathname === '/api/meta/data-deletion') return true
         return !!token
       },
     },
@@ -74,6 +75,6 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/admin/:path*',
-    '/api/((?!auth/register|auth/2fa|cron/|health|google/sync).*)',
+    '/api/((?!auth/register|auth/2fa|cron/|health|google/sync|meta/data-deletion).*)',
   ],
 }
